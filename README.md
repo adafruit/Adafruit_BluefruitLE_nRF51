@@ -12,6 +12,13 @@ If your are using an SPI board, the AT commands are wrapped in a thin layer to t
 
 There are two variants of the nRF51 Bluefruit LE modules.  One uses SPI to communicate, the other uses UART with flow control (TXD, RXD, CTS, RTS).  The wiring you use will depend on the module you are trying to connect.
 
+On both boards, power should be connected as shown below:
+
+Bluefruit LE | Arduino Uno 
+-------------|------------
+VIN          | 5V (assuming a 5V board)
+GND          | GND
+
 ## Software UART Pinout
 
 If you are using a UART Bluefruit LE board, your Arduino should be connected to the Bluefruit LE UART module using the following pinout:
