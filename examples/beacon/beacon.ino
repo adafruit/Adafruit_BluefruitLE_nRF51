@@ -47,7 +47,6 @@
 
 //------------- Hardware SPI Module -------------//
 #define BLUEFRUIT_SPI_RST_PIN       (9)
-
 #define BLUEFRUIT_SPI_IRQ_PIN       (3)  // MUST be an interrupt pin (pin 2 or 3 on an Uno)!
 #define BLUEFRUIT_SPI_CS_PIN        (10)
 
@@ -55,12 +54,11 @@
 // On an UNO: SCK = 13, MISO = 12, and MOSI = 11
 
 //------------- Software UART Module -------------//
+#define BLUEFRUIT_UART_RTS_PIN       (8)
+#define BLUEFRUIT_UART_RXD_PIN       (9)
+#define BLUEFRUIT_UART_TXD_PIN       (10)
+#define BLUEFRUIT_UART_CTS_PIN       (11)
 #define BLUEFRUIT_UART_MODE_PIN      (12)
-
-#define BLUEFRUIT_UART_RXD_PIN       (8)
-#define BLUEFRUIT_UART_TXD_PIN       (9)
-#define BLUEFRUIT_UART_CTS_PIN       (10)
-#define BLUEFRUIT_UART_RTS_PIN       (11)
 
 //Adafruit_BLE_HWSPI ble(BLUEFRUIT_SPI_CS_PIN, BLUEFRUIT_SPI_IRQ_PIN /*, BLUEFRUIT_SPI_RST_PIN */);
 Adafruit_BLE_SWUART ble(BLUEFRUIT_UART_RXD_PIN, BLUEFRUIT_UART_TXD_PIN,
@@ -76,7 +74,7 @@ Adafruit_BLE_SWUART ble(BLUEFRUIT_UART_RXD_PIN, BLUEFRUIT_UART_TXD_PIN,
 #define MANUFACTURER_APPLE         "0x004C"
 #define MANUFACTURER_NORDIC        "0x0059"
 
-#define BEACON_MANUFACTURER_ID     MANUFACTURER_NORDIC
+#define BEACON_MANUFACTURER_ID     MANUFACTURER_APPLE
 #define BEACON_UUID                "01-12-23-34-45-56-67-78-89-9A-AB-BC-CD-DE-EF-F0"
 #define BEACON_MAJOR               "0x0000"
 #define BEACON_MINOR               "0x0000"
@@ -131,7 +129,7 @@ void setup(void)
 
   Serial.print(F("Setting beacon configuration details: "));
 
-  // AT+BLEBEACON=0x0059,01-12-23-34-45-56-67-78-89-9A-AB-BC-CD-DE-EF-F0,0x0000,0x0000,-54
+  // AT+BLEBEACON=0x004C,01-12-23-34-45-56-67-78-89-9A-AB-BC-CD-DE-EF-F0,0x0000,0x0000,-54
   ble.print("AT+BLEBEACON="        );
   ble.print(BEACON_MANUFACTURER_ID ); ble.print(',');
   ble.print(BEACON_UUID            ); ble.print(',');
@@ -140,6 +138,11 @@ void setup(void)
   ble.print(BEACON_RSSI_1M         );
   ble.println(); // print line causes the command to execute
 
+  // check response status
+  EXECUTE ( ble.waitForOK() );
+  
+  Serial.print(F("Resetting the module for advertising changes to take effect: "));
+  ble.println("ATZ");
   // check response status
   EXECUTE ( ble.waitForOK() );
 

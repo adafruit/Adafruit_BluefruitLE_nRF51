@@ -25,10 +25,10 @@ If you are using a UART Bluefruit LE board, your Arduino should be connected to 
 
 Bluefruit LE UART | Arduino Uno 
 ------------------|------------
-RXI               | 8
-TXO               | 9
-CTS               | 10
-RTS               | 11
+RTS               | 8
+RXI               | 9
+TXO               | 10
+CTS               | 11
 
 Optional Pins
 
