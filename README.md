@@ -1,5 +1,9 @@
 This library is a 'driver' for nRF51822 based Adafruit Bluefruit LE modules that communicate via SPI or UART.
 
+# Related Products
+
+[Adafruit Bluefruit LE UART Friend](https://www.adafruit.com/product/2479)
+
 # AT Commands
 
 The Bluefruit LE modules this library talks to use AT-style commands and responses.
