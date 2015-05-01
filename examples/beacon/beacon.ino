@@ -129,7 +129,7 @@ void setup(void)
   /* Print Bluefruit information */
   ble.info();
 
-  Serial.print(F("Setting beacon using predefined configure"));
+  Serial.print(F("Setting beacon configuration details: "));
 
   // AT+BLEBEACON=0x0059,01-12-23-34-45-56-67-78-89-9A-AB-BC-CD-DE-EF-F0,0x0000,0x0000,-54
   ble.print("AT+BLEBEACON="        );
@@ -138,13 +138,13 @@ void setup(void)
   ble.print(BEACON_MAJOR           ); ble.print(',');
   ble.print(BEACON_MINOR           ); ble.print(',');
   ble.print(BEACON_RSSI_1M         );
-  ble.println(); // print line cause command executed
+  ble.println(); // print line causes the command to execute
 
   // check response status
   EXECUTE ( ble.waitForOK() );
 
   Serial.println();
-  Serial.println(F("Please use beacon app to test"));
+  Serial.println(F("Open your beacon app to test"));
 }
 
 /**************************************************************************/
