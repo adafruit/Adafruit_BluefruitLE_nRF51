@@ -137,11 +137,11 @@ void setup(void)
   EXECUTE( ble.reset() );
 
   Serial.println();
-  Serial.println(F("Goto phone Bluetooth's setting to connect and pair with Bluefruit"));
-  Serial.println(F("Open a typable App"));
+  Serial.println(F("Go to your phone's Bluetooth settings to pair your device"));
+  Serial.println(F("then open an application that accepts keyboard input"));
 
   Serial.println();
-  Serial.println(F("Enter characters to send"));
+  Serial.println(F("Enter the character(s) to send:"));
   Serial.println(F("- \\r for Enter"));
   Serial.println(F("- \\n for newline"));
   Serial.println(F("- \\t for tab"));
