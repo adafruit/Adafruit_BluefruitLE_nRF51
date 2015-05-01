@@ -1,5 +1,7 @@
 This library is for all nRF51 based Adafruit Bluefruit LE modules that use SPI or UART.
 
+Current nRF51 based Bluefruit LE products include:
+
 * [Adafruit Bluefruit LE UART Friend](https://www.adafruit.com/product/2479)
 
 # AT Commands
