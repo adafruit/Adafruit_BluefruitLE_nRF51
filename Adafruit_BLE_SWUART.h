@@ -41,7 +41,7 @@
 #include "utility/SoftwareSerialHwFlow.h"
 
 #define BLUEFRUIT_MODE_COMMAND    HIGH
-#define BLUEFRUIT_MODE_UART       LOW
+#define BLUEFRUIT_MODE_DATA       LOW
 
 class Adafruit_BLE_SWUART : public Adafruit_BLE
 {

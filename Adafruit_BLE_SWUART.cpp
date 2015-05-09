@@ -113,7 +113,7 @@ void Adafruit_BLE_SWUART::end(void)
 
     @param[in]  mode
                 The mode to change, either is BLUEFRUIT_MODE_COMMAND or
-                BLUEFRUIT_MODE_UART
+                BLUEFRUIT_MODE_DATA
 
     @return false if Mode Pin is not previously enabled, otherwise true.
 */

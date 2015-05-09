@@ -42,6 +42,7 @@
 /******************************************************************************/
 bool Adafruit_BLE::reset(void)
 {
+  // println();
   println("ATZ");
   bool isOK = waitForOK();
 

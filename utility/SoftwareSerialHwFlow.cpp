@@ -174,22 +174,19 @@ void SoftwareSerialHwFlow::recv()
     if (_inverse_logic)
       d = ~d;
 
-    // Ignore 0xff value, it is often signal error when other device in the middle of reset
-    if ( d != 0xff )
+    // Careful 0xff value may appear on the RXD when partner device in the middle of reset
+    // if buffer full, set the overflow flag and return
+    uint8_t next = (_receive_buffer_tail + 1) % _SS_MAX_RX_BUFF;
+    if (next != _receive_buffer_head)
     {
-      // if buffer full, set the overflow flag and return
-      uint8_t next = (_receive_buffer_tail + 1) % _SS_MAX_RX_BUFF;
-      if (next != _receive_buffer_head)
-      {
-        // save new data in buffer: tail points to where byte goes
-        _receive_buffer[_receive_buffer_tail] = d; // save new byte
-        _receive_buffer_tail = next;
-      }
-      else
-      {
-        DebugPulse(_DEBUG_PIN1, 1);
+      // save new data in buffer: tail points to where byte goes
+      _receive_buffer[_receive_buffer_tail] = d; // save new byte
+      _receive_buffer_tail = next;
+    }
+    else
+    {
+      DebugPulse(_DEBUG_PIN1, 1);
         _buffer_overflow = true;
-      }
     }
 
     // skip the stop bit
