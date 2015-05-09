@@ -86,15 +86,16 @@ bool Adafruit_BLE_SWUART::begin(void)
   {
     pinMode(m_mode_pin, OUTPUT);
     digitalWrite(m_mode_pin, BLUEFRUIT_MODE_COMMAND);
+
+    // A bit of delay to make sure mode change take effect
+    delay(1);
   }
 
   // Bluefruit baudrate is fixed to 9600
   m_serial.begin(9600);
 
   // reset Bluefruit module upon connect
-  reset();
-
-  return true;
+  return reset();
 }
 
 /******************************************************************************/
