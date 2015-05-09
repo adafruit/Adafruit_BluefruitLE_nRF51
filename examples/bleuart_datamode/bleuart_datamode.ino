@@ -122,13 +122,13 @@ void setup(void)
   /* Print Bluefruit information */
   ble.info();
 
-  Serial.println(F("Open te Adafruit Bluefruit LE Connect app and connect in UART mode,"));
+  Serial.println(F("Open the Adafruit Bluefruit LE Connect app and connect in UART mode,"));
   Serial.println(F("Then enter characters to send to your Bluefruit LE module."));
   Serial.println();
 
   // Set module to DATA mode
   Serial.println( F("Switching to DATA mode. Make sure you set the Bluefruit LE modules's") );
-  Serial.println( F("MODE pin to CMD mode to enable SW mode control.") );
+  Serial.println( F("MODE selection switch to CMD mode to enable SW mode selection.") );
   Serial.println();
   
   ble.setModePin(BLUEFRUIT_MODE_DATA);
