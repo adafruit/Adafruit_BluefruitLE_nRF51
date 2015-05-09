@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     bleuart_data.ino
+    @file     bleuart_datamode.ino
     @author   hathach, ktown (Adafruit Industries)
 
     @section LICENSE

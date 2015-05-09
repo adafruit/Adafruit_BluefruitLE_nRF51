@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     bleuart.ino
+    @file     bleuart_cmdmode.ino
     @author   hathach, ktown (Adafruit Industries)
 
     @section LICENSE
@@ -95,7 +95,7 @@ bool printResponse(void);
 void setup(void)
 {
   Serial.begin(115200);
-  Serial.println(F("BLE UART EXAMPLE"));
+  Serial.println(F("BLE UART CMD MODE EXAMPLE"));
   Serial.println(F("----------------"));
 
   /* Initialise the module */
