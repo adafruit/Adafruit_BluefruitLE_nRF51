@@ -55,12 +55,12 @@
 // On an UNO: SCK = 13, MISO = 12, and MOSI = 11
 
 //------------- Software UART Module -------------//
+#define BLUEFRUIT_UART_RTS_PIN       (8)
+#define BLUEFRUIT_UART_RXD_PIN       (9)
+#define BLUEFRUIT_UART_TXD_PIN       (10)
+#define BLUEFRUIT_UART_CTS_PIN       (11)
 #define BLUEFRUIT_UART_MODE_PIN      (12)
 
-#define BLUEFRUIT_UART_RXD_PIN       (8)
-#define BLUEFRUIT_UART_TXD_PIN       (9)
-#define BLUEFRUIT_UART_CTS_PIN       (10)
-#define BLUEFRUIT_UART_RTS_PIN       (11)
 
 //Adafruit_BLE_HWSPI ble(BLUEFRUIT_SPI_CS_PIN, BLUEFRUIT_SPI_IRQ_PIN /*, BLUEFRUIT_SPI_RST_PIN */);
 Adafruit_BLE_SWUART ble(BLUEFRUIT_UART_RXD_PIN, BLUEFRUIT_UART_TXD_PIN,
@@ -97,7 +97,7 @@ void setup(void)
 {
   Serial.begin(115200);
   Serial.println(F("BLE UART DATA MODE EXAMPLE"));
-  Serial.println(F("----------------"));
+  Serial.println(F("--------------------------"));
 
   /* Initialise the module */
   Serial.print(F("Initialising the Bluefruit LE module: "));
