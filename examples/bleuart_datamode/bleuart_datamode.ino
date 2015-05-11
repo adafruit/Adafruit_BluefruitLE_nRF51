@@ -41,35 +41,66 @@
 #include "Adafruit_BLE_HWSPI.h"
 #include "Adafruit_BLE_SWUART.h"
 
-//=======================================================================
-// HARDWARE SETTING
-//=======================================================================
+/*=========================================================================
+    DATA TRANSPORT SELECTION
+    Set TRANSPORT to an appropriate target, depending on the board you are
+    using and the transport protocol it is based on
+    -----------------------------------------------------------------------*/
+    #define TRANSPORT_SWSERIAL              (1)
+    #define TRANSPORT_HWSPI                 (2)
+    #define TRANSPORT                       (TRANSPORT_SWSERIAL)
+/*=========================================================================*/
 
-//------------- Hardware SPI Module -------------//
-#define BLUEFRUIT_SPI_RST_PIN       (9)
+/*=========================================================================
+    SPI SETTINGS
+    The following macros declare the pins to use for SPI communication
+    -----------------------------------------------------------------------*/
+    #define BLUEFRUIT_SPI_RST_PIN           (9)
+    #define BLUEFRUIT_SPI_IRQ_PIN           (3)  // MUST be an interrupt pin (pin 2 or 3 on an Uno)!
+    #define BLUEFRUIT_SPI_CS_PIN            (10)
+    /* Use HW SPI pins for the other SPI functions. On an Uno this means:
+         SCK  = 13
+         MISO = 12
+         MOSI = 11 */
+/*=========================================================================*/
 
-#define BLUEFRUIT_SPI_IRQ_PIN       (3)  // MUST be an interrupt pin (pin 2 or 3 on an Uno)!
-#define BLUEFRUIT_SPI_CS_PIN        (10)
+/*=========================================================================
+    SOFTWARE SERIAL SETTINGS
+    The following macros declare the pins used for SW serial
+    -----------------------------------------------------------------------*/
+    #define BLUEFRUIT_UART_RTS_PIN          (8)
+    #define BLUEFRUIT_UART_RXD_PIN          (9)
+    #define BLUEFRUIT_UART_TXD_PIN          (10)
+    #define BLUEFRUIT_UART_CTS_PIN          (11)
+    #define BLUEFRUIT_UART_MODE_PIN         (12)
+/*=========================================================================*/
 
-// Use hardware SPI for the remaining pins:
-// On an UNO: SCK = 13, MISO = 12, and MOSI = 11
+/*=========================================================================
+    APPLICATION SETTINGS
 
-//------------- Software UART Module -------------//
-#define BLUEFRUIT_UART_RTS_PIN       (8)
-#define BLUEFRUIT_UART_RXD_PIN       (9)
-#define BLUEFRUIT_UART_TXD_PIN       (10)
-#define BLUEFRUIT_UART_CTS_PIN       (11)
-#define BLUEFRUIT_UART_MODE_PIN      (12)
+    READ_BUFSIZE            Size of the read buffer for incoming data
+    VERBOSE_MODE            If set to 1 enables full data output (for
+                            debugging), otherwise set it to 0 to disable
+                            verbose output
+    BLE_READPACKET_TIMEOUT  The timeout in ms waiting for a data packet
+    -----------------------------------------------------------------------*/
+    #define BUFSIZE                         (128)
+    #define VERBOSE_MODE                    (0)
+/*=========================================================================*/
 
-
-//Adafruit_BLE_HWSPI ble(BLUEFRUIT_SPI_CS_PIN, BLUEFRUIT_SPI_IRQ_PIN /*, BLUEFRUIT_SPI_RST_PIN */);
-Adafruit_BLE_SWUART ble(BLUEFRUIT_UART_RXD_PIN, BLUEFRUIT_UART_TXD_PIN,
-                        BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN, BLUEFRUIT_UART_MODE_PIN);
-
-//=======================================================================
-// APPLICATION SETTING
-//=======================================================================
-#define BUFSIZE                    128
+/* Constructors */
+#if TRANSPORT == TRANSPORT_HWSPI
+  Adafruit_BLE_HWSPI ble(BLUEFRUIT_SPI_CS_PIN,
+                         BLUEFRUIT_SPI_IRQ_PIN /*, BLUEFRUIT_SPI_RST_PIN */);
+#elif TRANSPORT == TRANSPORT_SWSERIAL
+  Adafruit_BLE_SWUART ble(BLUEFRUIT_UART_RXD_PIN, 
+                          BLUEFRUIT_UART_TXD_PIN,
+                          BLUEFRUIT_UART_CTS_PIN, 
+                          BLUEFRUIT_UART_RTS_PIN, 
+                          BLUEFRUIT_UART_MODE_PIN);
+#else
+  #error No TRANSPORT defined! Please set this to an appropriate value.
+#endif
 
 /**************************************************************************/
 /*!
@@ -99,6 +130,13 @@ void setup(void)
   Serial.println(F("BLE UART DATA MODE EXAMPLE"));
   Serial.println(F("--------------------------"));
 
+  #if TRANSPORT == TRANSPORT_SWSERIAL
+  Serial.println( F("") );
+  Serial.println( F("Make sure the mode selection switch on your UART FRIEND") );
+  Serial.println( F("is set to CMD mode to enable SW-based mode control!"));
+  Serial.println( F("") );
+  #endif
+
   /* Initialise the module */
   Serial.print(F("Initialising the Bluefruit LE module: "));
 
@@ -108,6 +146,12 @@ void setup(void)
     while(1){}
   }
   Serial.println( F("OK!") );
+  
+  /* Switch to CMD mode if we're using a UART module */
+  #if TRANSPORT == TRANSPORT_SWSERIAL
+  Serial.print( F("Switching to CMD mode: ") );
+  EXECUTE( ble.setModePin(BLUEFRUIT_MODE_COMMAND) );
+  #endif
 
   /* Perform a factory reset to make sure everything is in a known state */
   Serial.print(F("Performing a factory reset: "));
@@ -116,8 +160,8 @@ void setup(void)
   /* Disable command echo from Bluefruit */
   ble.echo(false);
 
-  /* Set ble command verbose */
-  ble.verbose(false);
+  /* Set the device into VERBOSE mode if requested (echo commands) */
+  ble.verbose(VERBOSE_MODE);
 
   /* Print Bluefruit information */
   ble.info();

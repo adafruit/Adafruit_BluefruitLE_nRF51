@@ -122,7 +122,7 @@ uint8_t replybuffer[READ_BUFSIZE+1];
   do{\
     if ( !(command) ) { Serial.println( F("FAILED!") ); while(1){} }\
     Serial.println( F("OK!") );\
-  }while(0);
+  }while(0)
 
 /**************************************************************************/
 /*! 
