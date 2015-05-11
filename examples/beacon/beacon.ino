@@ -82,23 +82,26 @@
     VERBOSE_MODE            If set to 1 enables full data output (for
                             debugging), otherwise set it to 0 to disable
                             verbose output
-    BLE_READPACKET_TIMEOUT  The timeout in ms waiting for a data packet
+    BEACON_MANUFACTURER_ID  Company Identifier assigned by Bluetooth SIG
+                            Full list of Manufacturer ID can be found here
+                            https://www.bluetooth.org/en-us/specification/assigned-numbers/company-identifiers
+    BEACON_UUID             16-bytes UUID in hex format AA-BB-...
+    BEACON_MAJOR            16-bit major nunber
+    BEACON_MINOR            16-bit minor nunber
+    BEACON_RSSI_1M
     -----------------------------------------------------------------------*/
     #define BUFSIZE                         (128)
     #define VERBOSE_MODE                    (0)
+
+    #define MANUFACTURER_APPLE         "0x004C"
+    #define MANUFACTURER_NORDIC        "0x0059"
+
+    #define BEACON_MANUFACTURER_ID     MANUFACTURER_APPLE
+    #define BEACON_UUID                "01-12-23-34-45-56-67-78-89-9A-AB-BC-CD-DE-EF-F0"
+    #define BEACON_MAJOR               "0x0000"
+    #define BEACON_MINOR               "0x0000"
+    #define BEACON_RSSI_1M             "-54"
 /*=========================================================================*/
-
-
-/* Full list of Manufacturer ID can be found here
- * https://www.bluetooth.org/en-us/specification/assigned-numbers/company-identifiers */
-#define MANUFACTURER_APPLE         "0x004C"
-#define MANUFACTURER_NORDIC        "0x0059"
-
-#define BEACON_MANUFACTURER_ID     MANUFACTURER_APPLE
-#define BEACON_UUID                "01-12-23-34-45-56-67-78-89-9A-AB-BC-CD-DE-EF-F0"
-#define BEACON_MAJOR               "0x0000"
-#define BEACON_MINOR               "0x0000"
-#define BEACON_RSSI_1M             "-54"
 
 /* Constructors */
 #if TRANSPORT == TRANSPORT_HWSPI

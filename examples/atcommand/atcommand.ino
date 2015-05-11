@@ -82,7 +82,6 @@
     VERBOSE_MODE            If set to 1 enables full data output (for
                             debugging), otherwise set it to 0 to disable
                             verbose output
-    BLE_READPACKET_TIMEOUT  The timeout in ms waiting for a data packet
     -----------------------------------------------------------------------*/
     #define BUFSIZE                         (128)
     #define VERBOSE_MODE                    (1)

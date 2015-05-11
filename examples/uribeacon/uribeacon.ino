@@ -82,13 +82,13 @@
     VERBOSE_MODE            If set to 1 enables full data output (for
                             debugging), otherwise set it to 0 to disable
                             verbose output
-    BLE_READPACKET_TIMEOUT  The timeout in ms waiting for a data packet
+    URL                     URL that is advertised, it must not longer than 17
+                            (excluding http:// and www.)
     -----------------------------------------------------------------------*/
     #define BUFSIZE                         (128)
     #define VERBOSE_MODE                    (0)
+    #define URL                             "http://www.adafruit.com"
 /*=========================================================================*/
-// URL that is advertised, it must not longer than 17 (omitted http:// and www.)
-#define URL                 "http://www.adafruit.com"
 
 /* Constructors */
 #if TRANSPORT == TRANSPORT_HWSPI
