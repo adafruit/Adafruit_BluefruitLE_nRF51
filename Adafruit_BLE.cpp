@@ -97,6 +97,25 @@ bool Adafruit_BLE::echo(bool enable)
 
 /******************************************************************************/
 /*!
+    @brief  Check connection state, returns true is connected!
+*/
+/******************************************************************************/
+bool Adafruit_BLE::isConnected(void)
+{
+  bool connected = false;
+
+  println(F("AT+GAPGETCONN"));
+  readline(_timeout);
+  if (buffer[0] == '1') 
+    connected = true;
+  if (!waitForOK()) 
+    return false;
+  return connected;
+}
+
+
+/******************************************************************************/
+/*!
     @brief  Print Bluefruit's information retrieved by ATI command
 */
 /******************************************************************************/
@@ -171,6 +190,11 @@ void Adafruit_BLE::readln(void)
 /******************************************************************************/
 bool Adafruit_BLE::waitForOK(void)
 {
+
+  if (_verbose) {
+    Serial.print("\n<- ");
+  }
+
   while (readline(_timeout)) {
     if (strcmp(buffer, "OK") == 0) return true;
   }
@@ -210,9 +234,11 @@ int32_t Adafruit_BLE::readln_parseInt(void)
 uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
   uint16_t replyidx = 0;
 
+  /*
   if (_verbose) {
-    Serial.print("<- ");
+    Serial.print("\n<- ");
   }
+  */
 
   while (timeout--) {
     while(available()) {

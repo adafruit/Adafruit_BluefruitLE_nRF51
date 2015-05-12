@@ -53,9 +53,11 @@ class Adafruit_BLE : public Stream
   protected:
     bool     _verbose;
     uint16_t _timeout;
-    char buffer[BLE_BUFSIZE+1];
 
   public:
+    char buffer[BLE_BUFSIZE+1];
+
+
     // Auto print out TX & RX data to normal Serial
     void verbose(bool enable) { _verbose = enable; }
 
@@ -65,6 +67,9 @@ class Adafruit_BLE : public Stream
     void info(void);
     bool echo(bool enable);
     bool waitForOK(void);
+
+
+    bool isConnected(void);
 
     // read one line from stream into buffer
     size_t readln( char *buffer, size_t length);
