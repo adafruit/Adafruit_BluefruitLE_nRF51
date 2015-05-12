@@ -42,9 +42,14 @@
 /******************************************************************************/
 bool Adafruit_BLE::reset(void)
 {
+  bool isOK;
   // println();
-  println("ATZ");
-  bool isOK = waitForOK();
+  for (uint8_t t=0; t < 5; t++) {
+    println("ATZ");
+    isOK = waitForOK();
+    if (isOK) break;
+  }
+  if (! isOK) return false;
 
   // Bluefruit need 1 second to reboot
   delay(1000);
@@ -104,24 +109,9 @@ void Adafruit_BLE::info(void)
 
   println("ATI");
 
-  char buffer[BLE_BUFSIZE+1];
-  buffer[BLE_BUFSIZE] = 0;
-
-  size_t len = 0;
-  while ( (len = readln(buffer, BLE_BUFSIZE)) > 0 )
-  {
-    String ok_mess("OK");
-    String error_mess("ERROR");
-
-    if ( ok_mess == buffer || error_mess == buffer) break;
-
-    if (len < BLE_BUFSIZE)
-    {
-      Serial.println(buffer);
-    }else
-    {
-      Serial.print(buffer);
-    }
+  while (readline(_timeout)) {
+    Serial.println(buffer);
+    if (strcmp(buffer, "OK") == 0) break;
   }
 
   Serial.println(F("----------------"));
@@ -181,7 +171,10 @@ void Adafruit_BLE::readln(void)
 /******************************************************************************/
 bool Adafruit_BLE::waitForOK(void)
 {
-  return findUntil( (char*) "OK\r\n", (char*) "ERROR\r\n");
+  while (readline(_timeout)) {
+    if (strcmp(buffer, "OK") == 0) return true;
+  }
+  return false;
 }
 
 /******************************************************************************/
@@ -210,3 +203,46 @@ int32_t Adafruit_BLE::readln_parseInt(void)
 
   return val;
 }
+
+
+
+
+uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
+  uint16_t replyidx = 0;
+
+  if (_verbose) {
+    Serial.print("<- ");
+  }
+
+  while (timeout--) {
+    while(available()) {
+      char c =  read();
+      if (c == '\r') continue;
+      if (c == 0xA) {
+        if (replyidx == 0)   // the first 0x0A is ignored
+          continue;
+        
+        if (!multiline) {
+          timeout = 0;         // the second 0x0A is the end of the line
+          break;
+        }
+      }
+      buffer[replyidx] = c;
+      replyidx++;
+
+      if (replyidx >= (BLE_BUFSIZE-1)) {
+	//if (_verbose) { Serial.println("*overflow*"); }  // for my debuggin' only!
+	timeout = 0;
+	break;
+      }
+    }
+    
+    if (timeout == 0) break;
+    delay(1);
+  }
+  buffer[replyidx] = 0;  // null term
+
+  return replyidx;
+}
+
+

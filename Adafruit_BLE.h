@@ -43,7 +43,7 @@
 #include "utility/errors.h"
 #include "utility/TimeoutTimer.h"
 
-#define BLE_DEFAULT_TIMEOUT      2000
+#define BLE_DEFAULT_TIMEOUT      250
 #define BLE_BUFSIZE              4*SDEP_MAX_PACKETSIZE
 
 #define ASSERT(condition, err)    if ( !(condition) ) return err;
@@ -52,6 +52,8 @@ class Adafruit_BLE : public Stream
 {
   protected:
     bool     _verbose;
+    uint16_t _timeout;
+    char buffer[BLE_BUFSIZE+1];
 
   public:
     // Auto print out TX & RX data to normal Serial
@@ -72,6 +74,8 @@ class Adafruit_BLE : public Stream
     }
 
     void readln(void);
+
+    uint16_t readline(uint16_t timeout, boolean multiline = false);
 
     int32_t readln_parseInt(void);
 };
