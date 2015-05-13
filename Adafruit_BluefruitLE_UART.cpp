@@ -54,10 +54,16 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_
 {
   _verbose = false;
   _timeout = BLE_DEFAULT_TIMEOUT;
+
+#if not defined (_VARIANT_ARDUINO_DUE_X_)
   ss = 0;
+#endif
+
   hs = &port;
   mySerial = &port;
 }
+
+#if not defined (_VARIANT_ARDUINO_DUE_X_)
 
 Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
   _cts_pin(cts_pin), _rts_pin(rts_pin), _mode_pin(mode_pin)
@@ -68,6 +74,8 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_
   ss = &port;
   mySerial = &port;
 }
+
+#endif
 
 
 /******************************************************************************/
@@ -107,7 +115,9 @@ bool Adafruit_BluefruitLE_UART::begin(boolean debug)
   if (hs) {
     hs->begin(9600);
   } else {
+#if not defined (_VARIANT_ARDUINO_DUE_X_)
     ss->begin(9600);
+#endif
   }
 
   if (_cts_pin > 0) {
@@ -130,7 +140,9 @@ void Adafruit_BluefruitLE_UART::end(void)
   if (hs) {
     hs->end();
   } else {
+#if not defined (_VARIANT_ARDUINO_DUE_X_)
     ss->end();
+#endif
   }
 }
 

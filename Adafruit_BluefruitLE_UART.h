@@ -38,8 +38,10 @@
 #define _ADAFRUIT_BLE_UART_H_
 
 #include "Arduino.h"
-#include <SoftwareSerial.h>
 #include <Adafruit_BLE.h>
+#if not defined (_VARIANT_ARDUINO_DUE_X_)
+  #include <SoftwareSerial.h>
+#endif
 
 #define BLUEFRUIT_MODE_COMMAND    HIGH
 #define BLUEFRUIT_MODE_DATA       LOW
@@ -50,7 +52,9 @@ class Adafruit_BluefruitLE_UART : public Adafruit_BLE
     // Hardware Pins
     int8_t  _mode_pin, _rts_pin, _cts_pin;
     Stream *mySerial;
+#if not defined (_VARIANT_ARDUINO_DUE_X_)
     SoftwareSerial *ss;
+#endif
     HardwareSerial *hs;
     boolean _debug;
 
@@ -60,10 +64,12 @@ class Adafruit_BluefruitLE_UART : public Adafruit_BLE
 		      int8_t mode_pin = -1, 
 		      int8_t cts_pin = -1, 
 		      int8_t rts_pin = -1);
+#if not defined (_VARIANT_ARDUINO_DUE_X_)
     Adafruit_BluefruitLE_UART(SoftwareSerial &port,
 		      int8_t mode_pin = -1, 
 		      int8_t cts_pin = -1, 
 		      int8_t rts_pin = -1);
+#endif
 
     virtual ~Adafruit_BluefruitLE_UART();
 
