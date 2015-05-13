@@ -25,31 +25,25 @@ you send your own AT commands!
 #define BLUEFRUIT_SWUART_RXD_PIN        9    // Required for software serial!
 #define BLUEFRUIT_SWUART_TXD_PIN        10   // Required for software serial!
 #define BLUEFRUIT_UART_CTS_PIN          11   // Required for software serial!
+#define BLUEFRUIT_UART_RTS_PIN          -1   // Optional, set to -1 if unused
 
 /*== If you are using Hardware Serial
     The following macros declare the Serial port you are using. Uncomment this
     line if you are connecting the BLE to Leonardo/Micro or Flora
     -----------------------------------------------------------------------*/
-
 //#define BLUEFRUIT_HWSERIAL_NAME           Serial1
 
 /*== Other recommended pins!
-    The following macros declare the Serial port you are using, plus an optional Mode pin
-    use these pins if you are connecting the BLE to Leonardo/Micro or Flora
+    The following sets the optional Mode pin, its recommended but not required
     -----------------------------------------------------------------------*/
-
-#define BLUEFRUIT_UART_RTS_PIN          -1    // Optional, set to -1 if unused
 #define BLUEFRUIT_UART_MODE_PIN         12   // Optional but recommended, set to -1 if unused
-
 
 /*====================== SKETCH SETTINGS
     READ_BUFSIZE            Size of the read buffer for incoming data
-    VERBOSE_MODE            If set to 1 enables full data output (for
-                            debugging), otherwise set it to 0 to disable
-                            verbose output
+    VERBOSE_MODE            If set to true enables debugging output
     -----------------------------------------------------------------------*/
     #define BUFSIZE                         128
-    #define VERBOSE_MODE                    1
+    #define VERBOSE_MODE                    true
 /*=========================================================================*/
 
 /* Create the bluefruit object, either software serial... */
@@ -86,7 +80,7 @@ void setup(void)
   Serial.println(F("-------------------------------------"));
 
   /* Initialise the module */
-  Serial.print(F("Initialising the Bluefruit LE module: "));
+  Serial.println(F("Initialising the Bluefruit LE module: "));
 
   if ( !ble.begin(VERBOSE_MODE) )
   {
@@ -95,7 +89,7 @@ void setup(void)
   Serial.println( F("OK!") );
   
   /* Perform a factory reset to make sure everything is in a known state */
-  Serial.print(F("Performing a factory reset: "));
+  Serial.println(F("Performing a factory reset: "));
   if (! ble.factoryReset() ){
        error(F("Couldn't factory reset"));
   }
