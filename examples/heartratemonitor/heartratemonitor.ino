@@ -19,33 +19,27 @@
 #include "Adafruit_BLE_HWSPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 
-/*==  If you are using Software Serial....
-    The following macros declare the pins used for SW serial, you should
-    use these pins if you are connecting the UART Friend to an UNO
-    -----------------------------------------------------------------------*/
+// NOTE: This demo sends very long strings to the Bluefruit which can overwhelm it, 
+// so use the RTS pin, this is pretty much required!
+
+// If you are using Software Serial....
+// The following macros declare the pins used for SW serial, you should
+// use these pins if you are connecting the UART Friend to an UNO
 #define BLUEFRUIT_SWUART_RXD_PIN        9    // Required for software serial!
 #define BLUEFRUIT_SWUART_TXD_PIN        10   // Required for software serial!
 #define BLUEFRUIT_UART_CTS_PIN          11   // Required for software serial!
+#define BLUEFRUIT_UART_RTS_PIN          8    // Strongly recommended with this demo!
 
-/*== If you are using Hardware Serial
-    The following macros declare the Serial port you are using. Uncomment this
-    line if you are connecting the BLE to Leonardo/Micro or Flora
-    -----------------------------------------------------------------------*/
+// If you are using Hardware Serial
+// The following macros declare the Serial port you are using. Uncomment this
+// line if you are connecting the BLE to Leonardo/Micro or Flora
 //#define BLUEFRUIT_HWSERIAL_NAME           Serial1
 
-/*=============== Other recommended pins! ===============
-    The following define lets you set an optional Mode pin. This pin is not 
-    required if you set the Adafruit Bluefruit module switch to Command mode
------------------------------------------------------------------------*/
-#define BLUEFRUIT_UART_MODE_PIN         -1    // Not required
+// Other recommended pins!
+#define BLUEFRUIT_UART_MODE_PIN         -1   // Optional but recommended, set to -1 if unused
 
-// This demo sends very long strings to the Bluefruit which can overwhelm it, 
-// so use the RTS pin, this is pretty much required!
-#define BLUEFRUIT_UART_RTS_PIN          8    // Strongly recommended!
-
-
-//  VERBOSE_MODE   If set to true enables debug print output
-#define VERBOSE_MODE                    true
+// Sketch Settings
+#define VERBOSE_MODE                    true  // Enables full debug output is 'true'
 
 /* Create the bluefruit object, either software serial... */
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);

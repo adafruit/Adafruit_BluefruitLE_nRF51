@@ -15,38 +15,25 @@
 #include "Adafruit_BLE_HWSPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 
-/*==  If you are using Software Serial....
-    The following macros declare the pins used for SW serial, you should
-    use these pins if you are connecting the UART Friend to an UNO
-    -----------------------------------------------------------------------*/
+// If you are using Software Serial....
+// The following macros declare the pins used for SW serial, you should
+// use these pins if you are connecting the UART Friend to an UNO
 #define BLUEFRUIT_SWUART_RXD_PIN        9    // Required for software serial!
 #define BLUEFRUIT_SWUART_TXD_PIN        10   // Required for software serial!
 #define BLUEFRUIT_UART_CTS_PIN          11   // Required for software serial!
+#define BLUEFRUIT_UART_RTS_PIN          -1   // Optional, set to -1 if unused
 
-/*== If you are using Hardware Serial
-    The following macros declare the Serial port you are using. Uncomment this
-    line if you are connecting the BLE to Leonardo/Micro or Flora
-    -----------------------------------------------------------------------*/
-
+// If you are using Hardware Serial
+// The following macros declare the Serial port you are using. Uncomment this
+// line if you are connecting the BLE to Leonardo/Micro or Flora
 //#define BLUEFRUIT_HWSERIAL_NAME           Serial1
 
-/*== Other recommended pins!
-    The following macros declare the Serial port you are using, plus an optional Mode pin
-    use these pins if you are connecting the BLE to Leonardo/Micro or Flora
-    -----------------------------------------------------------------------*/
+// Other recommended pins!
+#define BLUEFRUIT_UART_MODE_PIN         12   // Optional but recommended, set to -1 if unused
 
-#define BLUEFRUIT_UART_RTS_PIN          -1    // Optional, set to -1 if unused
-#define BLUEFRUIT_UART_MODE_PIN         12    // Required for this demo!
-
-
-/*====================== SKETCH SETTINGS 
-    READ_BUFSIZE            Size of the read buffer for incoming data
-    VERBOSE_MODE            If set to 1 enables full data output (for
-                            debugging), otherwise set it to 0 to disable
-                            verbose output  */
-#define BUFSIZE                         128
-#define VERBOSE_MODE                    1
-/*=========================================================================*/
+// Sketch Settings
+#define BUFSIZE                         128   // Read buffer size for incoming data
+#define VERBOSE_MODE                    true  // Enables full debug output is 'true'
 
 /* Create the bluefruit object, either software serial... */
 

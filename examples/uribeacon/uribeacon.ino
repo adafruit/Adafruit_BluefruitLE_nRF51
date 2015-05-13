@@ -15,26 +15,21 @@
 #include "Adafruit_BLE_HWSPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 
-/*==  If you are using Software Serial....
-    The following macros declare the pins used for SW serial, you should
-    use these pins if you are connecting the UART Friend to an UNO
-    -----------------------------------------------------------------------*/
+// If you are using Software Serial....
+// The following macros declare the pins used for SW serial, you should
+// use these pins if you are connecting the UART Friend to an UNO
 #define BLUEFRUIT_SWUART_RXD_PIN        9    // Required for software serial!
 #define BLUEFRUIT_SWUART_TXD_PIN        10   // Required for software serial!
 #define BLUEFRUIT_UART_CTS_PIN          11   // Required for software serial!
-#define BLUEFRUIT_UART_RTS_PIN          -1   // Not required for thid demo
+#define BLUEFRUIT_UART_RTS_PIN          -1   // Optional, set to -1 if unused
 
-/*== If you are using Hardware Serial
-    The following macros declare the Serial port you are using. Uncomment this
-    line if you are connecting the BLE to Leonardo/Micro or Flora
-    -----------------------------------------------------------------------*/
+// If you are using Hardware Serial
+// The following macros declare the Serial port you are using. Uncomment this
+// line if you are connecting the BLE to Leonardo/Micro or Flora
 //#define BLUEFRUIT_HWSERIAL_NAME           Serial1
 
-/*=============== Other pins! ===============
-    The following define lets you set an optional Mode pin. This pin is not 
-    required if you set the Adafruit Bluefruit module switch to Command mode
------------------------------------------------------------------------*/
-#define BLUEFRUIT_UART_MODE_PIN         -1    // Not required
+// Other recommended pins!
+#define BLUEFRUIT_UART_MODE_PIN         -1   // Optional but recommended, set to -1 if unused
 
 /*=========================================================================
     APPLICATION SETTINGS

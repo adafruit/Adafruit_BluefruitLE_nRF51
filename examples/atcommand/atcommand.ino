@@ -20,33 +20,25 @@ you send your own AT commands!
 #include "Adafruit_BLE_HWSPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 
-/*==  If you are using Software Serial....
-    The following macros declare the pins used for SW serial, you should
-    use these pins if you are connecting the UART Friend to an UNO
-    -----------------------------------------------------------------------*/
+// If you are using Software Serial....
+// The following macros declare the pins used for SW serial, you should
+// use these pins if you are connecting the UART Friend to an UNO
 #define BLUEFRUIT_SWUART_RXD_PIN        9    // Required for software serial!
 #define BLUEFRUIT_SWUART_TXD_PIN        10   // Required for software serial!
 #define BLUEFRUIT_UART_CTS_PIN          11   // Required for software serial!
 #define BLUEFRUIT_UART_RTS_PIN          -1   // Optional, set to -1 if unused
 
-/*== If you are using Hardware Serial
-    The following macros declare the Serial port you are using. Uncomment this
-    line if you are connecting the BLE to Leonardo/Micro or Flora
-    -----------------------------------------------------------------------*/
+// If you are using Hardware Serial
+// The following macros declare the Serial port you are using. Uncomment this
+// line if you are connecting the BLE to Leonardo/Micro or Flora
 //#define BLUEFRUIT_HWSERIAL_NAME           Serial1
 
-/*== Other recommended pins!
-    The following sets the optional Mode pin, its recommended but not required
-    -----------------------------------------------------------------------*/
+// Other recommended pins!
 #define BLUEFRUIT_UART_MODE_PIN         12   // Optional but recommended, set to -1 if unused
 
-/*====================== SKETCH SETTINGS
-    READ_BUFSIZE            Size of the read buffer for incoming data
-    VERBOSE_MODE            If set to true enables debugging output
-    -----------------------------------------------------------------------*/
-    #define BUFSIZE                         128
-    #define VERBOSE_MODE                    true
-/*=========================================================================*/
+// Sketch Settings
+#define BUFSIZE                         128   // Read buffer size for incoming data
+#define VERBOSE_MODE                    true  // Enables full debug output is 'true'
 
 /* Create the bluefruit object, either software serial... */
 
@@ -58,8 +50,11 @@ Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
 /* ...or hardware serial, which does not need the RTS/CTS pins. Uncomment this line */
 //Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
 
-
-// A small helper
+/**************************************************************************/
+/*!
+    A small helper for error messages
+*/
+/**************************************************************************/
 void error(const __FlashStringHelper*err) {
   Serial.println(err);
   while (1);
@@ -71,7 +66,6 @@ void error(const __FlashStringHelper*err) {
             automatically on startup)
 */
 /**************************************************************************/
-
 void setup(void)
 {
   while (!Serial);  // required for Flora & Micro
