@@ -108,10 +108,11 @@ void setup(void)
 
   /* Change the device name to make it easier to find */
   Serial.println(F("Setting device name to 'Bluefruit HRM': "));
-  ble.println("AT+GAPDEVNAME=Bluefruit HRM");
-  if (! ble.waitForOK() ) { // check if command's response is OK
+  
+  if (! ble.sendCommandCheckOK("AT+GAPDEVNAME=Bluefruit HRM") ) { 
     error(F("Could not set device name?"));
   }
+
   /* Add the Heart Rate Service definition */
   /* Service ID should be 1 */
   Serial.println(F("Adding the Heart Rate Service definition (UUID = 0x180D): "));
