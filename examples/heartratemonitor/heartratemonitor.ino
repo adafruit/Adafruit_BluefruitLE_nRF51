@@ -109,7 +109,7 @@ void setup(void)
   /* Change the device name to make it easier to find */
   Serial.println(F("Setting device name to 'Bluefruit HRM': "));
   
-  if (! ble.sendCommandCheckOK("AT+GAPDEVNAME=Bluefruit HRM") ) { 
+  if (! ble.sendCommandCheckOK(F("AT+GAPDEVNAME=Bluefruit HRM")) ) { 
     error(F("Could not set device name?"));
   }
 
