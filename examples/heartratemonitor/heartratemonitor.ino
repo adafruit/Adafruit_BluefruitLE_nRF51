@@ -62,7 +62,6 @@ void error(const __FlashStringHelper *err) {
 uint32_t hrmServiceId;
 uint32_t hrmMeasureCharId;
 uint32_t hrmLocationCharId;
-
 /**************************************************************************/
 /*!
     @brief  Sets up the HW an the BLE module (this function is called
@@ -71,6 +70,9 @@ uint32_t hrmLocationCharId;
 /**************************************************************************/
 void setup(void)
 {
+  while (!Serial); 
+  delay(500);
+  
   boolean success;
    
   Serial.begin(115200);
@@ -99,6 +101,10 @@ void setup(void)
   Serial.println("Requesting Bluefruit info:");
   /* Print Bluefruit information */
   ble.info();
+
+  // this line is particularly required for Flora, but is a good idea 
+  // anyways for the super long lines ahead!
+  ble.setInterCharWriteDelay(5); // 5 ms
 
   /* Change the device name to make it easier to find */
   Serial.println(F("Setting device name to 'Bluefruit HRM': "));

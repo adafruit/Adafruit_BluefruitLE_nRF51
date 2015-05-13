@@ -2,8 +2,8 @@
     @file     bleuart_cmdmode.ino
     @author   hathach, ktown (Adafruit Industries)
 
-    This demo will show you how to send and receive data in COMMAND mode (without needing to put the module
-    into DATA mode or using the MODE pin)
+    This demo will show you how to send and receive data in COMMAND mode 
+    (without needing to put the module into DATA mode or using the MODE pin)
 */
 #include <string.h>
 #include <Arduino.h>

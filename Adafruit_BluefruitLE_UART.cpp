@@ -100,6 +100,7 @@ Adafruit_BluefruitLE_UART::~Adafruit_BluefruitLE_UART()
 bool Adafruit_BluefruitLE_UART::begin(boolean debug)
 {
   _verbose = debug;
+  _intercharwritedelay = 0;
 
   // If hardware mode pin is enabled, set it to CMD first
   if ( _mode_pin >= 0)
@@ -184,6 +185,8 @@ size_t Adafruit_BluefruitLE_UART::write(uint8_t c)
     while (digitalRead(_rts_pin)) {
       delay(1);
     }
+  } else {
+    delay(_intercharwritedelay);
   }
 
   delayMicroseconds(50);

@@ -66,6 +66,9 @@ void error(const __FlashStringHelper *err) {
 /**************************************************************************/
 void setup(void)
 {
+  while (!Serial);
+  delay(500);
+  
   Serial.begin(115200);
   Serial.println(F("Adafruit Bluefruit UriBeacon Example"));
   Serial.println(F("------------------------------------"));

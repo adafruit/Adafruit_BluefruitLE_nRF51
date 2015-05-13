@@ -57,6 +57,7 @@ class Adafruit_BluefruitLE_UART : public Adafruit_BLE
 #endif
     HardwareSerial *hs;
     boolean _debug;
+    uint8_t _intercharwritedelay;
 
   public:
     // Software Serial Constructor (0, 1, 2, or 3 pins)
@@ -70,6 +71,8 @@ class Adafruit_BluefruitLE_UART : public Adafruit_BLE
 		      int8_t cts_pin = -1, 
 		      int8_t rts_pin = -1);
 #endif
+
+    void setInterCharWriteDelay(uint8_t x) { _intercharwritedelay = x; };
 
     virtual ~Adafruit_BluefruitLE_UART();
 
