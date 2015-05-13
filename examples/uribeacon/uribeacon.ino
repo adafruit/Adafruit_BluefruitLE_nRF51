@@ -3,118 +3,65 @@
     @file     uribeacon.ino
     @author   hathach, ktown (Adafruit Industries)
 
-    @section LICENSE
-
-    Software License Agreement (BSD License)
-
-    Copyright (c) 2015, Adafruit Industries (adafruit.com)
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-    1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    3. Neither the name of the copyright holders nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
-    EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    This demo will turn your Bluefruit into a UriBeacon (a URL-beacon)
 */
 /**************************************************************************/
 #include <string.h>
 #include <Arduino.h>
 #include <SPI.h>
+#include <SoftwareSerial.h>
 
 #include "Adafruit_BLE.h"
 #include "Adafruit_BLE_HWSPI.h"
-#include "Adafruit_BLE_SWUART.h"
+#include "Adafruit_BluefruitLE_UART.h"
 
-/*=========================================================================
-    DATA TRANSPORT SELECTION
-    Set TRANSPORT to an appropriate target, depending on the board you are
-    using and the transport protocol it is based on
+/*==  If you are using Software Serial....
+    The following macros declare the pins used for SW serial, you should
+    use these pins if you are connecting the UART Friend to an UNO
     -----------------------------------------------------------------------*/
-    #define TRANSPORT_SWSERIAL              (1)
-    #define TRANSPORT_HWSPI                 (2)
-    #define TRANSPORT                       (TRANSPORT_SWSERIAL)
-/*=========================================================================*/
+#define BLUEFRUIT_SWUART_RXD_PIN        9    // Required for software serial!
+#define BLUEFRUIT_SWUART_TXD_PIN        10   // Required for software serial!
+#define BLUEFRUIT_UART_CTS_PIN          11   // Required for software serial!
+#define BLUEFRUIT_UART_RTS_PIN          -1   // Not required for thid demo
 
-/*=========================================================================
-    SPI SETTINGS
-    The following macros declare the pins to use for SPI communication
+/*== If you are using Hardware Serial
+    The following macros declare the Serial port you are using. Uncomment this
+    line if you are connecting the BLE to Leonardo/Micro or Flora
     -----------------------------------------------------------------------*/
-    #define BLUEFRUIT_SPI_RST_PIN           (9)
-    #define BLUEFRUIT_SPI_IRQ_PIN           (3)  // MUST be an interrupt pin (pin 2 or 3 on an Uno)!
-    #define BLUEFRUIT_SPI_CS_PIN            (10)
-    /* Use HW SPI pins for the other SPI functions. On an Uno this means:
-         SCK  = 13
-         MISO = 12
-         MOSI = 11 */
-/*=========================================================================*/
+//#define BLUEFRUIT_HWSERIAL_NAME           Serial1
 
-/*=========================================================================
-    SOFTWARE SERIAL SETTINGS
-    The following macros declare the pins used for SW serial
-    -----------------------------------------------------------------------*/
-    #define BLUEFRUIT_UART_RTS_PIN          (8)
-    #define BLUEFRUIT_UART_RXD_PIN          (9)
-    #define BLUEFRUIT_UART_TXD_PIN          (10)
-    #define BLUEFRUIT_UART_CTS_PIN          (11)
-    #define BLUEFRUIT_UART_MODE_PIN         (12)
-/*=========================================================================*/
+/*=============== Other pins! ===============
+    The following define lets you set an optional Mode pin. This pin is not 
+    required if you set the Adafruit Bluefruit module switch to Command mode
+-----------------------------------------------------------------------*/
+#define BLUEFRUIT_UART_MODE_PIN         -1    // Not required
 
 /*=========================================================================
     APPLICATION SETTINGS
 
-    READ_BUFSIZE            Size of the read buffer for incoming data
-    VERBOSE_MODE            If set to 1 enables full data output (for
-                            debugging), otherwise set it to 0 to disable
-                            verbose output
+    VERBOSE_MODE            If set to true, enables debugging output
     URL                     URL that is advertised, it must not longer than 17
-                            (excluding http:// and www.)
+                            bytes (excluding http:// and www.)
     -----------------------------------------------------------------------*/
-    #define BUFSIZE                         (128)
-    #define VERBOSE_MODE                    (0)
+    #define VERBOSE_MODE                    true
     #define URL                             "http://www.adafruit.com"
 /*=========================================================================*/
 
-/* Constructors */
-#if TRANSPORT == TRANSPORT_HWSPI
-  Adafruit_BLE_HWSPI ble(BLUEFRUIT_SPI_CS_PIN,
-                         BLUEFRUIT_SPI_IRQ_PIN /*, BLUEFRUIT_SPI_RST_PIN */);
-#elif TRANSPORT == TRANSPORT_SWSERIAL
-  Adafruit_BLE_SWUART ble(BLUEFRUIT_UART_RXD_PIN, 
-                          BLUEFRUIT_UART_TXD_PIN,
-                          BLUEFRUIT_UART_CTS_PIN, 
-                          BLUEFRUIT_UART_RTS_PIN, 
-                          BLUEFRUIT_UART_MODE_PIN);
-#else
-  #error No TRANSPORT defined! Please set this to an appropriate value.
-#endif
+/* Create the bluefruit object, either software serial... */
+SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
 
-/**************************************************************************/
-/*!
-    @brief  Helper MACROS to check command execution. Print 'FAILED!' or 'OK!',
-            loop forever if failed
-*/
-/**************************************************************************/
-#define EXECUTE(command)\
-  do{\
-    if ( !(command) ) { Serial.println( F("FAILED!") ); while(1){} }\
-    Serial.println( F("OK!") );\
-  }while(0)
+Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
+                      BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
+
+/* ...or hardware serial, requires only the RTS pin to keep the Bluefruit happy. Uncomment this line */
+//Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN, BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
+
+
+// A small helper
+void error(const __FlashStringHelper *err) {
+  Serial.println(err);
+  while (1);
+}
 
 /**************************************************************************/
 /*!
@@ -125,49 +72,35 @@
 void setup(void)
 {
   Serial.begin(115200);
-  Serial.println(F("BLE URI BEACON EXAMPLE"));
-  Serial.println(F("----------------------"));
-
-  #if TRANSPORT == TRANSPORT_SWSERIAL
-  Serial.println( F("") );
-  Serial.println( F("Make sure the mode selection switch on your UART FRIEND") );
-  Serial.println( F("is set to CMD mode to enable SW-based mode control!"));
-  Serial.println( F("") );
-  #endif
+  Serial.println(F("Adafruit Bluefruit UriBeacon Example"));
+  Serial.println(F("------------------------------------"));
 
   /* Initialise the module */
-  Serial.print(F("Initialising the Bluefruit LE module: "));
-
-  if ( !ble.begin() )
+  Serial.println(F("Initialising the Bluefruit LE module: "));
+  if ( !ble.begin(VERBOSE_MODE) )  // initialize in verbose mode
   {
-    Serial.println( F("FAILED! (Check your wiring?)") );
-    while(1){}
+    error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
   }
   Serial.println( F("OK!") );
-  
-  /* Switch to CMD mode if we're using a UART module */
-  #if TRANSPORT == TRANSPORT_SWSERIAL
-  Serial.print( F("Switching to CMD mode: ") );
-  EXECUTE( ble.setModePin(BLUEFRUIT_MODE_COMMAND) );
-  #endif
 
   /* Perform a factory reset to make sure everything is in a known state */
-  Serial.print(F("Performing a factory reset: "));
-  EXECUTE( ble.factoryReset() );
+  Serial.println(F("Performing a factory reset: "));
+  if (! ble.factoryReset() ){
+       error(F("Couldn't factory reset"));
+  }
 
   /* Disable command echo from Bluefruit */
   ble.echo(false);
 
-  /* Set the device into VERBOSE mode if requested (echo commands) */
-  ble.verbose(VERBOSE_MODE);
-
+  Serial.println("Requesting Bluefruit info:");
   /* Print Bluefruit information */
   ble.info();
 
   /* Set URI beacon data */
   Serial.print(F("Setting uri beacon to Adafruit website: "));
-  ble.println("AT+BLEURIBEACON=" URL);
-  EXECUTE( ble.waitForOK() );
+  if (! ble.sendCommandCheckOK(F( "AT+BLEURIBEACON=" URL ))) {
+    error(F("Couldnt set URL?"));
+  }
 
   Serial.println();
   Serial.println(F("Please use Google Physical Web application to test"));
@@ -181,4 +114,3 @@ void setup(void)
 void loop(void)
 {
 }
-
