@@ -68,8 +68,10 @@ class Adafruit_BLE : public Stream
     bool echo(bool enable);
     bool waitForOK(void);
 
-
     bool isConnected(void);
+
+    bool sendCommandCheckOK(const __FlashStringHelper *cmd);
+    bool sendCommandWithIntReply(const __FlashStringHelper *cmd, uint32_t *reply);
 
     // read one line from stream into buffer
     size_t readln( char *buffer, size_t length);

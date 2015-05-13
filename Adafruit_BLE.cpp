@@ -45,8 +45,8 @@ bool Adafruit_BLE::reset(void)
   bool isOK;
   // println();
   for (uint8_t t=0; t < 5; t++) {
-    println("ATZ");
-    isOK = waitForOK();
+    isOK = sendCommandCheckOK(F("ATZ"));
+
     if (isOK) break;
   }
   if (! isOK) return false;
@@ -136,6 +136,38 @@ void Adafruit_BLE::info(void)
   Serial.println(F("----------------"));
 
   _verbose = v;
+}
+
+
+/******************************************************************************/
+/*!
+    @brief  Send a command from a flash string, and parse an int reply
+*/
+/******************************************************************************/
+bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, uint32_t *reply) {
+  println(cmd); // the easy part
+  
+  if (_verbose) {
+    Serial.print("\n<- ");
+  }
+  uint8_t rlen = readline(_timeout);
+  if (rlen == 0) 
+    return false;
+  if (! isDigit(buffer[0])) 
+    return false;
+  *reply = atoi(buffer);
+  return waitForOK();
+}
+
+
+/******************************************************************************/
+/*!
+    @brief  Send a command from a flash string, and parse an int reply
+*/
+/******************************************************************************/
+bool Adafruit_BLE::sendCommandCheckOK(const __FlashStringHelper *cmd) {
+  println(cmd); // the easy part
+  return waitForOK();
 }
 
 /******************************************************************************/
