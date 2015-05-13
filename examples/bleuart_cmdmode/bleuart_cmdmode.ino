@@ -2,6 +2,8 @@
     @file     bleuart_cmdmode.ino
     @author   hathach, ktown (Adafruit Industries)
 
+    This demo will show you how to send and receive data in COMMAND mode (without needing to put the module
+    into DATA mode or using the MODE pin)
 */
 #include <string.h>
 #include <Arduino.h>
@@ -33,7 +35,7 @@
     -----------------------------------------------------------------------*/
 
 #define BLUEFRUIT_UART_RTS_PIN          -1    // Optional, set to -1 if unused
-#define BLUEFRUIT_UART_MODE_PIN         12   // Optional but recommended, set to -1 if unused
+#define BLUEFRUIT_UART_MODE_PIN         -1   // Optional but recommended, set to -1 if unused
 
 
 /*====================== SKETCH SETTINGS
@@ -42,8 +44,8 @@
                             debugging), otherwise set it to 0 to disable
                             verbose output
     -----------------------------------------------------------------------*/
-    #define BUFSIZE                         128
-    #define VERBOSE_MODE                    1
+#define BUFSIZE                         128
+#define VERBOSE_MODE                    1
 /*=========================================================================*/
 
 /* Create the bluefruit object, either software serial... */
@@ -107,7 +109,7 @@ void setup(void)
   
   /* Wait for connection */
   while (! ble.isConnected()) {
-      delay(1000);
+      delay(500);
   }
   
   Serial.println(F("*****************"));
@@ -122,7 +124,7 @@ void loop(void)
 {
   // Check for user input
   char inputs[BUFSIZE+1];
-
+  
   if ( getUserInput(inputs, BUFSIZE) )
   {
     // Send characters to Bluefruit
@@ -146,7 +148,7 @@ void loop(void)
     return;
   } 
   // Some data was found, its in the buffer
-  Serial.print(F("[Recv] c")); Serial.println(ble.buffer);
+  Serial.print(F("[Recv] ")); Serial.println(ble.buffer);
   ble.waitForOK();
 }
 
