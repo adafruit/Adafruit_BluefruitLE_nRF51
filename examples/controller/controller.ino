@@ -75,6 +75,9 @@ extern uint8_t packetbuffer[];
 /**************************************************************************/
 void setup(void)
 {
+  while (!Serial);
+  delay(500);
+  
   Serial.begin(115200);
   Serial.println(F("Adafruit Bluefruit App Controller Example"));
   Serial.println(F("-----------------------------------------"));
