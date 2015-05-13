@@ -1,15 +1,22 @@
 /*!
-    @file     bleuart_datamode.ino
-    @author   hathach, ktown (Adafruit Industries)
-    
-    This demo will show you how to initialize the module in COMMAND mode then
-    send data in DATA mode, uses the MODE pin
-*/
+    @file     neopixel_picker.ino
+    @author   ladyada, ktown (Adafruit Industries)
 
+A basic color picker using Bluefruit LE & the Bluefruit App!
+*/
+/**************************************************************************/
 #include <string.h>
 #include <Arduino.h>
 #include <SPI.h>
 #include <SoftwareSerial.h>
+#include <Adafruit_NeoPixel.h>
+
+// Which pin on the Arduino is connected to the NeoPixels?
+#define PIN            6
+// How many NeoPixels are attached to the Arduino?
+#define NUMPIXELS      1
+
+Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUMPIXELS, PIN);
 
 #include "Adafruit_BLE.h"
 #include "Adafruit_BLE_HWSPI.h"
@@ -31,9 +38,17 @@
 // Other recommended pins!
 #define BLUEFRUIT_UART_MODE_PIN         12   // Optional but recommended, set to -1 if unused
 
-// Sketch Settings
-#define BUFSIZE                         128   // Read buffer size for incoming data
-#define VERBOSE_MODE                    true  // Enables full debug output is 'true'
+/*=========================================================================
+    APPLICATION SETTINGS
+
+    VERBOSE_MODE            If set to 1 enables full data output (for
+                            debugging), otherwise set it to 0 to disable
+                            verbose output
+    BLE_READPACKET_TIMEOUT  The timeout in ms waiting for a data packet
+    -----------------------------------------------------------------------*/
+    #define VERBOSE_MODE                    1
+    #define BLE_READPACKET_TIMEOUT          500
+/*=========================================================================*/
 
 /* Create the bluefruit object, either software serial... */
 
@@ -52,6 +67,14 @@ void error(const __FlashStringHelper*err) {
   while (1);
 }
 
+// function prototypes over in packetparser.cpp
+uint8_t readPacket(Adafruit_BluefruitLE_UART *ble, uint16_t timeout);
+float parsefloat(uint8_t *buffer);
+void printHex(const uint8_t * data, const uint32_t numBytes);
+
+// the packet buffer
+extern uint8_t packetbuffer[];
+
 
 /**************************************************************************/
 /*!
@@ -61,11 +84,22 @@ void error(const __FlashStringHelper*err) {
 /**************************************************************************/
 void setup(void)
 {
+  while (!Serial);
+  delay(500);
+  
+  // turn off neopixel
+  pixel.begin(); // This initializes the NeoPixel library.
+  pixel.setPixelColor(0, pixel.Color(0,0,0)); // off
+  pixel.show();
+  
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit Command <-> Data Mode Example"));
-  Serial.println(F("------------------------------------------------"));
+  Serial.println(F("Adafruit Bluefruit App Controller Example"));
+  Serial.println(F("-----------------------------------------"));
 
   /* Initialise the module */
+  Serial.print(F("Initialising the Bluefruit LE module: "));
+
+    /* Initialise the module */
   Serial.print(F("Initialising the Bluefruit LE module: "));
   if ( !ble.begin(VERBOSE_MODE) )
   {
@@ -78,7 +112,6 @@ void setup(void)
   if (! ble.factoryReset() ){
        error(F("Couldn't factory reset"));
   }
-
   /* Disable command echo from Bluefruit */
   ble.echo(false);
 
@@ -86,8 +119,8 @@ void setup(void)
   /* Print Bluefruit information */
   ble.info();
 
-  Serial.println(F("Please use Adafruit Bluefruit LE app to connect in UART mode"));
-  Serial.println(F("Then Enter characters to send to Bluefruit"));
+  Serial.println(F("Please use Adafruit Bluefruit LE app to connect in Controller mode"));
+  Serial.println(F("Then activate/use the sensors, color picker, game controller, etc!"));
   Serial.println();
   
   ble.verbose(false);  // debug info is a little annoying after this point!
@@ -106,11 +139,11 @@ void setup(void)
   } else {
     Serial.println( F("Switching to DATA mode using +++!") );
     ble.println("+++");
-    delay(100);
-    ble.waitForOK();
+    delay(10);
   }
-  
+
   Serial.println(F("*****************"));
+
 }
 
 /**************************************************************************/
@@ -119,33 +152,29 @@ void setup(void)
 */
 /**************************************************************************/
 void loop(void)
-{
-  // Check for user input
-  char n, inputs[BUFSIZE+1];
-  
-  if (Serial.available())
-  {
-    n = Serial.readBytes(inputs, BUFSIZE);
-    inputs[n] = 0;
-    // Send characters to Bluefruit
-    Serial.print("Sending: ");
-    Serial.print(inputs);
+{  
+  /* Wait for new data to arrive */
+  uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
+  if (len == 0) return;
 
-    // Send input data to host via Bluefruit
-    ble.print(inputs);
+  /* Got a packet! */
+  // printHex(packetbuffer, len);
+
+  // Color
+  if (packetbuffer[1] == 'C') {
+    uint8_t red = packetbuffer[2];
+    uint8_t green = packetbuffer[3];
+    uint8_t blue = packetbuffer[4];
+    Serial.print ("RGB #"); 
+    if (red < 0x10) Serial.print("0");
+    Serial.print(red, HEX);
+    if (green < 0x10) Serial.print("0");
+    Serial.print(green, HEX);
+    if (blue < 0x10) Serial.print("0");
+    Serial.println(blue, HEX);
+    
+    pixel.setPixelColor(0, pixel.Color(red,green,blue));
+    pixel.show(); // This sends the updated pixel color to the hardware.
   }
 
-  // Echo received data
-  while ( ble.available() )
-  {
-    int c = ble.read();
-
-    Serial.print((char)c);
-
-    // Hex output too, helps w/debugging!
-    Serial.print(" [0x");
-    if (c <= 0xF) Serial.print(F("0"));
-    Serial.print(c, HEX);
-    Serial.print("] ");
-  }
 }

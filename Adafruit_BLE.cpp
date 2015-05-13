@@ -49,7 +49,21 @@ bool Adafruit_BLE::reset(void)
 
     if (isOK) break;
   }
-  if (! isOK) return false;
+  if (! isOK) {
+    // ok we're going to get desperate
+    delay(50);
+    println("+++");
+    delay(50);
+    
+    for (uint8_t t=0; t < 5; t++) {
+      isOK = sendCommandCheckOK(F("ATZ"));
+      
+      if (isOK) break;
+    }
+
+    if (!isOK)
+      return false;
+  }
 
   // Bluefruit need 1 second to reboot
   delay(1000);
