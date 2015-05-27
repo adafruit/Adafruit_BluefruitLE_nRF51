@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_BLE_HWSPI.cpp
+    @file     Adafruit_BluefruitLE_SPI.cpp
     @author   hathach, ktown (Adafruit Industries)
 
     @section LICENSE
@@ -33,23 +33,16 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#include "Adafruit_BLE_HWSPI.h"
+#include "Adafruit_BluefruitLE_SPI.h"
 #include <Arduino.h>
 #include <stdlib.h>
 
-/******************************************************************************/
-/*!
-    @brief  ToDo: Interrupt handler for the IRQ pin
-*/
-/******************************************************************************/
-static void bleModule_IRQHandler(void)
-{
-  // TODO interrupt for IRQ
-}
+SPISettings bluefruitSPI(500000, MSBFIRST, SPI_MODE0);
+
 
 /******************************************************************************/
 /*!
-    @brief Instantiates a new instance of the Adafruit_BLE_HWSPI class
+    @brief Instantiates a new instance of the Adafruit_BluefruitLE_SPI class
 
     @param[in]  csPin
                 The location of the CS pin for the SPI interface
@@ -59,7 +52,7 @@ static void bleModule_IRQHandler(void)
     @param[in]  rstPin
 */
 /******************************************************************************/
-Adafruit_BLE_HWSPI::Adafruit_BLE_HWSPI(int8_t csPin, int8_t irqPin, int8_t rstPin) :
+Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, int8_t rstPin) :
     m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
 {
   memclr(&m_responseHeader, sizeof(sdepMsgHeader_t));
@@ -83,36 +76,29 @@ Adafruit_BLE_HWSPI::Adafruit_BLE_HWSPI(int8_t csPin, int8_t irqPin, int8_t rstPi
             'irqPin' is not a HW interrupt pin false will be returned.
 */
 /******************************************************************************/
-bool Adafruit_BLE_HWSPI::begin(void)
+bool Adafruit_BluefruitLE_SPI::begin(boolean v)
 {
-  // Determine the HW irq pin number
-  uint8_t irq_num;
-  irq_num = 0xff;
-  for (uint8_t i=0; i<sizeof(dreqinttable); i+=2)
-  {
-    if (m_irq_pin == dreqinttable[i])
-    {
-      irq_num = dreqinttable[i+1];
-      break;
-    }
-  }
-
-  if (irq_num == 0xff) return false;
+  _verbose = v;
 
   pinMode(m_irq_pin, INPUT);
-  attachInterrupt(irq_num, bleModule_IRQHandler, /*CHANGE*/ RISING);
 
   // Set CS pin to output and de-assert by default
   digitalWrite(m_cs_pin, HIGH);
   pinMode(m_cs_pin, OUTPUT);
 
-  // Initialise SPI (Mode 0), MSB first
   SPI.begin();
+
+  /* use transactions
+  // Initialise SPI (Mode 0), MSB first
   SPI.setDataMode(SPI_MODE0);
   SPI.setBitOrder(MSBFIRST);
 
   // nrf51 may not keep up with the SPI speed
   SPI.setClockDivider(SPI_CLOCK_SPEED);
+  */
+
+  if (m_rst_pin >= 0) 
+    hwreset();
 
   // Send Initialize command (this will cause Bluefruit to reset)
   if ( !sendInitializePattern() ) return false;
@@ -126,10 +112,9 @@ bool Adafruit_BLE_HWSPI::begin(void)
     @brief  Uninitializes the SPI interface
 */
 /******************************************************************************/
-void Adafruit_BLE_HWSPI::end(void)
+void Adafruit_BluefruitLE_SPI::end(void)
 {
   SPI.end();
-//  detachInterrupt()
 }
 
 /******************************************************************************/
@@ -137,7 +122,7 @@ void Adafruit_BLE_HWSPI::end(void)
     @brief  Performs a system reset using RST pin
 */
 /******************************************************************************/
-bool Adafruit_BLE_HWSPI::hwreset(void)
+bool Adafruit_BluefruitLE_SPI::hwreset(void)
 {
   if (m_rst_pin < 0) return false;
 
@@ -170,9 +155,11 @@ bool Adafruit_BLE_HWSPI::hwreset(void)
     @return     The number of bytes successfully read
 */
 /******************************************************************************/
-uint32_t Adafruit_BLE_HWSPI::bus_read(uint8_t *buf, uint32_t length)
+uint32_t Adafruit_BluefruitLE_SPI::bus_read(uint8_t *buf, uint32_t length)
 {
   TimeoutTimer tt(_timeout);
+
+  SPI.beginTransaction(bluefruitSPI);
 
   SPI_CS_ENABLE();
   for(uint32_t count=0; count<length && !tt.expired(); count++)
@@ -196,6 +183,8 @@ uint32_t Adafruit_BLE_HWSPI::bus_read(uint8_t *buf, uint32_t length)
   }
   SPI_CS_DISABLE();
 
+  SPI.endTransaction();
+
   return length;
 }
 
@@ -214,10 +203,12 @@ uint32_t Adafruit_BLE_HWSPI::bus_read(uint8_t *buf, uint32_t length)
     @return     The number of bytes written
 */
 /******************************************************************************/
-uint32_t Adafruit_BLE_HWSPI::bus_write (uint8_t *buf, uint32_t length)
+uint32_t Adafruit_BluefruitLE_SPI::bus_write (uint8_t *buf, uint32_t length)
 {
   uint32_t count=0;
   TimeoutTimer tt(_timeout);
+
+  SPI.beginTransaction(bluefruitSPI);
 
   SPI_CS_ENABLE();
   while ( (count < length) && !tt.expired() )
@@ -240,6 +231,8 @@ uint32_t Adafruit_BLE_HWSPI::bus_write (uint8_t *buf, uint32_t length)
   }
   SPI_CS_DISABLE();
 
+  SPI.endTransaction();
+
   return count;
 }
 
@@ -250,7 +243,7 @@ uint32_t Adafruit_BLE_HWSPI::bus_write (uint8_t *buf, uint32_t length)
     The command has NO response, and is expected to complete within 1 second
 */
 /******************************************************************************/
-bool Adafruit_BLE_HWSPI::sendInitializePattern(void)
+bool Adafruit_BluefruitLE_SPI::sendInitializePattern(void)
 {
   sdepMsgHeader_t msgHeader;
 
@@ -271,7 +264,7 @@ bool Adafruit_BLE_HWSPI::sendInitializePattern(void)
                 More Data bitfield, 0 indicates this is not end of transfer yet
 */
 /******************************************************************************/
-bool Adafruit_BLE_HWSPI::sendPacket(uint8_t more_data)
+bool Adafruit_BluefruitLE_SPI::sendPacket(uint8_t more_data)
 {
   // flush old response before sending the new command
   if (more_data == 0)
@@ -306,7 +299,7 @@ bool Adafruit_BLE_HWSPI::sendPacket(uint8_t more_data)
                 Character to send
 */
 /******************************************************************************/
-size_t Adafruit_BLE_HWSPI::write(uint8_t c)
+size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
 {
   // Final packet due to \r or \n terminator
   if (c == '\r' || c == '\n')
@@ -343,9 +336,14 @@ size_t Adafruit_BLE_HWSPI::write(uint8_t c)
     @return 'true' if a response is ready, otherwise 'false'
 */
 /******************************************************************************/
-int Adafruit_BLE_HWSPI::available(void)
+int Adafruit_BluefruitLE_SPI::available(void)
 {
-  return digitalRead(m_irq_pin);
+  if (! m_rx_fifo.empty() ) {
+    //Serial.println( m_rx_fifo.count());
+    return m_rx_fifo.count();
+  }
+  //Serial.print('.');
+  return (digitalRead(m_irq_pin));
 }
 
 /******************************************************************************/
@@ -355,13 +353,21 @@ int Adafruit_BLE_HWSPI::available(void)
     @return -1 if no data is available
 */
 /******************************************************************************/
-int Adafruit_BLE_HWSPI::read(void)
+int Adafruit_BluefruitLE_SPI::read(void)
 {
+  uint8_t ch;
+
+  // try to grab from buffer first...
+  if (!m_rx_fifo.empty()) {
+    m_rx_fifo.read(&ch);
+    return (int)ch;
+  }
+
   // Read data from Bluefruit if possible
   if ( digitalRead(m_irq_pin) ) getResponse();
 
-  uint8_t ch;
   return m_rx_fifo.read(&ch) ? ((int) ch) : EOF;
+
 }
 
 /******************************************************************************/
@@ -372,7 +378,7 @@ int Adafruit_BLE_HWSPI::read(void)
     @return -1 if no data is available
 */
 /******************************************************************************/
-int Adafruit_BLE_HWSPI::peek(void)
+int Adafruit_BluefruitLE_SPI::peek(void)
 {
   // Read data from Bluefruit if possible
   if ( digitalRead(m_irq_pin) ) getResponse();
@@ -388,7 +394,7 @@ int Adafruit_BLE_HWSPI::peek(void)
     @return -1 if no data is available
 */
 /******************************************************************************/
-void Adafruit_BLE_HWSPI::flush(void)
+void Adafruit_BluefruitLE_SPI::flush(void)
 {
   m_rx_fifo.clear();
 }
@@ -405,7 +411,7 @@ void Adafruit_BLE_HWSPI::flush(void)
       - false : if failed
 */
 /******************************************************************************/
-bool Adafruit_BLE_HWSPI::getResponse(void)
+bool Adafruit_BluefruitLE_SPI::getResponse(void)
 {
   // Blocking wait until IRQ is asserted
   while ( !digitalRead(m_irq_pin) ) {}
@@ -425,11 +431,14 @@ bool Adafruit_BLE_HWSPI::getResponse(void)
 
     if (_verbose)
     {
+      //Serial.println("Read: ");
       buffer[len] = 0;
-      Serial.print( (char*) buffer);
-
+      for (uint8_t x=0; x<len; x++) {
+	Serial.write( buffer[x]); 
+	//Serial.print("[0x"); Serial.print(buffer[x], HEX); Serial.print("], ");
+      }
       // small delay to make sure character is printed out
-      delay(1);
+      //delay(1);
     }
   }
 
@@ -447,7 +456,7 @@ bool Adafruit_BLE_HWSPI::getResponse(void)
     @return number of bytes in SDEP payload
 */
 /******************************************************************************/
-int Adafruit_BLE_HWSPI::getPacket(uint8_t* buffer)
+int Adafruit_BluefruitLE_SPI::getPacket(uint8_t* buffer)
 {
   // Wait for SDEP_MSGTYPE_RESPONSE
   uint8_t sync=0;

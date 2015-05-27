@@ -81,11 +81,13 @@ bool Adafruit_BLE::reset(void)
 /******************************************************************************/
 bool Adafruit_BLE::factoryReset(void)
 {
-  println("AT+FACTORYRESET");
-  bool isOK = waitForOK();
-
-  // Bluefruit need 1 second to reboot
-  delay(1000);
+  bool isOK = false;
+  while (! isOK) {
+    println("AT+FACTORYRESET");
+    isOK = waitForOK();
+    // Bluefruit need 1 second to reboot
+    delay(1000);
+  }
 
   // flush all left over
   flush();
@@ -242,7 +244,8 @@ bool Adafruit_BLE::waitForOK(void)
   }
 
   while (readline(_timeout)) {
-    if (strcmp(buffer, "OK") == 0) return true;
+    //Serial.println(buffer);
+    if (buffer[0] == 'O' && buffer[1] == 'K') return true;
   }
   return false;
 }
@@ -289,6 +292,7 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
   while (timeout--) {
     while(available()) {
       char c =  read();
+      //Serial.println(c);
       if (c == '\r') continue;
       if (c == 0xA) {
         if (replyidx == 0)   // the first 0x0A is ignored
