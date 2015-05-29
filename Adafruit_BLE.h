@@ -43,8 +43,8 @@
 #include "utility/errors.h"
 #include "utility/TimeoutTimer.h"
 
-#define BLUEFRUIT_MODE_COMMAND    HIGH
-#define BLUEFRUIT_MODE_DATA       LOW
+#define BLUEFRUIT_MODE_COMMAND   HIGH
+#define BLUEFRUIT_MODE_DATA      LOW
 #define BLE_DEFAULT_TIMEOUT      250
 #define BLE_BUFSIZE              4*SDEP_MAX_PACKETSIZE
 
@@ -54,10 +54,10 @@ class Adafruit_BLE : public Stream
 {
   protected:
     bool     _verbose;
-    uint16_t _timeout;
+    // uint16_t _timeout; already inherited from Stream
 
   public:
-    char buffer[BLE_BUFSIZE+1];
+    char _buffer[BLE_BUFSIZE+1];
 
 
     // Auto print out TX & RX data to normal Serial
@@ -73,17 +73,17 @@ class Adafruit_BLE : public Stream
     bool isConnected(void);
 
     bool sendCommandCheckOK(const __FlashStringHelper *cmd);
-    bool sendCommandWithIntReply(const __FlashStringHelper *cmd, uint32_t *reply);
+    bool sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply);
 
-    // read one line from stream into buffer
+    // read one line from stream user's buffer
     size_t readln( char *buffer, size_t length);
     size_t readln( uint8_t *buffer, size_t length)
     {
       return readln( (char *) buffer, length );
     }
 
-    void readln(void);
-
+    // read one line from stream to internal buffer
+    size_t readln(void);
     uint16_t readline(uint16_t timeout, boolean multiline = false);
 
     int32_t readln_parseInt(void);

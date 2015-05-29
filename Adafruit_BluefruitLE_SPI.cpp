@@ -89,16 +89,7 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v)
 
   SPI.begin();
 
-  /* use transactions
-  // Initialise SPI (Mode 0), MSB first
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setBitOrder(MSBFIRST);
-
-  // nrf51 may not keep up with the SPI speed
-  SPI.setClockDivider(SPI_CLOCK_SPEED);
-  */
-
-  if (m_rst_pin >= 0) 
+  if (m_rst_pin >= 0)
     hwreset();
 
   // Send Initialize command (this will cause Bluefruit to reset)

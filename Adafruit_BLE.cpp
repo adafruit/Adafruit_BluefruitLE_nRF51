@@ -118,14 +118,8 @@ bool Adafruit_BLE::echo(bool enable)
 /******************************************************************************/
 bool Adafruit_BLE::isConnected(void)
 {
-  bool connected = false;
-
-  println(F("AT+GAPGETCONN"));
-  readline(_timeout);
-  if (buffer[0] == '1') 
-    connected = true;
-  if (!waitForOK()) 
-    return false;
+  int32_t connected = 0;
+  sendCommandWithIntReply(F("AT+GAPGETCONN"), &connected);
   return connected;
 }
 
@@ -145,8 +139,8 @@ void Adafruit_BLE::info(void)
   println("ATI");
 
   while (readline(_timeout)) {
-    Serial.println(buffer);
-    if (strcmp(buffer, "OK") == 0) break;
+    Serial.println(_buffer);
+    if (strcmp(_buffer, "OK") == 0) break;
   }
 
   Serial.println(F("----------------"));
@@ -160,18 +154,13 @@ void Adafruit_BLE::info(void)
     @brief  Send a command from a flash string, and parse an int reply
 */
 /******************************************************************************/
-bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, uint32_t *reply) {
+bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply) {
   println(cmd); // the easy part
   
   if (_verbose) {
     Serial.print("\n<- ");
   }
-  uint8_t rlen = readline(_timeout);
-  if (rlen == 0) 
-    return false;
-  if (! isDigit(buffer[0])) 
-    return false;
-  *reply = atoi(buffer);
+  (*reply) = readln_parseInt();
   return waitForOK();
 }
 
@@ -197,7 +186,10 @@ bool Adafruit_BLE::sendCommandCheckOK(const __FlashStringHelper *cmd) {
                Buffer's length
 
     @return Number of bytes are read. If it is equal to the \ref length, the whole
-    line (or line feed) is not fully retrieved.
+            line (or line feed) is not fully retrieved.
+    
+    @note   Timeout for each read() character is _timeout (see \ref Stream
+            implementation). _timeout can be changed by setTimeout()        
 */
 /******************************************************************************/
 size_t Adafruit_BLE::readln( char *buffer, size_t length)
@@ -219,14 +211,17 @@ size_t Adafruit_BLE::readln( char *buffer, size_t length)
 
 /******************************************************************************/
 /*!
-    @brief  Read one line of response data from internal FIFO to the buffer,
-            but does not store it to anywhere, i.e will discard a whole line.
-            Can be useful where user don't care about the response.
+    @brief  Read one line of response data from internal FIFO to the interna buffer
+    @note   Timeout for each read() character is _timeout (see \ref Stream
+            implementation). _timeout can be changed by setTimeout()
 */
 /******************************************************************************/
-void Adafruit_BLE::readln(void)
+size_t Adafruit_BLE::readln(void)
 {
-  find( (char*) "\n");
+  size_t len = readln(_buffer, BLE_BUFSIZE);
+  _buffer[len] = 0;
+
+  return len;
 }
 
 
@@ -238,14 +233,13 @@ void Adafruit_BLE::readln(void)
 /******************************************************************************/
 bool Adafruit_BLE::waitForOK(void)
 {
-
   if (_verbose) {
     Serial.print("\n<- ");
   }
 
   while (readline(_timeout)) {
     //Serial.println(buffer);
-    if (buffer[0] == 'O' && buffer[1] == 'K') return true;
+    if ( strcmp(_buffer, "OK") == 0 ) return true;
   }
   return false;
 }
@@ -260,18 +254,16 @@ bool Adafruit_BLE::waitForOK(void)
 /******************************************************************************/
 int32_t Adafruit_BLE::readln_parseInt(void)
 {
-  char buffer[BLE_BUFSIZE+1];
-  buffer[BLE_BUFSIZE] = 0;
-
-  size_t len = readln(buffer, BLE_BUFSIZE);
+  size_t len = readln();
   if (len == 0) return 0;
 
-  int32_t val = strtol(buffer, NULL, 0);
+  // also parsed hex number e.g 0xADAF
+  int32_t val = strtol(_buffer, NULL, 0);
 
   // discard the rest of the line
-  while( len == BLE_BUFSIZE )
+  while( BLE_BUFSIZE == len )
   {
-    len = readln(buffer, BLE_BUFSIZE);
+    len = readln(_buffer, BLE_BUFSIZE);
   }
 
   return val;
@@ -279,9 +271,42 @@ int32_t Adafruit_BLE::readln_parseInt(void)
 
 
 
+/******************************************************************************/
+/*!
+    @brief  Get (multiple) lines of response data (see \ref readln) to internal
+            buffer.
 
+    @param[in] timeout
+               Timeout for each read() operation
+    @param[in] multiline
+               Read multiple lines
+*/
+/******************************************************************************/
 uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
-  uint16_t replyidx = 0;
+
+  uint16_t replyidx;
+  uint16_t prev_timeout = _timeout; // save default timeout
+  _timeout = timeout;
+
+  replyidx = readln(_buffer, BLE_BUFSIZE);
+
+  // Run out of time
+  if (replyidx == 0) return 0;
+
+  // Read until buffer is full or no more data
+  if ( multiline ) {
+    uint16_t len;
+    do {
+      len = readln(_buffer+replyidx, BLE_BUFSIZE-replyidx);
+      replyidx += len;
+    }while( (len > 0) && (replyidx < BLE_BUFSIZE) );
+  }
+
+  _timeout = prev_timeout; // restore default timeout
+
+  return replyidx;
+
+#if 0
 
   /*
   if (_verbose) {
@@ -303,7 +328,7 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
           break;
         }
       }
-      buffer[replyidx] = c;
+      _buffer[replyidx] = c;
       replyidx++;
 
       if (replyidx >= (BLE_BUFSIZE-1)) {
@@ -316,9 +341,10 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
     if (timeout == 0) break;
     delay(1);
   }
-  buffer[replyidx] = 0;  // null term
+  _buffer[replyidx] = 0;  // null term
 
   return replyidx;
+#endif
 }
 
 
