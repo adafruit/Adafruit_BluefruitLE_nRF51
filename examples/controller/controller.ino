@@ -32,7 +32,7 @@ Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 /* ...software SPI, using SCK/MOSI/MISO user-defined SPI pins and then user selected CS/IRQ/RST */
-//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+//Adafruit_BluefruitLE_HWSPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 
 // A small helper
@@ -100,8 +100,8 @@ void setup(void)
 
   // Set module to DATA mode
   Serial.println( F("Switching to DATA mode using the MODE pin!") );
- // ble.setModePin(BLUEFRUIT_MODE_DATA);
- ble.println("+++");
+  // ble.setModePin(BLUEFRUIT_MODE_DATA);
+  ble.println("+++");
   Serial.println(F("*****************"));
 
 }

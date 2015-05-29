@@ -65,7 +65,6 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     uint8_t         m_tx_count;
 
     // RX
-//    sdepMsgHeader_t m_responseHeader;
     uint8_t         m_rx_buffer[BLE_BUFSIZE];
     Adafruit_FIFO   m_rx_fifo;
 

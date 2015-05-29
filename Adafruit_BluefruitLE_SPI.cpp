@@ -55,8 +55,6 @@ SPISettings bluefruitSPI(500000, MSBFIRST, SPI_MODE0);
 Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, int8_t rstPin) :
     m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
 {
-//  memclr(&m_responseHeader, sizeof(sdepMsgHeader_t));
-
   m_cs_pin  = csPin;
   m_irq_pin = irqPin;
   m_rst_pin = rstPin;
@@ -155,12 +153,6 @@ uint32_t Adafruit_BluefruitLE_SPI::bus_read(uint8_t *buf, uint32_t length)
   uint32_t count = 0;
   
   SPI.beginTransaction(bluefruitSPI);
-
-  // Bluefruit SPIS always need a CS toggle to be ready for transferring data
-//  SPI_CS_ENABLE();
-//  SPI.transfer(0xff);
-//  SPI_CS_DISABLE();
-//  delayMicroseconds(SPI_DEFAULT_DELAY_US);
 
   SPI_CS_ENABLE();
   while( (count<length) && !tt.expired() )
@@ -300,11 +292,7 @@ bool Adafruit_BluefruitLE_SPI::sendInitializePattern(void)
 bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buffer, uint8_t count, uint8_t more_data)
 {
   // flush old response before sending the new command
-  if (more_data == 0)
-  {
-//    memclr(&m_responseHeader, sizeof(sdepMsgHeader_t));
-    flush();
-  }
+  if (more_data == 0) flush();
 
   sdepMsgHeader_t msgHeader;
 
@@ -567,7 +555,7 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
     if ( !msg_response.header.more_data ) break;
 
     // It takes a bit since all Data received to IRQ to get LOW
-    // Better to delay a bit for it to be stable before the next try
+    // May need to delay a bit for it to be stable before the next try
     // delayMicroseconds(SPI_DEFAULT_DELAY_US);
   }
 
