@@ -63,19 +63,21 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     uint8_t         m_tx_count;
 
     // RX
-    sdepMsgHeader_t m_responseHeader;
+//    sdepMsgHeader_t m_responseHeader;
     uint8_t         m_rx_buffer[BLE_BUFSIZE];
     Adafruit_FIFO   m_rx_fifo;
 
     // Low level transportation I/O functions
     uint32_t bus_read(uint8_t *buf, uint32_t length);
-    uint32_t bus_write(uint8_t *buf, uint32_t length);
+    uint32_t bus_write(const uint8_t *buf, uint32_t length);
 
     bool    sendInitializePattern(void);
-    bool    sendPacket(uint8_t more_data);
-    int     getPacket(uint8_t* buffer);
+    bool    sendPacket(uint16_t command, const uint8_t* buffer, uint8_t count, uint8_t more_data);
+    bool    getPacket(sdepMsgResponse_t* p_response);
 
     bool    getResponse(void);
+
+    void    switchMode(void);
 
   public:
     // Constructor

@@ -43,9 +43,6 @@
   #include <SoftwareSerial.h>
 #endif
 
-#define BLUEFRUIT_MODE_COMMAND    HIGH
-#define BLUEFRUIT_MODE_DATA       LOW
-
 class Adafruit_BluefruitLE_UART : public Adafruit_BLE
 {
   private:

@@ -55,13 +55,14 @@ SPISettings bluefruitSPI(500000, MSBFIRST, SPI_MODE0);
 Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, int8_t rstPin) :
     m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
 {
-  memclr(&m_responseHeader, sizeof(sdepMsgHeader_t));
+//  memclr(&m_responseHeader, sizeof(sdepMsgHeader_t));
 
   m_cs_pin  = csPin;
   m_irq_pin = irqPin;
   m_rst_pin = rstPin;
 
   m_tx_count = 0;
+  m_mode     = BLUEFRUIT_MODE_COMMAND;
   _verbose   = false;
   _timeout   = BLE_DEFAULT_TIMEOUT;
 }
@@ -157,12 +158,21 @@ bool Adafruit_BluefruitLE_SPI::hwreset(void)
 /******************************************************************************/
 uint32_t Adafruit_BluefruitLE_SPI::bus_read(uint8_t *buf, uint32_t length)
 {
-  TimeoutTimer tt(_timeout);
+  if (length == 0) return 0;
 
+  TimeoutTimer tt(_timeout);
+  uint32_t count = 0;
+  
   SPI.beginTransaction(bluefruitSPI);
 
+  // Bluefruit SPIS always need a CS toggle to be ready for transferring data
+//  SPI_CS_ENABLE();
+//  SPI.transfer(0xff);
+//  SPI_CS_DISABLE();
+//  delayMicroseconds(SPI_DEFAULT_DELAY_US);
+
   SPI_CS_ENABLE();
-  for(uint32_t count=0; count<length && !tt.expired(); count++)
+  while( (count<length) && !tt.expired() )
   {
     uint8_t rd = SPI_OVERREAD_BYTE;
 
@@ -170,22 +180,52 @@ uint32_t Adafruit_BluefruitLE_SPI::bus_read(uint8_t *buf, uint32_t length)
     {
       rd = SPI.transfer(0xff);
 
-      if (rd != SPI_IGNORED_BYTE && rd != SPI_OVERREAD_BYTE) break;
+      if (rd != SPI_IGNORED_BYTE && rd != SPI_OVERREAD_BYTE)
+      {
+        // Successfully get non-special meaning byte
+        buf[count++] = rd;
+        break;
+      }
+      else
+      {
+        // Either special 0xFF or 0xFE is detected, check if it is data or
+        // part of following patterns
+        // Pattern FF-FF-FF-FF : Bluefruit has no more data
+        // Pattern FE-FE-FE-FE : Bluefruit is not ready
+        uint8_t pattern_buf[4];
+        uint8_t pattern_count = 1;
+        pattern_buf[0] = rd;
+
+        while ( (pattern_buf[0] == rd) && (pattern_count < 4) )
+        {
+          rd = SPI.transfer(0xff);
+          pattern_buf[ pattern_count++ ] = rd;
+        }
+
+        // 0xFF/0xFE is real data
+        if ( !((pattern_count == 4) && (pattern_buf[0] == pattern_buf[3])) )
+        {
+          // make sure we don't overflow the buffer
+          uint8_t c = min(pattern_count, length-count);
+
+          memcpy(buf+count, pattern_buf, c);
+          count += c;
+
+          break;
+        }
+      }
 
       // blemodule is busy processing, wait a bit before retry
       SPI_CS_DISABLE();
       delayMicroseconds(SPI_DEFAULT_DELAY_US);
       SPI_CS_ENABLE();
     }
-
-    if (rd == SPI_OVERREAD_BYTE) return count;
-    *buf++ = rd;
   }
-  SPI_CS_DISABLE();
 
+  SPI_CS_DISABLE();
   SPI.endTransaction();
 
-  return length;
+  return count;
 }
 
 /******************************************************************************/
@@ -205,6 +245,8 @@ uint32_t Adafruit_BluefruitLE_SPI::bus_read(uint8_t *buf, uint32_t length)
 /******************************************************************************/
 uint32_t Adafruit_BluefruitLE_SPI::bus_write (uint8_t *buf, uint32_t length)
 {
+  if (length == 0) return 0;
+
   uint32_t count=0;
   TimeoutTimer tt(_timeout);
 
@@ -264,30 +306,44 @@ bool Adafruit_BluefruitLE_SPI::sendInitializePattern(void)
                 More Data bitfield, 0 indicates this is not end of transfer yet
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_SPI::sendPacket(uint8_t more_data)
+bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buffer, uint8_t count, uint8_t more_data)
 {
   // flush old response before sending the new command
   if (more_data == 0)
   {
-    memclr(&m_responseHeader, sizeof(sdepMsgHeader_t));
+//    memclr(&m_responseHeader, sizeof(sdepMsgHeader_t));
     flush();
   }
 
   sdepMsgHeader_t msgHeader;
 
   msgHeader.msg_type    = SDEP_MSGTYPE_COMMAND;
-  msgHeader.cmd_id_high = highByte(SDEP_CMDTYPE_AT_WRAPPER);
-  msgHeader.cmd_id_low  = lowByte(SDEP_CMDTYPE_AT_WRAPPER);
-  msgHeader.length      = m_tx_count;
-  msgHeader.more_data   = (m_tx_count == SDEP_MAX_PACKETSIZE) ? more_data : 0;
+  msgHeader.cmd_id_high = highByte(command);
+  msgHeader.cmd_id_low  = lowByte(command);
+  msgHeader.length      = count;
+  msgHeader.more_data   = (count == SDEP_MAX_PACKETSIZE) ? more_data : 0;
 
   // Send the SDEP header
   ASSERT( sizeof(sdepMsgHeader_t) == bus_write((uint8_t*)&msgHeader, sizeof(sdepMsgHeader_t)), false );
 
   // Send the command payload
-  ASSERT ( msgHeader.length == bus_write(m_tx_buffer, msgHeader.length), false );
+  if ( buffer != NULL && count > 0)
+  {
+    ASSERT ( msgHeader.length == bus_write(buffer, msgHeader.length), false );
+  }
 
   return true;
+}
+
+/******************************************************************************/
+/*!
+    @brief Simulate "+++" switch mode command
+*/
+/******************************************************************************/
+void Adafruit_BLE_HWSPI::switchMode(void)
+{
+  m_mode = 1 - m_mode;
+  m_rx_fifo.write_n("OK\r\n", 4);
 }
 
 /******************************************************************************/
@@ -301,19 +357,35 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint8_t more_data)
 /******************************************************************************/
 size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
 {
+  if (m_mode == BLUEFRUIT_MODE_DATA)
+  {
+    sendPacket(SDEP_CMDTYPE_BLE_UARTTX, &c, 1, 0);
+    getResponse();
+    return 1;
+  }
+
+  // Following code handle BLUEFRUIT_MODE_COMMAND
+
   // Final packet due to \r or \n terminator
   if (c == '\r' || c == '\n')
   {
     if (m_tx_count > 0)
     {
-      sendPacket(0);
-      m_tx_count = 0;
+      // +++ command to switch mode
+      if ( memcmp(m_tx_buffer, "+++", 3) == 0)
+      {
+        switchMode();
+      }else
+      {
+        sendPacket(SDEP_CMDTYPE_AT_WRAPPER, m_tx_buffer, m_tx_count, 0);
+        m_tx_count = 0;
+      }
     }
   }
-  // More than max packet bufferd --> send with more_data = 1
+  // More than max packet buffered --> send with more_data = 1
   else if (m_tx_count == SDEP_MAX_PACKETSIZE)
   {
-    sendPacket(1);
+    sendPacket(SDEP_CMDTYPE_AT_WRAPPER, m_tx_buffer, m_tx_count, 1);
 
     m_tx_buffer[0] = c;
     m_tx_count = 1;
@@ -329,6 +401,38 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
   return 1;
 }
 
+size_t Adafruit_BLE_HWSPI::write(const uint8_t *buffer, size_t size)
+{
+  if ( m_mode == BLUEFRUIT_MODE_DATA )
+  {
+    if ( size >= 4 && !memcmp(buffer, "+++", 3) && (buffer[3] == '\r' || buffer[3] == '\n') )
+    {
+      switchMode();
+    }else
+    {
+      while(size)
+      {
+        size_t len = min(size, SDEP_MAX_PACKETSIZE);
+        size -= len;
+
+        sendPacket(SDEP_CMDTYPE_BLE_UARTTX, buffer, (uint8_t) len, size ? 1 : 0);
+        getResponse();
+
+        buffer += len;
+      }
+    }
+
+    return size;
+  }else
+  {
+    size_t n = 0;
+    while (size--) {
+      n += write(*buffer++);
+    }
+    return n;
+  }
+}
+
 /******************************************************************************/
 /*!
     @brief Check if the response from the previous command is ready
@@ -342,8 +446,21 @@ int Adafruit_BluefruitLE_SPI::available(void)
     //Serial.println( m_rx_fifo.count());
     return m_rx_fifo.count();
   }
-  //Serial.print('.');
-  return (digitalRead(m_irq_pin));
+
+  if ( m_mode == BLUEFRUIT_MODE_DATA )
+  {
+    // DATA Mode: query for BLE UART data
+    sendPacket(SDEP_CMDTYPE_BLE_UARTRX, NULL, 0, 0);
+
+    // Waiting to get response from Bluefruit
+    getResponse();
+
+    return m_rx_fifo.count();
+  }else
+  {
+    //Serial.print('.');
+    return (digitalRead(m_irq_pin));
+  }
 }
 
 /******************************************************************************/
@@ -363,8 +480,18 @@ int Adafruit_BluefruitLE_SPI::read(void)
     return (int)ch;
   }
 
-  // Read data from Bluefruit if possible
-  if ( digitalRead(m_irq_pin) ) getResponse();
+  if ( m_mode == BLUEFRUIT_MODE_DATA )
+  {
+    // DATA Mode: query for BLE UART data
+    sendPacket(SDEP_CMDTYPE_BLE_UARTRX, NULL, 0, 0);
+
+    // Waiting to get response from Bluefruit
+    getResponse();
+  }else
+  {
+    // COMMAND Mode: Only read data from Bluefruit if IRQ is raised
+    if ( digitalRead(m_irq_pin) ) getResponse();
+  }
 
   return m_rx_fifo.read(&ch) ? ((int) ch) : EOF;
 
@@ -380,8 +507,18 @@ int Adafruit_BluefruitLE_SPI::read(void)
 /******************************************************************************/
 int Adafruit_BluefruitLE_SPI::peek(void)
 {
-  // Read data from Bluefruit if possible
-  if ( digitalRead(m_irq_pin) ) getResponse();
+  if ( m_mode == BLUEFRUIT_MODE_DATA )
+  {
+    // DATA Mode: query for BLE UART data
+    sendPacket(SDEP_CMDTYPE_BLE_UARTRX, NULL, 0, 0);
+
+    // Waiting to get response from Bluefruit
+    getResponse();
+  }else
+  {
+    // Read data from Bluefruit if possible
+    if ( digitalRead(m_irq_pin) ) getResponse();
+  }
 
   uint8_t ch;
   return m_rx_fifo.peek(&ch) ? ch : EOF;
@@ -418,28 +555,29 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
 
   // There is data from Bluefruit & enough room in the fifo
   while ( digitalRead(m_irq_pin) &&
-          ( sizeof(m_rx_buffer) - m_rx_fifo.count() ) >= SDEP_MAX_PACKETSIZE
-  )
+          ( sizeof(m_rx_buffer) - m_rx_fifo.count() ) >= SDEP_MAX_PACKETSIZE )
   {
     // Get a SDEP packet
-    uint8_t buffer[SDEP_MAX_PACKETSIZE+1];
-    int len = getPacket(buffer);
-    if ( len < 0 ) return false;
+    sdepMsgResponse_t msg_response;
+    if ( !getPacket(&msg_response) ) return false;
 
-    // Write to fifo
-    m_rx_fifo.write_n(buffer, len);
-
-    if (_verbose)
+    if ( msg_response.header.length > 0)
     {
-      //Serial.println("Read: ");
-      buffer[len] = 0;
-      for (uint8_t x=0; x<len; x++) {
-	Serial.write( buffer[x]); 
-	//Serial.print("[0x"); Serial.print(buffer[x], HEX); Serial.print("], ");
+      // Write to fifo
+      m_rx_fifo.write_n(msg_response.payload, msg_response.header.length);
+
+      if (_verbose)
+      {
+        Serial.write( msg_response.payload, msg_response.header.length);
       }
-      // small delay to make sure character is printed out
-      //delay(1);
     }
+
+    // No more packet data
+    if ( !msg_response.header.more_data ) break;
+
+    // It takes a bit since all Data received to IRQ to get LOW
+    // Better to delay a bit for it to be stable before the next try
+    // delayMicroseconds(SPI_DEFAULT_DELAY_US);
   }
 
   return true;
@@ -456,35 +594,45 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
     @return number of bytes in SDEP payload
 */
 /******************************************************************************/
-int Adafruit_BluefruitLE_SPI::getPacket(uint8_t* buffer)
+bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 {
   // Wait for SDEP_MSGTYPE_RESPONSE
   uint8_t sync=0;
   do {
-    if ( 1 != bus_read(&sync, 1) ) return -1;
+    if ( 1 != bus_read(&sync, 1) ) return false;
   } while(sync != SDEP_MSGTYPE_RESPONSE && sync != SDEP_MSGTYPE_ERROR);
 
-  m_responseHeader.msg_type = sync;
+  sdepMsgHeader_t* p_header = &p_response->header;
+  p_header->msg_type = sync;
 
   // Error Message Response only has 3 bytes (no payload's length)
-  if (m_responseHeader.msg_type == SDEP_MSGTYPE_ERROR)
+  if (p_header->msg_type == SDEP_MSGTYPE_ERROR)
   {
-    bus_read((uint8_t*)&m_responseHeader.cmd_id, 2);
+    bus_read((uint8_t*)&p_header->cmd_id, 2);
 
-    uint32_t error_code = (uint32_t) word(m_responseHeader.cmd_id_high, m_responseHeader.cmd_id_low);
+    uint32_t error_code = (uint32_t) word(p_header->cmd_id_high, p_header->cmd_id_low);
     (void) error_code;
 
-    return -1;
+    return false;
   }
 
   // Normal Response Message, first get header
-  if ( 3 != bus_read((uint8_t*)&m_responseHeader.cmd_id, 3) ) return -1;
-  if ( m_responseHeader.cmd_id != SDEP_CMDTYPE_AT_WRAPPER) return -1;
+  if ( 3 != bus_read((uint8_t*)&p_header->cmd_id, 3) ) return false;
+
+  if ( ! (p_header->cmd_id == SDEP_CMDTYPE_AT_WRAPPER ||
+          p_header->cmd_id == SDEP_CMDTYPE_BLE_UARTTX ||
+          p_header->cmd_id == SDEP_CMDTYPE_BLE_UARTRX) )
+  {
+    // unknown command
+    return false;
+  }
 
   // Get payload
-  int len = bus_read( buffer, m_responseHeader.length);
-  if ( len != m_responseHeader.length ) return -1;
+  if (p_header->length > SDEP_MAX_PACKETSIZE) return false;
 
-  return len;
+  int len = bus_read( p_response->payload, (uint32_t) p_header->length);
+  if ( len != p_header->length ) return false;
+
+  return true;
 }
 
