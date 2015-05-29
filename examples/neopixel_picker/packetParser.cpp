@@ -4,7 +4,7 @@
 #include <SoftwareSerial.h>
 
 #include "Adafruit_BLE.h"
-#include "Adafruit_BLE_HWSPI.h"
+#include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 
 

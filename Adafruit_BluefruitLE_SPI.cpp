@@ -243,7 +243,7 @@ uint32_t Adafruit_BluefruitLE_SPI::bus_read(uint8_t *buf, uint32_t length)
     @return     The number of bytes written
 */
 /******************************************************************************/
-uint32_t Adafruit_BluefruitLE_SPI::bus_write (uint8_t *buf, uint32_t length)
+uint32_t Adafruit_BluefruitLE_SPI::bus_write (const uint8_t *buf, uint32_t length)
 {
   if (length == 0) return 0;
 
@@ -340,7 +340,7 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buffe
     @brief Simulate "+++" switch mode command
 */
 /******************************************************************************/
-void Adafruit_BLE_HWSPI::switchMode(void)
+void Adafruit_BluefruitLE_SPI::switchMode(void)
 {
   m_mode = 1 - m_mode;
   m_rx_fifo.write_n("OK\r\n", 4);
@@ -401,7 +401,7 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
   return 1;
 }
 
-size_t Adafruit_BLE_HWSPI::write(const uint8_t *buffer, size_t size)
+size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buffer, size_t size)
 {
   if ( m_mode == BLUEFRUIT_MODE_DATA )
   {
