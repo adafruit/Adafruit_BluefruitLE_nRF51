@@ -57,6 +57,7 @@ class Adafruit_FIFO
 
     void clear(void);
     bool peek(void* buffer);
+    bool peekAt(uint16_t position, void * p_buffer);
 
     bool write(void const* item);
     uint16_t write_n(void const * data, uint16_t n);

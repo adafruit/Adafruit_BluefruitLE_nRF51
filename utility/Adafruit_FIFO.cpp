@@ -198,3 +198,27 @@ bool Adafruit_FIFO::peek(void* buffer)
   return true;
 }
 
+
+/******************************************************************************/
+/*!
+    @brief  Read an item without removing it from the FIFO at the specific index
+
+    @param[in] position
+               Position to read from in the FIFO buffer
+
+    @param[in] buffer
+               Memory address to store item
+*/
+/******************************************************************************/
+bool Adafruit_FIFO::peekAt(uint16_t position, void * p_buffer)
+{
+  if( empty() || (position >= m_count) ) return false;
+
+  uint16_t index = (m_rd_idx + position) % m_depth; // rd_idx is position=0
+  memcpy(p_buffer,
+         m_buffer + (index * m_item_size),
+         m_item_size);
+
+  return true;
+}
+
