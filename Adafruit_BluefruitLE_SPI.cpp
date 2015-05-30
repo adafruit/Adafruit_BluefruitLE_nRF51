@@ -37,7 +37,7 @@
 #include <Arduino.h>
 #include <stdlib.h>
 
-SPISettings bluefruitSPI(500000, MSBFIRST, SPI_MODE0);
+SPISettings bluefruitSPI(2000000, MSBFIRST, SPI_MODE0);
 
 
 /******************************************************************************/
