@@ -57,7 +57,7 @@ class Adafruit_BLE : public Stream
     // uint16_t _timeout; already inherited from Stream
 
   public:
-    char _buffer[BLE_BUFSIZE+1];
+    char buffer[BLE_BUFSIZE+1];
 
 
     // Auto print out TX & RX data to normal Serial

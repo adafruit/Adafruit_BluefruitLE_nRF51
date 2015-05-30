@@ -87,12 +87,16 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v)
 
   SPI.begin();
 
+  // use hardware reset if available
   if (m_rst_pin >= 0)
+  {
     hwreset();
-
-  // Send Initialize command (this will cause Bluefruit to reset)
-  if ( !sendInitializePattern() ) return false;
-  delay(1000);
+  }else
+  {
+    // Otherwise send Initialize command to reset Bluefruit
+    if ( !sendInitializePattern() ) return false;
+    delay(1000);
+  }
 
   return true;
 }

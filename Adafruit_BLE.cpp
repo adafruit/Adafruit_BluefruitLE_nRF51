@@ -139,8 +139,8 @@ void Adafruit_BLE::info(void)
   println("ATI");
 
   while (readline(_timeout)) {
-    Serial.println(_buffer);
-    if (strcmp(_buffer, "OK") == 0) break;
+    Serial.println(buffer);
+    if (strcmp(buffer, "OK") == 0) break;
   }
 
   Serial.println(F("----------------"));
@@ -218,8 +218,8 @@ size_t Adafruit_BLE::readln( char *buffer, size_t length)
 /******************************************************************************/
 size_t Adafruit_BLE::readln(void)
 {
-  size_t len = readln(_buffer, BLE_BUFSIZE);
-  _buffer[len] = 0;
+  size_t len = readln(buffer, BLE_BUFSIZE);
+  buffer[len] = 0;
 
   return len;
 }
@@ -239,7 +239,7 @@ bool Adafruit_BLE::waitForOK(void)
 
   while (readline(_timeout)) {
     //Serial.println(buffer);
-    if ( strcmp(_buffer, "OK") == 0 ) return true;
+    if ( strcmp(buffer, "OK") == 0 ) return true;
   }
   return false;
 }
@@ -258,12 +258,12 @@ int32_t Adafruit_BLE::readln_parseInt(void)
   if (len == 0) return 0;
 
   // also parsed hex number e.g 0xADAF
-  int32_t val = strtol(_buffer, NULL, 0);
+  int32_t val = strtol(buffer, NULL, 0);
 
   // discard the rest of the line
   while( BLE_BUFSIZE == len )
   {
-    len = readln(_buffer, BLE_BUFSIZE);
+    len = readln(buffer, BLE_BUFSIZE);
   }
 
   return val;
@@ -288,7 +288,7 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
   uint16_t prev_timeout = _timeout; // save default timeout
   _timeout = timeout;
 
-  replyidx = readln(_buffer, BLE_BUFSIZE);
+  replyidx = readln(buffer, BLE_BUFSIZE);
 
   // Run out of time
   if (replyidx == 0) return 0;
@@ -297,7 +297,7 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
   if ( multiline ) {
     uint16_t len;
     do {
-      len = readln(_buffer+replyidx, BLE_BUFSIZE-replyidx);
+      len = readln(buffer+replyidx, BLE_BUFSIZE-replyidx);
       replyidx += len;
     }while( (len > 0) && (replyidx < BLE_BUFSIZE) );
   }
@@ -328,7 +328,7 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
           break;
         }
       }
-      _buffer[replyidx] = c;
+      buffer[replyidx] = c;
       replyidx++;
 
       if (replyidx >= (BLE_BUFSIZE-1)) {
@@ -341,7 +341,7 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
     if (timeout == 0) break;
     delay(1);
   }
-  _buffer[replyidx] = 0;  // null term
+  buffer[replyidx] = 0;  // null term
 
   return replyidx;
 #endif
