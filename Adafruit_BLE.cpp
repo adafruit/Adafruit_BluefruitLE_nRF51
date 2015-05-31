@@ -240,6 +240,7 @@ bool Adafruit_BLE::waitForOK(void)
   while (readline(_timeout)) {
     //Serial.println(buffer);
     if ( strcmp(buffer, "OK") == 0 ) return true;
+    if ( strcmp(buffer, "ERROR") == 0 ) return false;
   }
   return false;
 }
