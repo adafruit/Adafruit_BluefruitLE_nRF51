@@ -46,17 +46,17 @@ If you are using an SPI Bluefruit LE board, your Arduino should be connected to 
 
 Bluefruit LE SPI | Arduino Uno 
 -----------------|------------
-SCLK             | D13        
-MISO             | D12        
-MOSI             | D11        
-CS               | D10        
-IRQ              | D3         
+SCLK             | 13
+MISO             | 12
+MOSI             | 11
+CS               | 10
+IRQ              | 9
 
 Optional Pins (enable these in the sample sketches)
 
 Bluefruit LE SPI | Arduino Uno 
 -----------------|------------
-RESET            | D9
+RESET            | 8
 
 # SPI AT Command Transport Layer (SDEP)
 
