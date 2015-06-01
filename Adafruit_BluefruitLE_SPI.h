@@ -53,8 +53,6 @@
 class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
 {
   private:
-    uint8_t         m_mode;
-
     // Hardware Pin
     int8_t          m_cs_pin;
     int8_t          m_irq_pin;
@@ -88,6 +86,9 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     bool hwreset(void);
     bool begin(boolean v);
     void end(void);
+
+    // bool setMode(uint8_t mode);
+    //using Adafruit_BLE::setMode(uint8_t mode);
 
     // Class Print virtual function Interface
     virtual size_t write(uint8_t c);

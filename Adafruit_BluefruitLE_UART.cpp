@@ -52,9 +52,6 @@
 Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
   _cts_pin(cts_pin), _rts_pin(rts_pin), _mode_pin(mode_pin)
 {
-  _verbose = false;
-  _timeout = BLE_DEFAULT_TIMEOUT;
-
 #if not defined (_VARIANT_ARDUINO_DUE_X_)
   ss = 0;
 #endif
@@ -68,8 +65,6 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_
 Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
   _cts_pin(cts_pin), _rts_pin(rts_pin), _mode_pin(mode_pin)
 {
-  _verbose = false;
-  _timeout = BLE_DEFAULT_TIMEOUT;
   hs = 0;
   ss = &port;
   mySerial = &port;
@@ -158,7 +153,7 @@ void Adafruit_BluefruitLE_UART::end(void)
     @return false if Mode Pin is not previously enabled, otherwise true.
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_UART::setModePin(uint8_t mode)
+bool Adafruit_BluefruitLE_UART::setMode(uint8_t mode)
 {
   if ( _mode_pin < 0 ) return false;
   digitalWrite(_mode_pin, mode);

@@ -60,9 +60,6 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, 
   m_rst_pin = rstPin;
 
   m_tx_count = 0;
-  m_mode     = BLUEFRUIT_MODE_COMMAND;
-  _verbose   = false;
-  _timeout   = BLE_DEFAULT_TIMEOUT;
 }
 
 
@@ -325,7 +322,7 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buffe
 /******************************************************************************/
 void Adafruit_BluefruitLE_SPI::switchMode(void)
 {
-  m_mode = 1 - m_mode;
+  _mode = 1 - _mode;
   m_rx_fifo.write_n("OK\r\n", 4);
 }
 
@@ -340,7 +337,7 @@ void Adafruit_BluefruitLE_SPI::switchMode(void)
 /******************************************************************************/
 size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
 {
-  if (m_mode == BLUEFRUIT_MODE_DATA)
+  if (_mode == BLUEFRUIT_MODE_DATA)
   {
     sendPacket(SDEP_CMDTYPE_BLE_UARTTX, &c, 1, 0);
     getResponse();
@@ -386,7 +383,7 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
 
 size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buffer, size_t size)
 {
-  if ( m_mode == BLUEFRUIT_MODE_DATA )
+  if ( _mode == BLUEFRUIT_MODE_DATA )
   {
     if ( size >= 4 && !memcmp(buffer, "+++", 3) && (buffer[3] == '\r' || buffer[3] == '\n') )
     {
@@ -430,7 +427,7 @@ int Adafruit_BluefruitLE_SPI::available(void)
     return m_rx_fifo.count();
   }
 
-  if ( m_mode == BLUEFRUIT_MODE_DATA )
+  if ( _mode == BLUEFRUIT_MODE_DATA )
   {
     // DATA Mode: query for BLE UART data
     sendPacket(SDEP_CMDTYPE_BLE_UARTRX, NULL, 0, 0);
@@ -463,7 +460,7 @@ int Adafruit_BluefruitLE_SPI::read(void)
     return (int)ch;
   }
 
-  if ( m_mode == BLUEFRUIT_MODE_DATA )
+  if ( _mode == BLUEFRUIT_MODE_DATA )
   {
     // DATA Mode: query for BLE UART data
     sendPacket(SDEP_CMDTYPE_BLE_UARTRX, NULL, 0, 0);
@@ -490,7 +487,7 @@ int Adafruit_BluefruitLE_SPI::read(void)
 /******************************************************************************/
 int Adafruit_BluefruitLE_SPI::peek(void)
 {
-  if ( m_mode == BLUEFRUIT_MODE_DATA )
+  if ( _mode == BLUEFRUIT_MODE_DATA )
   {
     // DATA Mode: query for BLE UART data
     sendPacket(SDEP_CMDTYPE_BLE_UARTRX, NULL, 0, 0);

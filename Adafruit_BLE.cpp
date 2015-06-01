@@ -37,6 +37,18 @@
 
 /******************************************************************************/
 /*!
+    @brief  Constructor
+*/
+/******************************************************************************/
+Adafruit_BLE::Adafruit_BLE(void)
+{
+  _verbose = false;
+  _mode    = BLUEFRUIT_MODE_COMMAND;
+  _timeout = BLE_DEFAULT_TIMEOUT;
+}
+
+/******************************************************************************/
+/*!
     @brief  Performs a system reset using AT command
 */
 /******************************************************************************/
@@ -136,11 +148,11 @@ void Adafruit_BLE::info(void)
 
   Serial.println(F("----------------"));
 
-  println("ATI");
+  println(F("ATI"));
 
   while (readline(_timeout)) {
+    if ( !strcmp(buffer, "OK") || !strcmp(buffer, "ERROR")  ) break;
     Serial.println(buffer);
-    if (strcmp(buffer, "OK") == 0) break;
   }
 
   Serial.println(F("----------------"));
@@ -348,4 +360,8 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
 #endif
 }
 
-
+/*
+bool Adafruit_BLE::setMode(uint8_t mode)
+{
+  return true;
+}*/

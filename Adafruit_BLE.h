@@ -54,11 +54,14 @@ class Adafruit_BLE : public Stream
 {
   protected:
     bool     _verbose;
+    uint8_t  _mode;
+
     // uint16_t _timeout; already inherited from Stream
 
   public:
+    // Constructor
+    Adafruit_BLE(void);
     char buffer[BLE_BUFSIZE+1];
-
 
     // Auto print out TX & RX data to normal Serial
     void verbose(bool enable) { _verbose = enable; }
@@ -69,8 +72,9 @@ class Adafruit_BLE : public Stream
     void info(void);
     bool echo(bool enable);
     bool waitForOK(void);
-
     bool isConnected(void);
+
+    // virtual bool setMode(uint8_t mode);
 
     bool sendCommandCheckOK(const __FlashStringHelper *cmd);
     bool sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply);
