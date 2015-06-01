@@ -90,15 +90,13 @@ void setup(void)
   Serial.println(F("*****************"));
 
   // Set module to DATA mode
-  /* if (BLUEFRUIT_UART_MODE_PIN >= 0) {
+  if (BLUEFRUIT_UART_MODE_PIN >= 0) {
     Serial.println( F("Switching to DATA mode using the MODE pin!") );
-    ble.setModePin(BLUEFRUIT_MODE_DATA);
-  } else */ 
-  {
+  } else  {
     Serial.println( F("Switching to DATA mode using +++!") );
-    ble.println("+++");
-    ble.waitForOK();
   }
+  
+  ble.setMode(BLUEFRUIT_MODE_DATA);
   
   Serial.println(F("*****************"));
 }

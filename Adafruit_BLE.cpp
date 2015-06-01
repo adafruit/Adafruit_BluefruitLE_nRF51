@@ -95,8 +95,7 @@ bool Adafruit_BLE::factoryReset(void)
 {
   bool isOK = false;
   while (! isOK) {
-    println("AT+FACTORYRESET");
-    isOK = waitForOK();
+    isOK = sendCommandCheckOK(F("AT+FACTORYRESET"));
     // Bluefruit need 1 second to reboot
     delay(1000);
   }
@@ -176,6 +175,21 @@ bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, int32
   return waitForOK();
 }
 
+/******************************************************************************/
+/*!
+    @brief  Send a command from a SRAM string, and parse an int reply
+*/
+/******************************************************************************/
+bool Adafruit_BLE::sendCommandWithIntReply(const char cmd[], int32_t *reply) {
+  println(cmd); // the easy part
+
+  if (_verbose) {
+    Serial.print("\n<- ");
+  }
+  (*reply) = readln_parseInt();
+  return waitForOK();
+}
+
 
 /******************************************************************************/
 /*!
@@ -183,6 +197,16 @@ bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, int32
 */
 /******************************************************************************/
 bool Adafruit_BLE::sendCommandCheckOK(const __FlashStringHelper *cmd) {
+  println(cmd); // the easy part
+  return waitForOK();
+}
+
+/******************************************************************************/
+/*!
+    @brief  Send a command from a SRAM string, and parse an int reply
+*/
+/******************************************************************************/
+bool Adafruit_BLE::sendCommandCheckOK(const char cmd[]) {
   println(cmd); // the easy part
   return waitForOK();
 }
@@ -359,9 +383,3 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
   return replyidx;
 #endif
 }
-
-/*
-bool Adafruit_BLE::setMode(uint8_t mode)
-{
-  return true;
-}*/

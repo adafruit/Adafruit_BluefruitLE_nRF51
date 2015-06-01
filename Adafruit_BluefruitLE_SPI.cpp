@@ -132,6 +132,38 @@ bool Adafruit_BluefruitLE_SPI::hwreset(void)
 
 /******************************************************************************/
 /*!
+    @brief Handle direct "+++" input command from user.
+           User should use setMode instead
+*/
+/******************************************************************************/
+void Adafruit_BluefruitLE_SPI::manualSwitchMode(void)
+{
+  _mode = 1 - _mode;
+  m_rx_fifo.write_n("OK\r\n", 4);
+}
+
+/******************************************************************************/
+/*!
+    @brief Simulate "+++" switch mode command
+*/
+/******************************************************************************/
+bool Adafruit_BluefruitLE_SPI::setMode(uint8_t new_mode)
+{
+  // invalid mode
+  if ( !(new_mode == BLUEFRUIT_MODE_COMMAND || new_mode == BLUEFRUIT_MODE_DATA) ) return false;
+
+  // Already in the wanted mode
+  if ( _mode == new_mode ) return true;
+
+  // SPI use different SDEP command when in DATA/COMMAND mode.
+  // --> does not switch using +++ command
+  _mode = new_mode;
+
+  return true;
+}
+
+/******************************************************************************/
+/*!
     @brief  Read data from Ble module's SPI interface.  
             This function will retry if the BLE module is not ready
             (response = SPI_IGNORED_BYTE), or terminate when 'length' bytes
@@ -317,17 +349,6 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buffe
 
 /******************************************************************************/
 /*!
-    @brief Simulate "+++" switch mode command
-*/
-/******************************************************************************/
-void Adafruit_BluefruitLE_SPI::switchMode(void)
-{
-  _mode = 1 - _mode;
-  m_rx_fifo.write_n("OK\r\n", 4);
-}
-
-/******************************************************************************/
-/*!
     @brief Print API, either buffered data internally or send SDEP packet to bus
     if possible. An \r, \n is command terminator will force the packet to be sent
 
@@ -354,7 +375,7 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
       // +++ command to switch mode
       if ( memcmp(m_tx_buffer, "+++", 3) == 0)
       {
-        switchMode();
+        manualSwitchMode();
       }else
       {
         sendPacket(SDEP_CMDTYPE_AT_WRAPPER, m_tx_buffer, m_tx_count, 0);
@@ -387,7 +408,7 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buffer, size_t size)
   {
     if ( size >= 4 && !memcmp(buffer, "+++", 3) && (buffer[3] == '\r' || buffer[3] == '\n') )
     {
-      switchMode();
+      manualSwitchMode();
     }else
     {
       while(size)
@@ -615,4 +636,5 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 
   return true;
 }
+
 

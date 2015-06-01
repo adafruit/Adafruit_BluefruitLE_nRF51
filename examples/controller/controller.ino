@@ -26,7 +26,7 @@ Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
 */
 
 /* ...or hardware serial, which does not need the RTS/CTS pins. Uncomment this line */
-//Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
+// Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
 
 /* ...hardware SPI, using SCK/MOSI/MISO hardware SPI pins and then user selected CS/IRQ/RST */
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
@@ -98,10 +98,14 @@ void setup(void)
   
   Serial.println(F("*****************"));
 
-  // Set module to DATA mode
-  Serial.println( F("Switching to DATA mode using the MODE pin!") );
-  // ble.setModePin(BLUEFRUIT_MODE_DATA);
-  ble.println("+++");
+  // Set Bluefruit to DATA mode
+  if (BLUEFRUIT_UART_MODE_PIN >= 0) {
+    Serial.println( F("Switching to DATA mode using the MODE pin!") );
+  } else  {
+    Serial.println( F("Switching to DATA mode using +++!") );
+  }
+  ble.setMode(BLUEFRUIT_MODE_DATA);
+  
   Serial.println(F("*****************"));
 
 }

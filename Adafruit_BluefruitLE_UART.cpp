@@ -153,11 +153,30 @@ void Adafruit_BluefruitLE_UART::end(void)
     @return false if Mode Pin is not previously enabled, otherwise true.
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_UART::setMode(uint8_t mode)
+bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
 {
-  if ( _mode_pin < 0 ) return false;
-  digitalWrite(_mode_pin, mode);
-  return true;
+  // invalid mode
+  if ( !(new_mode == BLUEFRUIT_MODE_COMMAND || new_mode == BLUEFRUIT_MODE_DATA) ) return false;
+
+  bool isOK;
+
+  if ( !(_mode_pin < 0) )
+  {
+    // Switch mode using hardware pin if available
+    digitalWrite(_mode_pin, new_mode);
+    isOK = true;
+  }else
+  {
+    // Already in the wanted mode
+    if ( _mode == new_mode ) return true;
+
+    // Switch mode using +++ command
+    isOK = sendCommandCheckOK( F("+++") );
+  }
+
+  if (isOK) _mode = new_mode;
+
+  return isOK;
 }
 
 /******************************************************************************/
