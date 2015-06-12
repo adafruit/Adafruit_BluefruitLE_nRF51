@@ -1,14 +1,17 @@
-/**************************************************************************/
-/*!
-    @file     atcommand.ino
-    @author   hathach
+/*********************************************************************
+ This is an example for our nRF51822 based Bluefruit LE modules
 
-This example shows how to connect to your Adafruit Bluefruit LE (nrf51822) and do
-some basic AT commands to check connectivity, print out the version strings and let 
-you send your own AT commands!
+ Pick one up today in the adafruit shop!
 
-*/
-/**************************************************************************/
+ Adafruit invests time and resources providing this open source code, 
+ please support Adafruit and open-source hardware by purchasing 
+ products from Adafruit!
+ 
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
 #include <Arduino.h>
 #include <SPI.h>
 #if not defined (_VARIANT_ARDUINO_DUE_X_)

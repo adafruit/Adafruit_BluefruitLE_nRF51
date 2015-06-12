@@ -1,13 +1,17 @@
-/**************************************************************************/
-/*!
-    @file     factoryreset.ino
-    @author   hathach, ktown (Adafruit Industries)
+/*********************************************************************
+ This is an example for our nRF51822 based Bluefruit LE modules
 
-    @section LICENSE
+ Pick one up today in the adafruit shop!
 
-  This example will do a factory reset
-*/
-/**************************************************************************/
+ Adafruit invests time and resources providing this open source code, 
+ please support Adafruit and open-source hardware by purchasing 
+ products from Adafruit!
+ 
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
 #include <Arduino.h>
 #include <SPI.h>
 #if not defined (_VARIANT_ARDUINO_DUE_X_)

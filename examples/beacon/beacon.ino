@@ -1,11 +1,17 @@
-/*************************************************************************
-    @file     beacon.ino
-    @author   hathach, ktown (Adafruit Industries)
+/*********************************************************************
+ This is an example for our nRF51822 based Bluefruit LE modules
 
+ Pick one up today in the adafruit shop!
 
-This example shows how to turn your Adafruit Bluefruit LE (nrf51822) into
-a Beacon!
-**************************************************************************/
+ Adafruit invests time and resources providing this open source code, 
+ please support Adafruit and open-source hardware by purchasing 
+ products from Adafruit!
+ 
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
 #include <Arduino.h>
 #include <SPI.h>
 #if not defined (_VARIANT_ARDUINO_DUE_X_)
@@ -21,10 +27,6 @@ a Beacon!
 /*=========================================================================
     APPLICATION SETTINGS
 
-    READ_BUFSIZE            Size of the read buffer for incoming data
-    VERBOSE_MODE            If set to 1 enables full data output (for
-                            debugging), otherwise set it to 0 to disable
-                            verbose output
     BEACON_MANUFACTURER_ID  Company Identifier assigned by Bluetooth SIG
                             Full list of Manufacturer ID can be found here
                             https://www.bluetooth.org/en-us/specification/assigned-numbers/company-identifiers
@@ -33,9 +35,6 @@ a Beacon!
     BEACON_MINOR            16-bit minor nunber
     BEACON_RSSI_1M
     -----------------------------------------------------------------------*/
-    #define BUFSIZE                    128
-    #define VERBOSE_MODE               1
-
     #define MANUFACTURER_APPLE         "0x004C"
     #define MANUFACTURER_NORDIC        "0x0059"
 

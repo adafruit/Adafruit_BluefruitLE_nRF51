@@ -1,11 +1,17 @@
-/**************************************************************************/
-/*!
-    @file     uribeacon.ino
-    @author   hathach, ktown (Adafruit Industries)
+/*********************************************************************
+ This is an example for our nRF51822 based Bluefruit LE modules
 
-    This demo will turn your Bluefruit into a UriBeacon (a URL-beacon)
-*/
-/**************************************************************************/
+ Pick one up today in the adafruit shop!
+
+ Adafruit invests time and resources providing this open source code, 
+ please support Adafruit and open-source hardware by purchasing 
+ products from Adafruit!
+ 
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
 #include <Arduino.h>
 #include <SPI.h>
 #if not defined (_VARIANT_ARDUINO_DUE_X_)
@@ -19,14 +25,10 @@
 #include "BluefruitConfig.h"
 
 /*=========================================================================
-    APPLICATION SETTINGS
-
-    VERBOSE_MODE            If set to true, enables debugging output
-    URL                     URL that is advertised, it must not longer than 17
-                            bytes (excluding http:// and www.)
-    -----------------------------------------------------------------------*/
-    #define VERBOSE_MODE                    true
-    #define URL                             "http://www.adafruit.com"
+ The URL that is advertised. It must not longer than 17 bytes
+ (excluding http:// and www.)
+ --------------------------------------------------------------------------*/
+ #define URL                             "http://www.adafruit.com"
 /*=========================================================================*/
 
 // Create the bluefruit object, either software serial...uncomment these lines

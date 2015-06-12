@@ -1,15 +1,22 @@
-/**************************************************************************/
-/*!
-    @file     heartratemonitor.ino
-    @author   hathach, ktown (Adafruit Industries)
+/*********************************************************************
+ This is an example for our nRF51822 based Bluefruit LE modules
 
-    This demo turns the Bluefruit into a 'Heart Rate Monitor' type of BLE
-    device - it just sends fake data, it cannot actually see into your heart
+ Pick one up today in the adafruit shop!
 
-    Please note the long strings of data sent mean the *RTS* pin is required
-    to slow down data sent to the Bluefruit LE!
+ Adafruit invests time and resources providing this open source code, 
+ please support Adafruit and open-source hardware by purchasing 
+ products from Adafruit!
+ 
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
+/*
+    Please note the long strings of data sent mean the *RTS* pin is
+    required with UART to slow down data sent to the Bluefruit LE!
 */
-/**************************************************************************/
+
 #include <Arduino.h>
 #include <SPI.h>
 #if not defined (_VARIANT_ARDUINO_DUE_X_)

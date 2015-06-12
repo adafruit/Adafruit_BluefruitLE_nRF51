@@ -1,10 +1,17 @@
-/*!
-    @file     neopixel_picker.ino
-    @author   ladyada, ktown (Adafruit Industries)
+/*********************************************************************
+ This is an example for our nRF51822 based Bluefruit LE modules
 
-A basic color picker using Bluefruit LE & the Bluefruit App!
-*/
-/**************************************************************************/
+ Pick one up today in the adafruit shop!
+
+ Adafruit invests time and resources providing this open source code, 
+ please support Adafruit and open-source hardware by purchasing 
+ products from Adafruit!
+ 
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
 #include <string.h>
 #include <Arduino.h>
 #include <SPI.h>
@@ -22,6 +29,18 @@ Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUMPIXELS, PIN);
 #include "Adafruit_BLE_HWSPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 
+/*=========================================================================
+    APPLICATION SETTINGS
+
+    VERBOSE_MODE            If set to 1 enables full data output (for
+                            debugging), otherwise set it to 0 to disable
+                            verbose output
+    BLE_READPACKET_TIMEOUT  The timeout in ms waiting for a data packet
+    -----------------------------------------------------------------------*/
+    #define VERBOSE_MODE                    1
+    #define BLE_READPACKET_TIMEOUT          500
+/*=========================================================================*/
+
 // If you are using Software Serial....
 // The following macros declare the pins used for SW serial, you should
 // use these pins if you are connecting the UART Friend to an UNO
@@ -37,18 +56,6 @@ Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUMPIXELS, PIN);
 
 // Other recommended pins!
 #define BLUEFRUIT_UART_MODE_PIN         12   // Optional but recommended, set to -1 if unused
-
-/*=========================================================================
-    APPLICATION SETTINGS
-
-    VERBOSE_MODE            If set to 1 enables full data output (for
-                            debugging), otherwise set it to 0 to disable
-                            verbose output
-    BLE_READPACKET_TIMEOUT  The timeout in ms waiting for a data packet
-    -----------------------------------------------------------------------*/
-    #define VERBOSE_MODE                    1
-    #define BLE_READPACKET_TIMEOUT          500
-/*=========================================================================*/
 
 /* Create the bluefruit object, either software serial... */
 
