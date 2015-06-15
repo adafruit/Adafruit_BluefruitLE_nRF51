@@ -124,7 +124,7 @@ void loop(void)
   
   // Check for incoming characters from Bluefruit
   ble.println("AT+BLEUARTRX");
-  ble.readline(100);  // 100ms timeout
+  ble.readline();
   if (strcmp(ble.buffer, "OK") == 0) {
     // no data
     return;
