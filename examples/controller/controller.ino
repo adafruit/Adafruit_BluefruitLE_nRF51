@@ -72,9 +72,6 @@ void setup(void)
 
   /* Initialise the module */
   Serial.print(F("Initialising the Bluefruit LE module: "));
-
-    /* Initialise the module */
-  Serial.print(F("Initialising the Bluefruit LE module: "));
   if ( !ble.begin(VERBOSE_MODE) )
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
@@ -107,11 +104,7 @@ void setup(void)
   Serial.println(F("*****************"));
 
   // Set Bluefruit to DATA mode
-  if (BLUEFRUIT_UART_MODE_PIN >= 0) {
-    Serial.println( F("Switching to DATA mode using the MODE pin!") );
-  } else  {
-    Serial.println( F("Switching to DATA mode using +++!") );
-  }
+  Serial.println( F("Switching to DATA mode!") );
   ble.setMode(BLUEFRUIT_MODE_DATA);
   
   Serial.println(F("*****************"));

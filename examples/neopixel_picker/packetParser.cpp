@@ -71,7 +71,7 @@ void printHex(const uint8_t * data, const uint32_t numBytes)
     @brief  Waits for incoming data and parses it
 */
 /**************************************************************************/
-uint8_t readPacket(Adafruit_BluefruitLE_UART *ble, uint16_t timeout) 
+uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout) 
 {
   uint16_t origtimeout = timeout, replyidx = 0;
 

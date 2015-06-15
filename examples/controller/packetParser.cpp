@@ -135,3 +135,4 @@ uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout)
   // checksum passed!
   return replyidx;
 }
+
