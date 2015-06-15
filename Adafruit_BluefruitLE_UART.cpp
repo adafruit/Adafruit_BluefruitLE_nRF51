@@ -160,7 +160,7 @@ bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
 
   bool isOK;
 
-  if ( !(_mode_pin < 0) )
+  if ( _mode_pin >= 0 )
   {
     // Switch mode using hardware pin if available
     digitalWrite(_mode_pin, new_mode);

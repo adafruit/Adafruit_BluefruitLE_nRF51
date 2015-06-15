@@ -77,7 +77,7 @@ class Adafruit_BluefruitLE_UART : public Adafruit_BLE
     bool begin(boolean debug = false);
     void end(void);
 
-    bool setMode(uint8_t mode);
+    bool setMode(uint8_t new_mode);
 
     // Class Print virtual function Interface
     virtual size_t write(uint8_t c);

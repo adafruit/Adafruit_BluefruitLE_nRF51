@@ -93,12 +93,11 @@ bool Adafruit_BLE::reset(void)
 /******************************************************************************/
 bool Adafruit_BLE::factoryReset(void)
 {
-  bool isOK = false;
-  while (! isOK) {
-    isOK = sendCommandCheckOK(F("AT+FACTORYRESET"));
-    // Bluefruit need 1 second to reboot
-    delay(1000);
-  }
+  println("AT+FACTORYRESET");
+  bool isOK = waitForOK();
+
+  // Bluefruit need 1 second to reboot
+  delay(1000);
 
   // flush all left over
   flush();
@@ -301,3 +300,4 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout)
 
   return replyidx;
 }
+

@@ -87,7 +87,7 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     bool begin(boolean v);
     void end(void);
 
-    bool setMode(uint8_t mode);
+    bool setMode(uint8_t new_mode);
 
     // Class Print virtual function Interface
     virtual size_t write(uint8_t c);

@@ -30,11 +30,13 @@
 #include "BluefruitConfig.h"
 
 // Create the bluefruit object, either software serial...uncomment these lines
+
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
 
 Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
                       BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
-                      
+
+
 /* ...or hardware serial, which does not need the RTS/CTS pins. Uncomment this line */
 // Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
 
@@ -43,6 +45,7 @@ Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
 
 /* ...software SPI, using SCK/MOSI/MISO user-defined SPI pins and then user selected CS/IRQ/RST */
 //Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+
 
 // A small helper
 void error(const __FlashStringHelper*err) {
@@ -76,11 +79,12 @@ void setup(void)
   
   /* Initialise the module */
   Serial.println(F("Initialising the Bluefruit LE module: "));
-  if ( !ble.begin(VERBOSE_MODE) )  // initialize in verbose mode
+
+  if ( !ble.begin(VERBOSE_MODE) )
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
   }
-  Serial.println( F("OK!") );
+  if ( !VERBOSE_MODE ) Serial.println( F("OK!") );
 
   /* Perform a factory reset to make sure everything is in a known state */
   Serial.println(F("Performing a factory reset: "));

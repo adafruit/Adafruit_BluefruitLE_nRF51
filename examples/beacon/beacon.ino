@@ -85,13 +85,13 @@ void setup(void)
   Serial.println(F("---------------------------------"));
 
   /* Initialise the module */
-  Serial.print(F("Initialising the Bluefruit LE module: "));
+  Serial.println(F("Initialising the Bluefruit LE module: "));
 
   if ( !ble.begin(VERBOSE_MODE) )
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
   }
-  Serial.println( F("OK!") );
+  if ( !VERBOSE_MODE ) Serial.println( F("OK!") );
 
   /* Perform a factory reset to make sure everything is in a known state */
   Serial.println(F("Performing a factory reset: "));
@@ -101,12 +101,12 @@ void setup(void)
   
   /* Disable command echo from Bluefruit */
   ble.echo(false);
-  
+
   Serial.println("Requesting Bluefruit info:");
   /* Print Bluefruit information */
   ble.info();
 
-  Serial.print(F("Setting beacon configuration details: "));
+  Serial.println(F("Setting beacon configuration details: "));
 
   // AT+BLEBEACON=0x004C,01-12-23-34-45-56-67-78-89-9A-AB-BC-CD-DE-EF-F0,0x0000,0x0000,-54
   ble.print("AT+BLEBEACON="        );
