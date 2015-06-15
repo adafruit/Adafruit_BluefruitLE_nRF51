@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_BLE_SWUART.h
+    @file     Adafruit_BluefruitLE_UART.h
     @author   hathach
 
     @section LICENSE

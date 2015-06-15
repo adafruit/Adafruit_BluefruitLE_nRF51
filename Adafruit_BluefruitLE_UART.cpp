@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_BLE_SWUART.cpp
+    @file     Adafruit_BluefruitLE_UART.cpp
     @author   hathach
 
     @section LICENSE
@@ -164,6 +164,7 @@ bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
   {
     // Switch mode using hardware pin if available
     digitalWrite(_mode_pin, new_mode);
+    delay(1);
     isOK = true;
   }else
   {
