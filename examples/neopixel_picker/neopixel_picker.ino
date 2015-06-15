@@ -28,7 +28,7 @@
 // Which pin on the Arduino is connected to the NeoPixels?
 #define PIN            6
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS      8
+#define NUMPIXELS      1
 
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUMPIXELS, PIN);
 
@@ -74,6 +74,9 @@ extern uint8_t packetbuffer[];
 /**************************************************************************/
 void setup(void)
 { 
+  while (!Serial); // required for Flora & Micro
+  delay(500);
+  
   // turn off neopixel
   pixel.begin(); // This initializes the NeoPixel library.
   for(uint8_t i=0; i<NUMPIXELS; i++) {

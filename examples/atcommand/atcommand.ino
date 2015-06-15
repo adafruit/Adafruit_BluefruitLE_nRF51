@@ -53,7 +53,6 @@ void error(const __FlashStringHelper*err) {
             automatically on startup)
 */
 /**************************************************************************/
-
 void setup(void)
 {
   while (!Serial);  // required for Flora & Micro

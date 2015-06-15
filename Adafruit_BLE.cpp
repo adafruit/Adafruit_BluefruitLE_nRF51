@@ -343,43 +343,4 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline) {
 
   return replyidx;
 
-#if 0
-
-  /*
-  if (_verbose) {
-    Serial.print("\n<- ");
-  }
-  */
-
-  while (timeout--) {
-    while(available()) {
-      char c =  read();
-      //Serial.println(c);
-      if (c == '\r') continue;
-      if (c == 0xA) {
-        if (replyidx == 0)   // the first 0x0A is ignored
-          continue;
-        
-        if (!multiline) {
-          timeout = 0;         // the second 0x0A is the end of the line
-          break;
-        }
-      }
-      buffer[replyidx] = c;
-      replyidx++;
-
-      if (replyidx >= (BLE_BUFSIZE-1)) {
-	//if (_verbose) { Serial.println("*overflow*"); }  // for my debuggin' only!
-	timeout = 0;
-	break;
-      }
-    }
-    
-    if (timeout == 0) break;
-    delay(1);
-  }
-  buffer[replyidx] = 0;  // null term
-
-  return replyidx;
-#endif
 }
