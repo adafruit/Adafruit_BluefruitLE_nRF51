@@ -89,7 +89,9 @@ void setup(void)
   
   // turn off neopixel
   pixel.begin(); // This initializes the NeoPixel library.
-  pixel.setPixelColor(0, pixel.Color(0,0,0)); // off
+  for(uint8_t i=0; i<NUMPIXELS; i++) {
+    pixel.setPixelColor(i, pixel.Color(0,0,0)); // off
+  }
   pixel.show();
   
   Serial.begin(115200);
@@ -173,7 +175,9 @@ void loop(void)
     if (blue < 0x10) Serial.print("0");
     Serial.println(blue, HEX);
     
-    pixel.setPixelColor(0, pixel.Color(red,green,blue));
+    for(uint8_t i=0; i<NUMPIXELS; i++) {
+      pixel.setPixelColor(i, pixel.Color(red,green,blue));
+    }  
     pixel.show(); // This sends the updated pixel color to the hardware.
   }
 
