@@ -28,7 +28,7 @@
 // Which pin on the Arduino is connected to the NeoPixels?
 #define PIN            6
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS      1
+#define NUMPIXELS      8
 
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUMPIXELS, PIN);
 
@@ -154,7 +154,7 @@ void loop(void)
     Serial.println(blue, HEX);
     
     for(uint8_t i=0; i<NUMPIXELS; i++) {
-      pixel.setPixelColor(0, pixel.Color(red,green,blue));
+      pixel.setPixelColor(i, pixel.Color(red,green,blue));
     }
     pixel.show(); // This sends the updated pixel color to the hardware.
   }
