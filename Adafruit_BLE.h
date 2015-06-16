@@ -55,8 +55,8 @@ class Adafruit_BLE : public Stream
   protected:
     bool     _verbose;
     uint8_t  _mode;
+    uint16_t _timeout;
 
-    // uint16_t _timeout; already inherited from Stream
 
   public:
     // Constructor
@@ -82,17 +82,18 @@ class Adafruit_BLE : public Stream
     bool sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply);
     bool sendCommandWithIntReply(const char cmd[], int32_t *reply);
 
-    uint16_t readline(char    * buf, uint16_t bufsize);
-    uint16_t readline(uint8_t * buf, uint16_t bufsize)
-    {
-      return readline( (char*) buf, bufsize);
-    }
-
-    // read one line from stream to internal buffer
+    // Read one line of response to internal buffer
     uint16_t readline(uint16_t timeout);
     uint16_t readline(void)
     {
       return readline(_timeout);
+    }
+
+    // Read one line of response to provided buffer
+    uint16_t readline(char    * buf, uint16_t bufsize);
+    uint16_t readline(uint8_t * buf, uint16_t bufsize)
+    {
+      return readline( (char*) buf, bufsize);
     }
 
     // read one line and convert the string to integer number

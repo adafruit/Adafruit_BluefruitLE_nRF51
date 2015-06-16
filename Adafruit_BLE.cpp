@@ -166,12 +166,11 @@ void Adafruit_BLE::info(void)
 */
 /******************************************************************************/
 bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply) {
-  println(cmd); // the easy part
-  
+  println(cmd);                   // send command
   if (_verbose) {
     Serial.print("\n<- ");
   }
-  (*reply) = readline_parseInt();
+  (*reply) = readline_parseInt(); // parse integer response
   return waitForOK();
 }
 
@@ -181,12 +180,11 @@ bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, int32
 */
 /******************************************************************************/
 bool Adafruit_BLE::sendCommandWithIntReply(const char cmd[], int32_t *reply) {
-  println(cmd); // the easy part
-
+  println(cmd);                   // send command
   if (_verbose) {
     Serial.print("\n<- ");
   }
-  (*reply) = readline_parseInt();
+  (*reply) = readline_parseInt(); // parse integer response
   return waitForOK();
 }
 
@@ -197,7 +195,7 @@ bool Adafruit_BLE::sendCommandWithIntReply(const char cmd[], int32_t *reply) {
 */
 /******************************************************************************/
 bool Adafruit_BLE::sendCommandCheckOK(const __FlashStringHelper *cmd) {
-  println(cmd); // the easy part
+  println(cmd);       // send command
   return waitForOK();
 }
 
@@ -207,7 +205,7 @@ bool Adafruit_BLE::sendCommandCheckOK(const __FlashStringHelper *cmd) {
 */
 /******************************************************************************/
 bool Adafruit_BLE::sendCommandCheckOK(const char cmd[]) {
-  println(cmd); // the easy part
+  println(cmd);       // send command
   return waitForOK();
 }
 
@@ -292,12 +290,6 @@ uint16_t Adafruit_BLE::readline(char * buf, uint16_t bufsize)
 uint16_t Adafruit_BLE::readline(uint16_t timeout)
 {
   uint16_t replyidx = 0;
-
-  /*
-  if (_verbose) {
-    Serial.print("\n<- ");
-  }
-  */
 
   while (timeout--) {
     while(available()) {
