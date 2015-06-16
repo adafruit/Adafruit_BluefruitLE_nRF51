@@ -245,8 +245,6 @@ int Adafruit_BluefruitLE_UART::available(void)
 int Adafruit_BluefruitLE_UART::read(void)
 {
   int c = mySerial->read();
-
-  if (_verbose && c > 0) Serial.print((char)c);
   return c;
 }
 

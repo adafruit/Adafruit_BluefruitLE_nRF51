@@ -372,7 +372,6 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
       // +++ command to switch mode
       if ( memcmp(m_tx_buffer, "+++", 3) == 0)
       {
-        // Serial.println("switch from cmd");
         simulateSwitchMode();
       }else
       {
@@ -404,14 +403,10 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
 {
   if ( _mode == BLUEFRUIT_MODE_DATA )
   {
-    Serial.println((char*)buf);
-    Serial.println(size);
-
     if ((size >= 3) &&
         !memcmp(buf, "+++", 3) &&
         !(size > 3 && buf[3] != '\r' && buf[3] != '\n') )
     {
-      //Serial.println("switch from data");
       simulateSwitchMode();
     }else
     {
@@ -578,11 +573,6 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
     {
       // Write to fifo
       m_rx_fifo.write_n(msg_response.payload, msg_response.header.length);
-
-      if (_verbose)
-      {
-        Serial.write( msg_response.payload, msg_response.header.length);
-      }
     }
 
     // No more packet data

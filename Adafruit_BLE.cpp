@@ -326,6 +326,13 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline)
   }
   buffer[replyidx] = 0;  // null term
 
+  // Print out if is verbose
+  if (_verbose && replyidx > 0)
+  {
+    Serial.print(buffer);
+    if (replyidx < BLE_BUFSIZE) Serial.println();
+  }
+
   return replyidx;
 }
 
