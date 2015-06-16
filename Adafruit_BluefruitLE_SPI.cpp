@@ -84,18 +84,29 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v)
 
   SPI.begin();
 
+  bool isOK;
+
+  // Always try to send Initialize command to reset
+  // Bluefruit since user can define but not wiring RST signal
+  isOK = sendInitializePattern();
+
   // use hardware reset if available
   if (m_rst_pin >= 0)
   {
-    hwreset();
-  }else
-  {
-    // Otherwise send Initialize command to reset Bluefruit
-    if ( !sendInitializePattern() ) return false;
-    delay(1000);
+    // pull the RST to GND for 10 ms
+    pinMode(m_rst_pin, OUTPUT);
+    digitalWrite(m_rst_pin, HIGH);
+    digitalWrite(m_rst_pin, LOW);
+    delay(10);
+    digitalWrite(m_rst_pin, HIGH);
+
+    isOK= true;
   }
 
-  return true;
+  // Bluefruit takes 1 second to reboot
+  delay(1000);
+
+  return isOK;
 }
 
 /******************************************************************************/
@@ -110,28 +121,6 @@ void Adafruit_BluefruitLE_SPI::end(void)
 
 /******************************************************************************/
 /*!
-    @brief  Performs a system reset using RST pin
-*/
-/******************************************************************************/
-bool Adafruit_BluefruitLE_SPI::hwreset(void)
-{
-  if (m_rst_pin < 0) return false;
-
-  // pull the RST to GND for 20 ms
-  pinMode(m_rst_pin, OUTPUT);
-  digitalWrite(m_rst_pin, HIGH);
-  digitalWrite(m_rst_pin, LOW);
-  delay(20);
-  digitalWrite(m_rst_pin, HIGH);
-
-  // delay 1 second for Bluefruit
-  delay(1000);
-
-  return true;
-}
-
-/******************************************************************************/
-/*!
     @brief Handle direct "+++" input command from user.
            User should use setMode instead
 */
@@ -139,7 +128,14 @@ bool Adafruit_BluefruitLE_SPI::hwreset(void)
 void Adafruit_BluefruitLE_SPI::manualSwitchMode(void)
 {
   _mode = 1 - _mode;
+#if 1
+  char ch = '0' + _mode;
+
+  m_rx_fifo.write(&ch);
+  m_rx_fifo.write_n("\r\nOK\r\n", 6);
+#else
   m_rx_fifo.write_n("OK\r\n", 4);
+#endif  
 }
 
 /******************************************************************************/

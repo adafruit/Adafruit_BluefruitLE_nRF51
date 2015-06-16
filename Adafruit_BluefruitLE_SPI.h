@@ -83,7 +83,6 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, int8_t rstPin = -1);
 
     // HW initialisation
-    bool hwreset(void);
     bool begin(boolean v);
     void end(void);
 
