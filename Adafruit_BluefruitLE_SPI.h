@@ -77,6 +77,13 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     bool    getResponse(void);
 
     void    manualSwitchMode(void);
+    /*
+    size_t  writeInDataMode(const uint8_t *buffer, size_t size);
+    size_t  writeInDataMode(uint8_t ch)
+    {
+      return writeInDataMode(&ch, 1);
+    }
+    */
 
   public:
     // Constructor

@@ -128,14 +128,10 @@ void Adafruit_BluefruitLE_SPI::end(void)
 void Adafruit_BluefruitLE_SPI::manualSwitchMode(void)
 {
   _mode = 1 - _mode;
-#if 1
-  char ch = '0' + _mode;
 
+  char ch = '0' + _mode;
   m_rx_fifo.write(&ch);
   m_rx_fifo.write_n("\r\nOK\r\n", 6);
-#else
-  m_rx_fifo.write_n("OK\r\n", 4);
-#endif  
 }
 
 /******************************************************************************/
@@ -343,6 +339,12 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buffe
   return true;
 }
 
+/*
+size_t Adafruit_BluefruitLE_SPI::writeInDataMode(const uint8_t *buffer, size_t size)
+{
+
+}
+*/
 /******************************************************************************/
 /*!
     @brief Print API, either buffered data internally or send SDEP packet to bus
@@ -420,7 +422,9 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buffer, size_t size)
     }
 
     return size;
-  }else
+  }
+  // Command mode
+  else
   {
     size_t n = 0;
     while (size--) {
