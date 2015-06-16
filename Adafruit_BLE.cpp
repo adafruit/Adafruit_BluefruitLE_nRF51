@@ -61,6 +61,7 @@ bool Adafruit_BLE::reset(void)
 
     if (isOK) break;
   }
+
   if (! isOK) {
     // ok we're going to get desperate
     delay(50);
@@ -240,7 +241,7 @@ bool Adafruit_BLE::waitForOK(void)
 /******************************************************************************/
 int32_t Adafruit_BLE::readline_parseInt(void)
 {
-  size_t len = readline();
+  uint16_t len = readline();
   if (len == 0) return 0;
 
   // also parsed hex number e.g 0xADAF
@@ -249,14 +250,43 @@ int32_t Adafruit_BLE::readline_parseInt(void)
   return val;
 }
 
+/******************************************************************************/
+/*!
+    @brief  Get a line of response data into provided buffer.
 
+    @param[in] buf
+               Provided buffer
+    @param[in] bufsize
+               buffer size
+*/
+/******************************************************************************/
+uint16_t Adafruit_BLE::readline(char * buf, uint16_t bufsize)
+{
+  uint16_t len = bufsize;
+  uint16_t rd  = 0;
+
+  while ( (len > 0) && ((rd = readline()) == BLE_BUFSIZE)  )
+  {
+    uint16_t n = min(len, rd);
+    memcpy(buf, buffer, n);
+
+    buf += n;
+    len -= n;
+  }
+
+  return bufsize - len;
+}
 
 /******************************************************************************/
 /*!
-    @brief  Get lines of response data to internal buffer.
+    @brief  Get a line of response data into internal buffer.
 
     @param[in] timeout
                Timeout for each read() operation
+    @return    The number of bytes read. Data is available in the member .buffer.
+               Note if the number is equal to BLE_BUFSIZE, the internal buffer
+               is full before reaching endline. User should continue to call
+               this function a few more times.
 */
 /******************************************************************************/
 uint16_t Adafruit_BLE::readline(uint16_t timeout)
@@ -286,6 +316,7 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout)
       buffer[replyidx] = c;
       replyidx++;
 
+      // Buffer is full
       if (replyidx >= (BLE_BUFSIZE-1)) {
         //if (_verbose) { Serial.println("*overflow*"); }  // for my debuggin' only!
         timeout = 0;
