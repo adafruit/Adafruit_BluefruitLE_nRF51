@@ -125,7 +125,7 @@ void Adafruit_BluefruitLE_SPI::end(void)
            User should use setMode instead
 */
 /******************************************************************************/
-void Adafruit_BluefruitLE_SPI::manualSwitchMode(void)
+void Adafruit_BluefruitLE_SPI::simulateSwitchMode(void)
 {
   _mode = 1 - _mode;
 
@@ -314,7 +314,7 @@ bool Adafruit_BluefruitLE_SPI::sendInitializePattern(void)
                 More Data bitfield, 0 indicates this is not end of transfer yet
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buffer, uint8_t count, uint8_t more_data)
+bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, uint8_t count, uint8_t more_data)
 {
   // flush old response before sending the new command
   if (more_data == 0) flush();
@@ -331,20 +331,19 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buffe
   ASSERT( sizeof(sdepMsgHeader_t) == bus_write((uint8_t*)&msgHeader, sizeof(sdepMsgHeader_t)), false );
 
   // Send the command payload
-  if ( buffer != NULL && count > 0)
+  if ( buf != NULL && count > 0)
   {
-    ASSERT ( msgHeader.length == bus_write(buffer, msgHeader.length), false );
+    ASSERT ( msgHeader.length == bus_write(buf, msgHeader.length), false );
   }
 
   return true;
 }
 
-/*
-size_t Adafruit_BluefruitLE_SPI::writeInDataMode(const uint8_t *buffer, size_t size)
-{
+//bool Adafruit_BluefruitLE_SPI::handleSwitchCmdInDataMode(uint8_t ch)
+//{
+//  static char cmdBuf[4] = { 0 };
+//}
 
-}
-*/
 /******************************************************************************/
 /*!
     @brief Print API, either buffered data internally or send SDEP packet to bus
@@ -373,12 +372,13 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
       // +++ command to switch mode
       if ( memcmp(m_tx_buffer, "+++", 3) == 0)
       {
-        manualSwitchMode();
+        // Serial.println("switch from cmd");
+        simulateSwitchMode();
       }else
       {
         sendPacket(SDEP_CMDTYPE_AT_WRAPPER, m_tx_buffer, m_tx_count, 0);
-        m_tx_count = 0;
       }
+      m_tx_count = 0;
     }
   }
   // More than max packet buffered --> send with more_data = 1
@@ -400,13 +400,19 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
   return 1;
 }
 
-size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buffer, size_t size)
+size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
 {
   if ( _mode == BLUEFRUIT_MODE_DATA )
   {
-    if ( size >= 4 && !memcmp(buffer, "+++", 3) && (buffer[3] == '\r' || buffer[3] == '\n') )
+    Serial.println((char*)buf);
+    Serial.println(size);
+
+    if ((size >= 3) &&
+        !memcmp(buf, "+++", 3) &&
+        !(size > 3 && buf[3] != '\r' && buf[3] != '\n') )
     {
-      manualSwitchMode();
+      //Serial.println("switch from data");
+      simulateSwitchMode();
     }else
     {
       while(size)
@@ -414,10 +420,10 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buffer, size_t size)
         size_t len = min(size, SDEP_MAX_PACKETSIZE);
         size -= len;
 
-        sendPacket(SDEP_CMDTYPE_BLE_UARTTX, buffer, (uint8_t) len, size ? 1 : 0);
+        sendPacket(SDEP_CMDTYPE_BLE_UARTTX, buf, (uint8_t) len, size ? 1 : 0);
         getResponse();
 
-        buffer += len;
+        buf += len;
       }
     }
 
@@ -428,7 +434,7 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buffer, size_t size)
   {
     size_t n = 0;
     while (size--) {
-      n += write(*buffer++);
+      n += write(*buf++);
     }
     return n;
   }
@@ -508,6 +514,13 @@ int Adafruit_BluefruitLE_SPI::read(void)
 /******************************************************************************/
 int Adafruit_BluefruitLE_SPI::peek(void)
 {
+  uint8_t ch;
+
+  // try to grab from buffer first...
+  if ( !m_rx_fifo.peek(&ch) ) {
+    return (int)ch;
+  }
+
   if ( _mode == BLUEFRUIT_MODE_DATA )
   {
     // DATA Mode: query for BLE UART data
@@ -521,7 +534,6 @@ int Adafruit_BluefruitLE_SPI::peek(void)
     if ( digitalRead(m_irq_pin) ) getResponse();
   }
 
-  uint8_t ch;
   return m_rx_fifo.peek(&ch) ? ch : EOF;
 }
 
@@ -589,7 +601,7 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
     @brief      Perform a single SPI SDEP transaction and is used by getReponse to
                 get a full response composed of multiple packets.
 
-    @param[in]  buffer
+    @param[in]  buf
                 Memory location where payload is copied to
 
     @return number of bytes in SDEP payload
