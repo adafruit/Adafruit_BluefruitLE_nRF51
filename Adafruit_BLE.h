@@ -82,14 +82,14 @@ class Adafruit_BLE : public Stream
     bool sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply);
     bool sendCommandWithIntReply(const char cmd[], int32_t *reply);
 
-    // Read one line of response to internal buffer
-    uint16_t readline(uint16_t timeout);
+    // Read one line of response into internal buffer
+    uint16_t readline(uint16_t timeout, boolean multiline = false);
     uint16_t readline(void)
     {
-      return readline(_timeout);
+      return readline(_timeout, false);
     }
 
-    // Read one line of response to provided buffer
+    // Read one line of response into provided buffer
     uint16_t readline(char    * buf, uint16_t bufsize);
     uint16_t readline(uint8_t * buf, uint16_t bufsize)
     {

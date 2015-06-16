@@ -272,22 +272,27 @@ uint16_t Adafruit_BLE::readline(char * buf, uint16_t bufsize)
     len -= n;
   }
 
+//  buf[bufsize - len] = 0; // null terminator
+
   return bufsize - len;
 }
 
 /******************************************************************************/
 /*!
-    @brief  Get a line of response data into internal buffer.
+    @brief  Get (multiple) lines of response data into internal buffer.
 
     @param[in] timeout
                Timeout for each read() operation
+    @param[in] multiline
+               Read multiple lines
+
     @return    The number of bytes read. Data is available in the member .buffer.
-               Note if the number is equal to BLE_BUFSIZE, the internal buffer
-               is full before reaching endline. User should continue to call
-               this function a few more times.
+               Note if the returned number is equal to BLE_BUFSIZE, the internal
+               buffer is full before reaching endline. User should continue to
+               call this function a few more times.
 */
 /******************************************************************************/
-uint16_t Adafruit_BLE::readline(uint16_t timeout)
+uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline)
 {
   uint16_t replyidx = 0;
 
@@ -301,15 +306,16 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout)
         if (replyidx == 0)   // the first '\n' is ignored
           continue;
         
-        timeout = 0;         // the second 0x0A is the end of the line
-        break;
+        if (!multiline) {
+          timeout = 0;         // the second 0x0A is the end of the line
+          break;
+        }
       }
-
       buffer[replyidx] = c;
       replyidx++;
 
       // Buffer is full
-      if (replyidx >= (BLE_BUFSIZE-1)) {
+      if (replyidx >= BLE_BUFSIZE) {
         //if (_verbose) { Serial.println("*overflow*"); }  // for my debuggin' only!
         timeout = 0;
         break;
