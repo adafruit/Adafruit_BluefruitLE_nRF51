@@ -162,20 +162,29 @@ bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
 
   if ( _mode_pin >= 0 )
   {
-    // Switch mode using hardware pin if available
+    // Switch mode using hardware pin
     digitalWrite(_mode_pin, new_mode);
     delay(1);
     isOK = true;
   }else
   {
-    // Already in the wanted mode
-    if ( _mode == new_mode ) return true;
+    // Switch mode using +++ command, at worst switch 2 times
+    int32_t updated_mode;
 
-    // Switch mode using +++ command
-    isOK = sendCommandCheckOK( F("+++") );
+    isOK = sendCommandWithIntReply(F("+++"), &updated_mode);
+
+    if ( isOK )
+    {
+      // Ahhh, we are already in the wanted mode before sending +++
+      // Switch again. This is required to make sure it is always correct
+      if ( updated_mode != new_mode )
+      {
+        isOK = sendCommandWithIntReply(F("+++"), &updated_mode);
+        // Still does not match -> give up
+        if ( updated_mode != new_mode ) return false;
+      }
+    }
   }
-
-  if (isOK) _mode = new_mode;
 
   return isOK;
 }
