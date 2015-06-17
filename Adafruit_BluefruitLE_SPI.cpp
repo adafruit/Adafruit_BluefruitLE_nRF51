@@ -599,32 +599,43 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 {
-  // Wait for SDEP_MSGTYPE_RESPONSE
-  uint8_t sync=0;
-  do {
-    if ( 1 != bus_read(&sync, 1) ) return false;
-  } while(sync != SDEP_MSGTYPE_RESPONSE && sync != SDEP_MSGTYPE_ERROR);
-
   sdepMsgHeader_t* p_header = &p_response->header;
-  p_header->msg_type = sync;
+
+  // Keep looking for SDEP_MSGTYPE_RESPONSE or SDEP_MSGTYPE_ERROR
+  do {
+    if ( sizeof(sdepMsgHeader_t) != bus_read( (uint8_t*) p_header, sizeof(sdepMsgHeader_t)) ) return false;
+
+    // try to find sync word location
+    uint8_t idx;
+    for(idx=0; idx<sizeof(sdepMsgHeader_t); idx++)
+    {
+      uint8_t sync = ((uint8_t*)p_header)[idx];
+      if (sync == SDEP_MSGTYPE_RESPONSE || sync == SDEP_MSGTYPE_ERROR) break;
+    }
+
+    // sync word is not the first byte, need to fetch more
+    if (idx > 0)
+    {
+      uint8_t * p_sync = ((uint8_t*)p_header)+idx;
+      memmove(p_header, p_sync, sizeof(sdepMsgHeader_t)-idx);
+      bus_read(p_sync+sizeof(sdepMsgHeader_t)-idx, idx);
+    }
+  }while(p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR);
+
+  // Command is 16-bit at odd address, may have alignment issue with 32-bit chip
+  uint16_t cmd_id = word(p_header->cmd_id_high, p_header->cmd_id_low);
 
   // Error Message Response only has 3 bytes (no payload's length)
   if (p_header->msg_type == SDEP_MSGTYPE_ERROR)
   {
-    bus_read((uint8_t*)&p_header->cmd_id, 2);
-
-    uint32_t error_code = (uint32_t) word(p_header->cmd_id_high, p_header->cmd_id_low);
-    (void) error_code;
-
+    // Error code is cmd_id
     return false;
   }
 
   // Normal Response Message, first get header
-  if ( 3 != bus_read((uint8_t*)&p_header->cmd_id, 3) ) return false;
-
-  if ( ! (p_header->cmd_id == SDEP_CMDTYPE_AT_WRAPPER ||
-          p_header->cmd_id == SDEP_CMDTYPE_BLE_UARTTX ||
-          p_header->cmd_id == SDEP_CMDTYPE_BLE_UARTRX) )
+  if ( ! (cmd_id == SDEP_CMDTYPE_AT_WRAPPER ||
+          cmd_id == SDEP_CMDTYPE_BLE_UARTTX ||
+          cmd_id == SDEP_CMDTYPE_BLE_UARTRX) )
   {
     // unknown command
     return false;
