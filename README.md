@@ -200,17 +200,19 @@ Error messages (Message Type = 0x80) are returned whenever an error condition is
 | --------------- | ---- | ------------------------------------------------- |
 | Message Type    | U8   | Always '0x80'                                     |
 | Error ID        | U16  | Unique ID for the error condition                 |
+| Reserved        | U8   | Reserved for future use                           |
 
 Whenever an error condition is present and the system needs to be alerted (such as a failed request, an attempt to access a non-existing resource, etc.) the system can return a specific error message with an appropriate Error ID.
 
 A sample error message would be:
 
-| 0: Message Type (U8) | 1+2: Error ID (U16)   |
-| -------------------- | --------------------- |
-| 80                   | 01 00                 |
+| 0: Message Type (U8) | 1+2: Error ID (U16)   | 3: Reserved (U8) |
+| -------------------- | --------------------- | ---------------- |
+| 80                   | 01 00                 | 00               |
 
 - The first byte is the Message Type (0x80), which identifies this as an error message.
 - The second and third bytes are 0x0001 (01 00 in little-endian notation), which indicates that the supplied Command ID was invalid (see Standard Error IDs below).
+- The last byte is reserved and should be 0x00 and ignored.
 
 #### Standard Error IDs
 
