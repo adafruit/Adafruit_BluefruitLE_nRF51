@@ -40,7 +40,7 @@
 #include <SPI.h>
 #include "utility/Adafruit_FIFO.h"
 
-#define SPI_CS_ENABLE()           do { digitalWrite(m_cs_pin, LOW); delayMicroseconds(5); }while(0)
+#define SPI_CS_ENABLE()           digitalWrite(m_cs_pin, LOW)
 #define SPI_CS_DISABLE()          digitalWrite(m_cs_pin, HIGH)
 
 #define SPI_IGNORED_BYTE          0xFEu /**< SPI default character. Character clocked out in case of an ignored transaction. */

@@ -319,24 +319,18 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, 
   // flush old response before sending the new command
   if (more_data == 0) flush();
 
-  sdepMsgHeader_t msgHeader;
+  sdepMsgCommand_t msgCmd;
 
-  msgHeader.msg_type    = SDEP_MSGTYPE_COMMAND;
-  msgHeader.cmd_id_high = highByte(command);
-  msgHeader.cmd_id_low  = lowByte(command);
-  msgHeader.length      = count;
-  msgHeader.more_data   = (count == SDEP_MAX_PACKETSIZE) ? more_data : 0;
+  msgCmd.header.msg_type    = SDEP_MSGTYPE_COMMAND;
+  msgCmd.header.cmd_id_high = highByte(command);
+  msgCmd.header.cmd_id_low  = lowByte(command);
+  msgCmd.header.length      = count;
+  msgCmd.header.more_data   = (count == SDEP_MAX_PACKETSIZE) ? more_data : 0;
+
+  if ( buf != NULL && count > 0) memcpy(msgCmd.payload, buf, count);
 
   // Send the SDEP header
-  ASSERT( sizeof(sdepMsgHeader_t) == bus_write((uint8_t*)&msgHeader, sizeof(sdepMsgHeader_t)), false );
-
-  // Send the command payload
-  if ( buf != NULL && count > 0)
-  {
-    ASSERT ( msgHeader.length == bus_write(buf, msgHeader.length), false );
-  }
-
-  return true;
+  return sizeof(sdepMsgHeader_t) + count == bus_write((uint8_t*)&msgCmd, sizeof(sdepMsgHeader_t) + count);
 }
 
 //bool Adafruit_BluefruitLE_SPI::handleSwitchCmdInDataMode(uint8_t ch)
@@ -569,9 +563,9 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
     sdepMsgResponse_t msg_response;
     if ( !getPacket(&msg_response) ) return false;
 
+    // Write to fifo
     if ( msg_response.header.length > 0)
     {
-      // Write to fifo
       m_rx_fifo.write_n(msg_response.payload, msg_response.header.length);
     }
 
@@ -605,7 +599,7 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
   do {
     if ( sizeof(sdepMsgHeader_t) != bus_read( (uint8_t*) p_header, sizeof(sdepMsgHeader_t)) ) return false;
 
-    // try to find sync word location
+    // try to find sync word locgetPacketation
     uint8_t idx;
     for(idx=0; idx<sizeof(sdepMsgHeader_t); idx++)
     {
