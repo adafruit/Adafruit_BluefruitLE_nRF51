@@ -156,138 +156,6 @@ bool Adafruit_BluefruitLE_SPI::setMode(uint8_t new_mode)
 
 /******************************************************************************/
 /*!
-    @brief  Read data from Ble module's SPI interface.  
-            This function will retry if the BLE module is not ready
-            (response = SPI_IGNORED_BYTE), or terminate when 'length' bytes
-            have been read, SPI_OVERREAD_BYTE is returned or 'timeout_ms' have
-            passed.
-
-    @param[out] buf
-                buffer to store read data
-    @param[in]  length 
-                number of bytes to be read
-
-    @return     The number of bytes successfully read
-*/
-/******************************************************************************/
-uint32_t Adafruit_BluefruitLE_SPI::bus_read(uint8_t *buf, uint32_t length)
-{
-  if (length == 0) return 0;
-
-  TimeoutTimer tt(_timeout);
-  uint32_t count = 0;
-  
-  SPI.beginTransaction(bluefruitSPI);
-
-  SPI_CS_ENABLE();
-  while( (count<length) && !tt.expired() )
-  {
-    uint8_t rd = SPI_OVERREAD_BYTE;
-
-    while( !tt.expired() )
-    {
-      rd = SPI.transfer(0xff);
-
-      if (rd != SPI_IGNORED_BYTE && rd != SPI_OVERREAD_BYTE)
-      {
-        // Successfully get non-special meaning byte
-        buf[count++] = rd;
-        break;
-      }
-      else
-      {
-        // Either special 0xFF or 0xFE is detected, check if it is data or
-        // part of following patterns
-        // Pattern FF-FF-FF-FF : Bluefruit has no more data
-        // Pattern FE-FE-FE-FE : Bluefruit is not ready
-        uint8_t pattern_buf[4];
-        uint8_t pattern_count = 1;
-        pattern_buf[0] = rd;
-
-        while ( (pattern_buf[0] == rd) && (pattern_count < 4) )
-        {
-          rd = SPI.transfer(0xff);
-          pattern_buf[ pattern_count++ ] = rd;
-        }
-
-        // 0xFF/0xFE is real data
-        if ( !((pattern_count == 4) && (pattern_buf[0] == pattern_buf[3])) )
-        {
-          // make sure we don't overflow the buffer
-          uint8_t c = min(pattern_count, length-count);
-
-          memcpy(buf+count, pattern_buf, c);
-          count += c;
-
-          break;
-        }
-      }
-
-      // blemodule is busy processing, wait a bit before retry
-      SPI_CS_DISABLE();
-      delayMicroseconds(SPI_DEFAULT_DELAY_US);
-      SPI_CS_ENABLE();
-    }
-  }
-
-  SPI_CS_DISABLE();
-  SPI.endTransaction();
-
-  return count;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Write data to BLE module's SPI interface.
-            This function will retry if the BLE module is not ready
-            (response = SPI_IGNORED_BYTE), or terminate when 'length' bytes
-            have been written or 'timeout_ms' have passed.
-
-    @param[out] buf
-                Buffer containing the data to write
-    @param[in]  length 
-                Number of bytes to write
-
-    @return     The number of bytes written
-*/
-/******************************************************************************/
-uint32_t Adafruit_BluefruitLE_SPI::bus_write (const uint8_t *buf, uint32_t length)
-{
-  if (length == 0) return 0;
-
-  uint32_t count=0;
-  TimeoutTimer tt(_timeout);
-
-  SPI.beginTransaction(bluefruitSPI);
-
-  SPI_CS_ENABLE();
-  while ( (count < length) && !tt.expired() )
-  {
-    // Keep re-sending if SPI_IGNORED_BYTE is received
-    while( !tt.expired() )
-    {
-      uint8_t rd = SPI.transfer(*buf);
-
-      if (rd != SPI_IGNORED_BYTE) break;
-
-      // blemodule is busy processing, wait a bit before retry
-      SPI_CS_DISABLE();
-      delayMicroseconds(SPI_DEFAULT_DELAY_US);
-      SPI_CS_ENABLE();
-    }
-
-    buf++;
-    count++;
-  }
-  SPI_CS_DISABLE();
-
-  SPI.endTransaction();
-
-  return count;
-}
-
-/******************************************************************************/
-/*!
     @brief Send initialize pattern to Bluefruit LE to force a reset. This pattern
     follow the SDEP command syntax with command_id = SDEP_CMDTYPE_INITIALIZE.
     The command has NO response, and is expected to complete within 1 second
@@ -295,15 +163,7 @@ uint32_t Adafruit_BluefruitLE_SPI::bus_write (const uint8_t *buf, uint32_t lengt
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::sendInitializePattern(void)
 {
-  sdepMsgHeader_t msgHeader;
-
-  msgHeader.msg_type    = SDEP_MSGTYPE_COMMAND;
-  msgHeader.cmd_id_high = highByte(SDEP_CMDTYPE_INITIALIZE);
-  msgHeader.cmd_id_low  = lowByte(SDEP_CMDTYPE_INITIALIZE);
-  msgHeader.length      = 0;
-  msgHeader.more_data   = 0;
-
-  return (sizeof(sdepMsgHeader_t) == bus_write((uint8_t*)&msgHeader, sizeof(sdepMsgHeader_t)));
+  return sendPacket(SDEP_CMDTYPE_INITIALIZE, NULL, 0, 0);
 }
 
 /******************************************************************************/
@@ -327,10 +187,35 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, 
   msgCmd.header.length      = count;
   msgCmd.header.more_data   = (count == SDEP_MAX_PACKETSIZE) ? more_data : 0;
 
+  // Copy payload
   if ( buf != NULL && count > 0) memcpy(msgCmd.payload, buf, count);
 
-  // Send the SDEP header
-  return sizeof(sdepMsgHeader_t) + count == bus_write((uint8_t*)&msgCmd, sizeof(sdepMsgHeader_t) + count);
+  // Starting SPI transaction
+  SPI.beginTransaction(bluefruitSPI);
+  SPI_CS_ENABLE();
+
+  TimeoutTimer tt(_timeout);
+
+  // Bluefruit may not be ready
+  while ( ( SPI.transfer(msgCmd.header.msg_type) == SPI_IGNORED_BYTE ) && !tt.expired() )
+  {
+    // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
+    SPI_CS_DISABLE();
+    delayMicroseconds(SPI_DEFAULT_DELAY_US);
+    SPI_CS_ENABLE();
+  }
+
+  bool result = !tt.expired();
+  if ( result )
+  {
+    // transfer the rest of the data
+    SPI.transfer((void*) (((uint8_t*)&msgCmd) +1), sizeof(sdepMsgHeader_t)+count-1);
+  }
+
+  SPI_CS_DISABLE();
+  SPI.endTransaction();
+
+  return result;
 }
 
 //bool Adafruit_BluefruitLE_SPI::handleSwitchCmdInDataMode(uint8_t ch)
@@ -557,10 +442,12 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
 
   // There is data from Bluefruit & enough room in the fifo
   while ( digitalRead(m_irq_pin) &&
-          ( sizeof(m_rx_buffer) - m_rx_fifo.count() ) >= SDEP_MAX_PACKETSIZE )
+          m_rx_fifo.remaining() >= SDEP_MAX_PACKETSIZE )
   {
     // Get a SDEP packet
     sdepMsgResponse_t msg_response;
+    memclr(&msg_response, sizeof(sdepMsgResponse_t));
+
     if ( !getPacket(&msg_response) ) return false;
 
     // Write to fifo
@@ -595,53 +482,61 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 {
   sdepMsgHeader_t* p_header = &p_response->header;
 
-  // Keep looking for SDEP_MSGTYPE_RESPONSE or SDEP_MSGTYPE_ERROR
-  do {
-    if ( sizeof(sdepMsgHeader_t) != bus_read( (uint8_t*) p_header, sizeof(sdepMsgHeader_t)) ) return false;
+  SPI.beginTransaction(bluefruitSPI);
+  SPI_CS_ENABLE();
 
-    // try to find sync word locgetPacketation
-    uint8_t idx;
-    for(idx=0; idx<sizeof(sdepMsgHeader_t); idx++)
-    {
-      uint8_t sync = ((uint8_t*)p_header)[idx];
-      if (sync == SDEP_MSGTYPE_RESPONSE || sync == SDEP_MSGTYPE_ERROR) break;
-    }
+  TimeoutTimer tt(_timeout);
 
-    // sync word is not the first byte, need to fetch more
-    if (idx > 0)
-    {
-      uint8_t * p_sync = ((uint8_t*)p_header)+idx;
-      memmove(p_header, p_sync, sizeof(sdepMsgHeader_t)-idx);
-      bus_read(p_sync+sizeof(sdepMsgHeader_t)-idx, idx);
-    }
-  }while(p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR);
-
-  // Command is 16-bit at odd address, may have alignment issue with 32-bit chip
-  uint16_t cmd_id = word(p_header->cmd_id_high, p_header->cmd_id_low);
-
-  // Error Message Response only has 3 bytes (no payload's length)
-  if (p_header->msg_type == SDEP_MSGTYPE_ERROR)
+  // Bluefruit may not be ready
+  while ( ( (p_header->msg_type = SPI.transfer(0xff)) == SPI_IGNORED_BYTE ) && !tt.expired() )
   {
-    // Error code is cmd_id
-    return false;
+    // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
+    SPI_CS_DISABLE();
+    delayMicroseconds(SPI_DEFAULT_DELAY_US);
+    SPI_CS_ENABLE();
   }
 
-  // Normal Response Message, first get header
-  if ( ! (cmd_id == SDEP_CMDTYPE_AT_WRAPPER ||
+  bool result=false;
+
+  // Not a loop, just a way to avoid goto with error handling
+  do
+  {
+    if ( tt.expired() ) break;
+
+    // Look for the header
+    while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR )
+    {
+      p_header->msg_type = SPI.transfer(0xff);
+    }
+    memset( (&p_header->msg_type)+1, 0xff, sizeof(sdepMsgHeader_t) - 1);
+    SPI.transfer((&p_header->msg_type)+1, sizeof(sdepMsgHeader_t) - 1);
+
+    // Command is 16-bit at odd address, may have alignment issue with 32-bit chip
+    uint16_t cmd_id = word(p_header->cmd_id_high, p_header->cmd_id_low);
+
+    // Error Message Response
+    if ( p_header->msg_type == SDEP_MSGTYPE_ERROR ) break;
+
+    // Invalid command
+    if (!(cmd_id == SDEP_CMDTYPE_AT_WRAPPER ||
           cmd_id == SDEP_CMDTYPE_BLE_UARTTX ||
           cmd_id == SDEP_CMDTYPE_BLE_UARTRX) )
-  {
-    // unknown command
-    return false;
-  }
+    {
+      break;
+    }
 
-  // Get payload
-  if (p_header->length > SDEP_MAX_PACKETSIZE) return false;
+    // Invalid length
+    if(p_header->length > SDEP_MAX_PACKETSIZE) break;
 
-  int len = bus_read( p_response->payload, (uint32_t) p_header->length);
-  if ( len != p_header->length ) return false;
+    // read payload
+    memset(p_response->payload, 0xff, p_header->length);
+    SPI.transfer(p_response->payload, p_header->length);
 
-  return true;
+    result = true;
+  }while(0);
+
+  SPI_CS_DISABLE();
+  SPI.endTransaction();
+
+  return result;
 }
-
-
