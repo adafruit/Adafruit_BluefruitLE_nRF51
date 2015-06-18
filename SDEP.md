@@ -6,6 +6,13 @@ SDEP is used to handle messages and responses, including error responses, and wa
 
 SDEP messages have a four byte header, and up to a 16 byte payload, and larger messages are broken into several message chunks which are rebuilt at either end of the transport bus.  The 20 byte limit (4 byte header + 16 byte payload) was chosen to take into account the size limitations present in some transport layers.
 
+## SPI Hardware Requirements
+
+The SPI peripheral block on the nRF51822 MCU has some specific limitations that need to be taken into account when communicating with it as an SPI slave:
+
+* A 100us delay should be added between the moment that the CS line is asserted, and before any data is transmitted on the SPI bus
+* The CS line should remain asserted for the entire packet, rather than toggling CS every byte
+
 ## Simple Data Exchange Protocol (SDEP)
 
 The Simple Data Exchange Protocol (SDEP) can be used to send and receive binary messages between two connected devices using any binary serial bus (USB HID, USB Bulk, SPI, I2C, Wireless, etc.), exchanging data using one of four distinct message types (Command, Response, Alert and Error messages).
