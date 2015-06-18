@@ -156,34 +156,6 @@ bool Adafruit_BluefruitLE_SPI::setMode(uint8_t new_mode)
 
 /******************************************************************************/
 /*!
-    @brief  Read data from Ble module's SPI interface.  
-            This function will retry if the BLE module is not ready
-            (response = SPI_IGNORED_BYTE), or terminate when 'length' bytes
-            have been read, SPI_OVERREAD_BYTE is returned or 'timeout_ms' have
-            passed.
-
-    @param[out] buf
-                buffer to store read data
-    @param[in]  length 
-                number of bytes to be read
-
-    @return     The number of bytes successfully read
-*/
-/******************************************************************************/
-uint32_t Adafruit_BluefruitLE_SPI::bus_read(uint8_t *buf, uint32_t length)
-{
-  if (length == 0) return 0;
-  
-  for(uint8_t i=0; i<length; i++)
-  {
-    *buf++ = SPI.transfer(0xff);
-  }
-
-  return length;
-}
-
-/******************************************************************************/
-/*!
     @brief Send initialize pattern to Bluefruit LE to force a reset. This pattern
     follow the SDEP command syntax with command_id = SDEP_CMDTYPE_INITIALIZE.
     The command has NO response, and is expected to complete within 1 second
@@ -536,7 +508,8 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
     {
       p_header->msg_type = SPI.transfer(0xff);
     }
-    bus_read( ((uint8_t*) p_header)+1, sizeof(sdepMsgHeader_t)-1 );
+    memset( (&p_header->msg_type)+1, 0xff, sizeof(sdepMsgHeader_t) - 1);
+    SPI.transfer((&p_header->msg_type)+1, sizeof(sdepMsgHeader_t) - 1);
 
     // Command is 16-bit at odd address, may have alignment issue with 32-bit chip
     uint16_t cmd_id = word(p_header->cmd_id_high, p_header->cmd_id_low);
@@ -556,7 +529,9 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
     if(p_header->length > SDEP_MAX_PACKETSIZE) break;
 
     // read payload
-    bus_read( p_response->payload, (uint32_t) p_header->length);
+    memset(p_response->payload, 0xff, p_header->length);
+    SPI.transfer(p_response->payload, p_header->length);
+
     result = true;
   }while(0);
 

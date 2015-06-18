@@ -67,16 +67,12 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     Adafruit_FIFO   m_rx_fifo;
 
     // Low level transportation I/O functions
-    uint32_t bus_read(uint8_t *buf, uint32_t length);
-
     bool    sendInitializePattern(void);
     bool    sendPacket(uint16_t command, const uint8_t* buffer, uint8_t count, uint8_t more_data);
     bool    getPacket(sdepMsgResponse_t* p_response);
 
     bool    getResponse(void);
-
     void    simulateSwitchMode(void);
-
 //    bool    handleSwitchCmdInDataMode(uint8_t ch);
 
   public:
