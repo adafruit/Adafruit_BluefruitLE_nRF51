@@ -12,7 +12,9 @@ The SPI interface uses the standard four SPI pins (MISO, MOSI, SCK and CS/SSEL),
 
 ## IRQ Pin
 
-The IRQ line is asserted every time a full SDEP packet is available in the buffer on the nRF51822, at which point you should read the packet, keeping the CS line asserted for the entire transaction (as detailed below).
+The IRQ line is asserted as long as an entire SDEP packet is available in the buffer on the nRF51822, at which point you should read the packet, keeping the CS line asserted for the entire transaction (as detailed below).  
+
+The line will remain asserted as long as one or more packets are available, so the line may stay high after reading a packet, meaning that more packets are still available in the FIFO on the SPI slave side.
 
 ## SPI Bus Hardware Requirements
 
@@ -22,7 +24,7 @@ The SPI peripheral block on the nRF51822 MCU has some specific limitations that 
 * A 100us delay should be added between the moment that the CS line is asserted, and before any data is transmitted on the SPI bus
 * The CS line should remain asserted for the entire packet, rather than toggling CS every byte
 
-## Packet Type Identifier
+## SDEP Packet and SPI Error Identifier
 
 Once CS has been asserted and the mandatory 100us delay has passed, a single byte should be read from the SPI bus which will indicate the type of payload available on the nRF51822 (see **Message Type Indicator** below for more information on SDEP message types). Keep CS asserted after this byte has been read in case you need to continue reading the reset of the frame.
 
@@ -31,7 +33,7 @@ If a standard SDEP message type indicators (0x10, 0x20, 0x40 or 0x80) is encount
 * **0xFE**: Slave device not ready (wait a bit and try again)
 * **0xFF**: Slave device read overflow indicator (you've read more data than is available)
 
-## Sample Transactions
+## Sample Transaction
 
 The following image shows a sample SDEP response that is spread over two packets (since the response is > 20 bytes in size). Notice that the IRQ line stays asserted between the packets since more than one was available in the FIFO on the nRF51822 side:
 
