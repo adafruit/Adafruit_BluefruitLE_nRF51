@@ -6,14 +6,38 @@ SDEP is used to handle messages and responses, including error responses, and wa
 
 SDEP messages have a four byte header, and up to a 16 byte payload, and larger messages are broken into several message chunks which are rebuilt at either end of the transport bus.  The 20 byte limit (4 byte header + 16 byte payload) was chosen to take into account the size limitations present in some transport layers.
 
-## SPI Hardware Requirements
+# SPI Setup
+
+The SPI interface uses the standard four SPI pins (MISO, MOSI, SCK and CS/SSEL), as well as an additional **IRQ** line (output from the nRF51822 to the SPI Master MCU).
+
+## IRQ Pin
+
+The IRQ line is asserted every time a full SDEP packet is available in the buffer on the nRF51822, at which point you should read the packet, keeping the CS line asserted for the entire transaction (as detailed below).
+
+## SPI Bus Hardware Requirements
 
 The SPI peripheral block on the nRF51822 MCU has some specific limitations that need to be taken into account when communicating with it as an SPI slave:
 
+* The SPI clock should run <=2MHz
 * A 100us delay should be added between the moment that the CS line is asserted, and before any data is transmitted on the SPI bus
 * The CS line should remain asserted for the entire packet, rather than toggling CS every byte
 
-## Simple Data Exchange Protocol (SDEP)
+## Packet Type Identifier
+
+Once CS has been asserted and the mandatory 100us delay has passed, a single byte should be read from the SPI bus which will indicate the type of payload available on the nRF51822 (see **Message Type Indicator** below for more information on SDEP message types). Keep CS asserted after this byte has been read in case you need to continue reading the reset of the frame.
+
+If a standard SDEP message type indicators (0x10, 0x20, 0x40 or 0x80) is encountered, keep reading as normal.  There are two other indicators that should be taken into account, though, which indicate a problem on the nRF51822 SPI slave side:
+
+* **0xFE**: Slave device not ready (wait a bit and try again)
+* **0xFF**: Slave device read overflow indicator (you've read more data than is available)
+
+## Sample Transactions
+
+The following image shows a sample SDEP response that is spread over two packets (since the response is > 20 bytes in size). Notice that the IRQ line stays asserted between the packets since more than one was available in the FIFO on the nRF51822 side:
+
+![sdepexample_twopackets](https://cloud.githubusercontent.com/assets/181073/8234310/646b7498-15db-11e5-9c69-6366c5dd433a.png)
+
+# SDEP (Simple Data Exchange Protocol)
 
 The Simple Data Exchange Protocol (SDEP) can be used to send and receive binary messages between two connected devices using any binary serial bus (USB HID, USB Bulk, SPI, I2C, Wireless, etc.), exchanging data using one of four distinct message types (Command, Response, Alert and Error messages).
 
