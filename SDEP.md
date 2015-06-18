@@ -14,7 +14,7 @@ The SPI interface uses the standard four SPI pins (MISO, MOSI, SCK and CS/SSEL),
 
 The IRQ line is asserted as long as an entire SDEP packet is available in the buffer on the nRF51822, at which point you should read the packet, keeping the CS line asserted for the entire transaction (as detailed below).  
 
-The line will remain asserted as long as one or more packets are available, so the line may stay high after reading a packet, meaning that more packets are still available in the FIFO on the SPI slave side.
+The IRQ line will remain asserted as long as one or more packets are available, so the line may stay high after reading a packet, meaning that more packets are still available in the FIFO on the SPI slave side.
 
 ## SPI Bus Hardware Requirements
 
@@ -26,7 +26,7 @@ The SPI peripheral block on the nRF51822 MCU has some specific limitations that 
 
 ## SDEP Packet and SPI Error Identifier
 
-Once CS has been asserted and the mandatory 100us delay has passed, a single byte should be read from the SPI bus which will indicate the type of payload available on the nRF51822 (see **Message Type Indicator** below for more information on SDEP message types). Keep CS asserted after this byte has been read in case you need to continue reading the reset of the frame.
+Once CS has been asserted and the mandatory 100us delay has passed, a single byte should be read from the SPI bus which will indicate the type of payload available on the nRF51822 (see **Message Type Indicator** below for more information on SDEP message types). Keep CS asserted after this byte has been read in case you need to continue reading the rest of the frame.
 
 If a standard SDEP message type indicators (0x10, 0x20, 0x40 or 0x80) is encountered, keep reading as normal.  There are two other indicators that should be taken into account, though, which indicate a problem on the nRF51822 SPI slave side:
 
