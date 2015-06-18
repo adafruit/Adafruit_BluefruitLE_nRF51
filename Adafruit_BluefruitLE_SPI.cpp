@@ -541,14 +541,15 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 {
-  bool result=true;
   sdepMsgHeader_t* p_header = &p_response->header;
 
   SPI.beginTransaction(bluefruitSPI);
   SPI_CS_ENABLE();
 
+  TimeoutTimer tt(_timeout);
+
   // Bluefruit may not be ready
-  while ( (p_header->msg_type = SPI.transfer(0xff)) == SPI_IGNORED_BYTE )
+  while ( ( (p_header->msg_type = SPI.transfer(0xff)) == SPI_IGNORED_BYTE ) && !tt.expired() )
   {
     // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
     SPI_CS_DISABLE();
@@ -556,35 +557,44 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
     SPI_CS_ENABLE();
   }
 
-  // Look for the header
-  while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR )
-  {
-    p_header->msg_type = SPI.transfer(0xff);
-  }
-  result = bus_read( ((uint8_t*) p_header)+1, sizeof(sdepMsgHeader_t)-1 );
+  bool result=false;
 
-  if (result)
+  // Not a loop, just a way to avoid goto with error handling
+  do
   {
+    if ( tt.expired() ) break;
+
+    // Look for the header
+    while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR )
+    {
+      p_header->msg_type = SPI.transfer(0xff);
+    }
+    bus_read( ((uint8_t*) p_header)+1, sizeof(sdepMsgHeader_t)-1 );
+
     // Command is 16-bit at odd address, may have alignment issue with 32-bit chip
     uint16_t cmd_id = word(p_header->cmd_id_high, p_header->cmd_id_low);
 
-    // Error Message Response or Invalid command
-    if ( p_header->msg_type == SDEP_MSGTYPE_ERROR ||
-        !(cmd_id == SDEP_CMDTYPE_AT_WRAPPER   || cmd_id == SDEP_CMDTYPE_BLE_UARTTX || cmd_id == SDEP_CMDTYPE_BLE_UARTRX) ||
-         (p_header->length > SDEP_MAX_PACKETSIZE))
+    // Error Message Response
+    if ( p_header->msg_type == SDEP_MSGTYPE_ERROR ) break;
+
+    // Invalid command
+    if (!(cmd_id == SDEP_CMDTYPE_AT_WRAPPER ||
+          cmd_id == SDEP_CMDTYPE_BLE_UARTTX ||
+          cmd_id == SDEP_CMDTYPE_BLE_UARTRX) )
     {
-      result = false;
-    }else
-    {
-      int len = bus_read( p_response->payload, (uint32_t) p_header->length);
-      if ( len != p_header->length ) result = false;
+      break;
     }
-  }
+
+    // Invalid length
+    if(p_header->length > SDEP_MAX_PACKETSIZE) break;
+
+    // read payload
+    bus_read( p_response->payload, (uint32_t) p_header->length);
+    result = true;
+  }while(0);
 
   SPI_CS_DISABLE();
   SPI.endTransaction();
 
   return result;
 }
-
-
