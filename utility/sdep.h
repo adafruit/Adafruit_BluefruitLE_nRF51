@@ -56,7 +56,9 @@ extern "C" {
 typedef enum
 {
   SDEP_CMDTYPE_INITIALIZE     = 0xBEEF,   /**< Controls the on board LED(s) */
-  SDEP_CMDTYPE_AT_WRAPPER     = 0x0A00
+  SDEP_CMDTYPE_AT_WRAPPER     = 0x0A00,
+  SDEP_CMDTYPE_BLE_UARTTX     = 0x0A01,
+  SDEP_CMDTYPE_BLE_UARTRX     = 0x0A02,
 } sdepCmdType_t;
 
 /******************************************************************************/

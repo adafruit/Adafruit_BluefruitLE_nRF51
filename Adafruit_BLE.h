@@ -43,6 +43,8 @@
 #include "utility/errors.h"
 #include "utility/TimeoutTimer.h"
 
+#define BLUEFRUIT_MODE_COMMAND   HIGH
+#define BLUEFRUIT_MODE_DATA      LOW
 #define BLE_DEFAULT_TIMEOUT      250
 #define BLE_BUFSIZE              4*SDEP_MAX_PACKETSIZE
 
@@ -52,11 +54,14 @@ class Adafruit_BLE : public Stream
 {
   protected:
     bool     _verbose;
+    uint8_t  _mode;
     uint16_t _timeout;
 
-  public:
-    char buffer[BLE_BUFSIZE+1];
 
+  public:
+    // Constructor
+    Adafruit_BLE(void);
+    char buffer[BLE_BUFSIZE+1];
 
     // Auto print out TX & RX data to normal Serial
     void verbose(bool enable) { _verbose = enable; }
@@ -67,24 +72,32 @@ class Adafruit_BLE : public Stream
     void info(void);
     bool echo(bool enable);
     bool waitForOK(void);
-
     bool isConnected(void);
 
-    bool sendCommandCheckOK(const __FlashStringHelper *cmd);
-    bool sendCommandWithIntReply(const __FlashStringHelper *cmd, uint32_t *reply);
+    virtual bool setMode(uint8_t mode) = 0;
 
-    // read one line from stream into buffer
-    size_t readln( char *buffer, size_t length);
-    size_t readln( uint8_t *buffer, size_t length)
+    bool sendCommandCheckOK(const __FlashStringHelper *cmd);
+    bool sendCommandCheckOK(const char cmd[]);
+
+    bool sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply);
+    bool sendCommandWithIntReply(const char cmd[], int32_t *reply);
+
+    // Read one line of response into internal buffer
+    uint16_t readline(uint16_t timeout, boolean multiline = false);
+    uint16_t readline(void)
     {
-      return readln( (char *) buffer, length );
+      return readline(_timeout, false);
     }
 
-    void readln(void);
+    // Read one line of response into provided buffer
+    uint16_t readline(char    * buf, uint16_t bufsize);
+    uint16_t readline(uint8_t * buf, uint16_t bufsize)
+    {
+      return readline( (char*) buf, bufsize);
+    }
 
-    uint16_t readline(uint16_t timeout, boolean multiline = false);
-
-    int32_t readln_parseInt(void);
+    // read one line and convert the string to integer number
+    int32_t readline_parseInt(void);
 };
 
 //struct GattServer_t

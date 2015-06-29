@@ -1,49 +1,45 @@
-/*!
-    @file     bleuart_datamode.ino
-    @author   hathach, ktown (Adafruit Industries)
-    
-    This demo will show you how to initialize the module in COMMAND mode then
-    send data in DATA mode, uses the MODE pin
-*/
+/*********************************************************************
+ This is an example for our nRF51822 based Bluefruit LE modules
 
-#include <string.h>
+ Pick one up today in the adafruit shop!
+
+ Adafruit invests time and resources providing this open source code, 
+ please support Adafruit and open-source hardware by purchasing 
+ products from Adafruit!
+ 
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
 #include <Arduino.h>
 #include <SPI.h>
-#include <SoftwareSerial.h>
+#if not defined (_VARIANT_ARDUINO_DUE_X_)
+  #include <SoftwareSerial.h>
+#endif
 
 #include "Adafruit_BLE.h"
-#include "Adafruit_BLE_HWSPI.h"
+#include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 
-// If you are using Software Serial....
-// The following macros declare the pins used for SW serial, you should
-// use these pins if you are connecting the UART Friend to an UNO
-#define BLUEFRUIT_SWUART_RXD_PIN        9    // Required for software serial!
-#define BLUEFRUIT_SWUART_TXD_PIN        10   // Required for software serial!
-#define BLUEFRUIT_UART_CTS_PIN          11   // Required for software serial!
-#define BLUEFRUIT_UART_RTS_PIN          -1   // Optional, set to -1 if unused
+#include "BluefruitConfig.h"
 
-// If you are using Hardware Serial
-// The following macros declare the Serial port you are using. Uncomment this
-// line if you are connecting the BLE to Leonardo/Micro or Flora
-//#define BLUEFRUIT_HWSERIAL_NAME           Serial1
-
-// Other recommended pins!
-#define BLUEFRUIT_UART_MODE_PIN         12   // Optional but recommended, set to -1 if unused
-
-// Sketch Settings
-#define BUFSIZE                         128   // Read buffer size for incoming data
-#define VERBOSE_MODE                    true  // Enables full debug output is 'true'
-
-/* Create the bluefruit object, either software serial... */
-
+// Create the bluefruit object, either software serial...uncomment these lines
+/*
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
 
 Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
                       BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
+*/
 
 /* ...or hardware serial, which does not need the RTS/CTS pins. Uncomment this line */
-//Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
+// Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
+
+/* ...hardware SPI, using SCK/MOSI/MISO hardware SPI pins and then user selected CS/IRQ/RST */
+Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+
+/* ...software SPI, using SCK/MOSI/MISO user-defined SPI pins and then user selected CS/IRQ/RST */
+//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 
 // A small helper
@@ -51,7 +47,6 @@ void error(const __FlashStringHelper*err) {
   Serial.println(err);
   while (1);
 }
-
 
 /**************************************************************************/
 /*!
@@ -61,12 +56,16 @@ void error(const __FlashStringHelper*err) {
 /**************************************************************************/
 void setup(void)
 {
+  while (!Serial);  // required for Flora & Micro
+  delay(500);
+  
   Serial.begin(115200);
   Serial.println(F("Adafruit Bluefruit Command <-> Data Mode Example"));
   Serial.println(F("------------------------------------------------"));
 
   /* Initialise the module */
   Serial.print(F("Initialising the Bluefruit LE module: "));
+
   if ( !ble.begin(VERBOSE_MODE) )
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
@@ -74,7 +73,7 @@ void setup(void)
   Serial.println( F("OK!") );
 
   /* Perform a factory reset to make sure everything is in a known state */
-  Serial.print(F("Performing a factory reset: "));
+  Serial.println(F("Performing a factory reset: "));
   if (! ble.factoryReset() ){
        error(F("Couldn't factory reset"));
   }
@@ -100,15 +99,8 @@ void setup(void)
   Serial.println(F("*****************"));
 
   // Set module to DATA mode
-  if (BLUEFRUIT_UART_MODE_PIN >= 0) {
-    Serial.println( F("Switching to DATA mode using the MODE pin!") );
-    ble.setModePin(BLUEFRUIT_MODE_DATA);
-  } else {
-    Serial.println( F("Switching to DATA mode using +++!") );
-    ble.println("+++");
-    delay(100);
-    ble.waitForOK();
-  }
+  Serial.println( F("Switching to DATA mode!") );
+  ble.setMode(BLUEFRUIT_MODE_DATA);
   
   Serial.println(F("*****************"));
 }

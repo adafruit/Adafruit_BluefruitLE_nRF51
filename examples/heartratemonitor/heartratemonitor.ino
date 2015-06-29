@@ -1,67 +1,63 @@
-/**************************************************************************/
-/*!
-    @file     heartratemonitor.ino
-    @author   hathach, ktown (Adafruit Industries)
+/*********************************************************************
+ This is an example for our nRF51822 based Bluefruit LE modules
 
-    This demo turns the Bluefruit into a 'Heart Rate Monitor' type of BLE
-    device - it just sends fake data, it cannot actually see into your heart
+ Pick one up today in the adafruit shop!
 
-    Please note the long strings of data sent mean the *RTS* pin is required
-    to slow down data sent to the Bluefruit LE!
+ Adafruit invests time and resources providing this open source code, 
+ please support Adafruit and open-source hardware by purchasing 
+ products from Adafruit!
+ 
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
+/*
+    Please note the long strings of data sent mean the *RTS* pin is
+    required with UART to slow down data sent to the Bluefruit LE!
 */
-/**************************************************************************/
-#include <string.h>
+
 #include <Arduino.h>
 #include <SPI.h>
-#include <SoftwareSerial.h>
+#if not defined (_VARIANT_ARDUINO_DUE_X_)
+  #include <SoftwareSerial.h>
+#endif
 
 #include "Adafruit_BLE.h"
-#include "Adafruit_BLE_HWSPI.h"
+#include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 
-// NOTE: This demo sends very long strings to the Bluefruit which can overwhelm it, 
-// so use the RTS pin, this is pretty much required!
+#include "BluefruitConfig.h"
 
-// If you are using Software Serial....
-// The following macros declare the pins used for SW serial, you should
-// use these pins if you are connecting the UART Friend to an UNO
-#define BLUEFRUIT_SWUART_RXD_PIN        9    // Required for software serial!
-#define BLUEFRUIT_SWUART_TXD_PIN        10   // Required for software serial!
-#define BLUEFRUIT_UART_CTS_PIN          11   // Required for software serial!
-#define BLUEFRUIT_UART_RTS_PIN          8    // Strongly recommended with this demo!
-
-// If you are using Hardware Serial
-// The following macros declare the Serial port you are using. Uncomment this
-// line if you are connecting the BLE to Leonardo/Micro or Flora
-//#define BLUEFRUIT_HWSERIAL_NAME           Serial1
-
-// Other recommended pins!
-#define BLUEFRUIT_UART_MODE_PIN         -1   // Optional but recommended, set to -1 if unused
-
-// Sketch Settings
-#define VERBOSE_MODE                    true  // Enables full debug output is 'true'
-
-/* Create the bluefruit object, either software serial... */
+// Create the bluefruit object, either software serial...uncomment these lines
+/*
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
 
 Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
                       BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
+*/
 
-/* ...or hardware serial, requires only the RTS pin to keep the Bluefruit happy. Uncomment this line */
-//Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN, BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
+/* ...or hardware serial, which does not need the RTS/CTS pins. Uncomment this line */
+// Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
+
+/* ...hardware SPI, using SCK/MOSI/MISO hardware SPI pins and then user selected CS/IRQ/RST */
+Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+
+/* ...software SPI, using SCK/MOSI/MISO user-defined SPI pins and then user selected CS/IRQ/RST */
+//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 
 // A small helper
-void error(const __FlashStringHelper *err) {
+void error(const __FlashStringHelper*err) {
   Serial.println(err);
   while (1);
 }
 
 /* The service information */
 
-uint32_t hrmServiceId;
-uint32_t hrmMeasureCharId;
-uint32_t hrmLocationCharId;
+int32_t hrmServiceId;
+int32_t hrmMeasureCharId;
+int32_t hrmLocationCharId;
 /**************************************************************************/
 /*!
     @brief  Sets up the HW an the BLE module (this function is called
@@ -70,7 +66,7 @@ uint32_t hrmLocationCharId;
 /**************************************************************************/
 void setup(void)
 {
-  while (!Serial); 
+  while (!Serial); // required for Flora & Micro
   delay(500);
   
   boolean success;
@@ -82,8 +78,9 @@ void setup(void)
   randomSeed(micros());
   
   /* Initialise the module */
-  Serial.println(F("Initialising the Bluefruit LE module: "));
-  if ( !ble.begin(VERBOSE_MODE) )  // initialize in verbose mode
+  Serial.print(F("Initialising the Bluefruit LE module: "));
+
+  if ( !ble.begin(VERBOSE_MODE) )
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
   }
@@ -104,7 +101,7 @@ void setup(void)
 
   // this line is particularly required for Flora, but is a good idea 
   // anyways for the super long lines ahead!
-  ble.setInterCharWriteDelay(5); // 5 ms
+  // ble.setInterCharWriteDelay(5); // 5 ms
 
   /* Change the device name to make it easier to find */
   Serial.println(F("Setting device name to 'Bluefruit HRM': "));

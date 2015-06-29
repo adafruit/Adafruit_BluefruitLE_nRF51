@@ -57,6 +57,7 @@ class Adafruit_FIFO
 
     void clear(void);
     bool peek(void* buffer);
+    bool peekAt(uint16_t position, void * p_buffer);
 
     bool write(void const* item);
     uint16_t write_n(void const * data, uint16_t n);
@@ -64,9 +65,10 @@ class Adafruit_FIFO
     bool read(void* buffer);
     uint16_t read_n (void * buffer, uint16_t n);
 
-    inline bool     empty(void) { return m_count == 0; }
-    inline bool     full(void)  { return m_count == m_depth; }
-    inline uint16_t count(void) { return m_count; }
+    inline bool     empty(void)     { return m_count == 0; }
+    inline bool     full(void)      { return m_count == m_depth; }
+    inline uint16_t count(void)     { return m_count; }
+    inline uint16_t remaining(void) { return m_depth - m_count; }
 };
 
 #endif /* _Adafruit_FIFO_H_ */

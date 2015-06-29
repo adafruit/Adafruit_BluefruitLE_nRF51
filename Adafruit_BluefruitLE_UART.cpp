@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_BLE_SWUART.cpp
+    @file     Adafruit_BluefruitLE_UART.cpp
     @author   hathach
 
     @section LICENSE
@@ -52,9 +52,6 @@
 Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
   _cts_pin(cts_pin), _rts_pin(rts_pin), _mode_pin(mode_pin)
 {
-  _verbose = false;
-  _timeout = BLE_DEFAULT_TIMEOUT;
-
 #if not defined (_VARIANT_ARDUINO_DUE_X_)
   ss = 0;
 #endif
@@ -68,8 +65,6 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_
 Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
   _cts_pin(cts_pin), _rts_pin(rts_pin), _mode_pin(mode_pin)
 {
-  _verbose = false;
-  _timeout = BLE_DEFAULT_TIMEOUT;
   hs = 0;
   ss = &port;
   mySerial = &port;
@@ -158,11 +153,40 @@ void Adafruit_BluefruitLE_UART::end(void)
     @return false if Mode Pin is not previously enabled, otherwise true.
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_UART::setModePin(uint8_t mode)
+bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
 {
-  if ( _mode_pin < 0 ) return false;
-  digitalWrite(_mode_pin, mode);
-  return true;
+  // invalid mode
+  if ( !(new_mode == BLUEFRUIT_MODE_COMMAND || new_mode == BLUEFRUIT_MODE_DATA) ) return false;
+
+  bool isOK;
+
+  if ( _mode_pin >= 0 )
+  {
+    // Switch mode using hardware pin
+    digitalWrite(_mode_pin, new_mode);
+    delay(1);
+    isOK = true;
+  }else
+  {
+    // Switch mode using +++ command, at worst switch 2 times
+    int32_t updated_mode;
+
+    isOK = sendCommandWithIntReply(F("+++"), &updated_mode);
+
+    if ( isOK )
+    {
+      // Ahhh, we are already in the wanted mode before sending +++
+      // Switch again. This is required to make sure it is always correct
+      if ( updated_mode != new_mode )
+      {
+        isOK = sendCommandWithIntReply(F("+++"), &updated_mode);
+        // Still does not match -> give up
+        if ( updated_mode != new_mode ) return false;
+      }
+    }
+  }
+
+  return isOK;
 }
 
 /******************************************************************************/
@@ -221,8 +245,6 @@ int Adafruit_BluefruitLE_UART::available(void)
 int Adafruit_BluefruitLE_UART::read(void)
 {
   int c = mySerial->read();
-
-  if (_verbose && c > 0) Serial.print((char)c);
   return c;
 }
 

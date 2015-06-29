@@ -1,15 +1,17 @@
-/**************************************************************************/
-/*!
-    @file     atcommand.ino
-    @author   hathach
+/*********************************************************************
+ This is an example for our nRF51822 based Bluefruit LE modules
 
-This example shows how to connect to your Adafruit Bluefruit LE (nrf51822) and do
-some basic AT commands to check connectivity, print out the version strings and let 
-you send your own AT commands!
+ Pick one up today in the adafruit shop!
 
-*/
-/**************************************************************************/
-#include <string.h>
+ Adafruit invests time and resources providing this open source code, 
+ please support Adafruit and open-source hardware by purchasing 
+ products from Adafruit!
+ 
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
 #include <Arduino.h>
 #include <SPI.h>
 #if not defined (_VARIANT_ARDUINO_DUE_X_)
@@ -17,44 +19,30 @@ you send your own AT commands!
 #endif
 
 #include "Adafruit_BLE.h"
-#include "Adafruit_BLE_HWSPI.h"
+#include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 
-// If you are using Software Serial....
-// The following macros declare the pins used for SW serial, you should
-// use these pins if you are connecting the UART Friend to an UNO
-#define BLUEFRUIT_SWUART_RXD_PIN        9    // Required for software serial!
-#define BLUEFRUIT_SWUART_TXD_PIN        10   // Required for software serial!
-#define BLUEFRUIT_UART_CTS_PIN          11   // Required for software serial!
-#define BLUEFRUIT_UART_RTS_PIN          -1   // Optional, set to -1 if unused
+#include "BluefruitConfig.h"
 
-// If you are using Hardware Serial
-// The following macros declare the Serial port you are using. Uncomment this
-// line if you are connecting the BLE to Leonardo/Micro or Flora
-//#define BLUEFRUIT_HWSERIAL_NAME           Serial1
-
-// Other recommended pins!
-#define BLUEFRUIT_UART_MODE_PIN         12   // Optional but recommended, set to -1 if unused
-
-// Sketch Settings
-#define BUFSIZE                         128   // Read buffer size for incoming data
-#define VERBOSE_MODE                    true  // Enables full debug output is 'true'
-
-/* Create the bluefruit object, either software serial... */
-
+// Create the bluefruit object, either software serial...uncomment these lines
+/*
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
 
 Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
                       BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
+*/
 
 /* ...or hardware serial, which does not need the RTS/CTS pins. Uncomment this line */
-//Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
+// Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
 
-/**************************************************************************/
-/*!
-    A small helper for error messages
-*/
-/**************************************************************************/
+/* ...hardware SPI, using SCK/MOSI/MISO hardware SPI pins and then user selected CS/IRQ/RST */
+Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+
+/* ...software SPI, using SCK/MOSI/MISO user-defined SPI pins and then user selected CS/IRQ/RST */
+// Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+
+
+// A small helper
 void error(const __FlashStringHelper*err) {
   Serial.println(err);
   while (1);
@@ -76,14 +64,14 @@ void setup(void)
   Serial.println(F("-------------------------------------"));
 
   /* Initialise the module */
-  Serial.println(F("Initialising the Bluefruit LE module: "));
+  Serial.print(F("Initialising the Bluefruit LE module: "));
 
   if ( !ble.begin(VERBOSE_MODE) )
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
   }
   Serial.println( F("OK!") );
-  
+
   /* Perform a factory reset to make sure everything is in a known state */
   Serial.println(F("Performing a factory reset: "));
   if (! ble.factoryReset() ){
