@@ -59,6 +59,23 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, 
   m_irq_pin = irqPin;
   m_rst_pin = rstPin;
 
+  m_miso_pin = m_mosi_pin = m_sck_pin = -1;
+
+  m_tx_count = 0;
+}
+
+// software SPI version!
+Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin, int8_t mosiPin, 
+						   int8_t csPin, int8_t irqPin, int8_t rstPin) :
+    m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
+{
+  m_sck_pin = clkPin;
+  m_mosi_pin = mosiPin;
+  m_miso_pin = misoPin;
+  m_cs_pin  = csPin;
+  m_irq_pin = irqPin;
+  m_rst_pin = rstPin;
+
   m_tx_count = 0;
 }
 
@@ -82,7 +99,14 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v)
   digitalWrite(m_cs_pin, HIGH);
   pinMode(m_cs_pin, OUTPUT);
 
-  SPI.begin();
+  if (m_sck_pin == -1) {
+    // hardware SPI
+    SPI.begin();
+  } else {
+    pinMode(m_sck_pin, OUTPUT);
+    pinMode(m_miso_pin, INPUT);
+    pinMode(m_mosi_pin, OUTPUT);
+  }
 
   bool isOK;
 
@@ -116,7 +140,9 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v)
 /******************************************************************************/
 void Adafruit_BluefruitLE_SPI::end(void)
 {
-  SPI.end();
+  if (m_sck_pin == -1) {
+    SPI.end();
+  }
 }
 
 /******************************************************************************/
@@ -191,13 +217,15 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, 
   if ( buf != NULL && count > 0) memcpy(msgCmd.payload, buf, count);
 
   // Starting SPI transaction
-  SPI.beginTransaction(bluefruitSPI);
+  if (m_sck_pin == -1)
+    SPI.beginTransaction(bluefruitSPI);
+
   SPI_CS_ENABLE();
 
   TimeoutTimer tt(_timeout);
 
   // Bluefruit may not be ready
-  while ( ( SPI.transfer(msgCmd.header.msg_type) == SPI_IGNORED_BYTE ) && !tt.expired() )
+  while ( ( spixfer(msgCmd.header.msg_type) == SPI_IGNORED_BYTE ) && !tt.expired() )
   {
     // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
     SPI_CS_DISABLE();
@@ -209,11 +237,12 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, 
   if ( result )
   {
     // transfer the rest of the data
-    SPI.transfer((void*) (((uint8_t*)&msgCmd) +1), sizeof(sdepMsgHeader_t)+count-1);
+    spixfer((void*) (((uint8_t*)&msgCmd) +1), sizeof(sdepMsgHeader_t)+count-1);
   }
 
   SPI_CS_DISABLE();
-  SPI.endTransaction();
+  if (m_sck_pin == -1)
+    SPI.endTransaction();
 
   return result;
 }
@@ -482,13 +511,14 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 {
   sdepMsgHeader_t* p_header = &p_response->header;
 
-  SPI.beginTransaction(bluefruitSPI);
+  if (m_sck_pin == -1)
+    SPI.beginTransaction(bluefruitSPI);
   SPI_CS_ENABLE();
 
   TimeoutTimer tt(_timeout);
 
   // Bluefruit may not be ready
-  while ( ( (p_header->msg_type = SPI.transfer(0xff)) == SPI_IGNORED_BYTE ) && !tt.expired() )
+  while ( ( (p_header->msg_type = spixfer(0xff)) == SPI_IGNORED_BYTE ) && !tt.expired() )
   {
     // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
     SPI_CS_DISABLE();
@@ -506,10 +536,10 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
     // Look for the header
     while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR )
     {
-      p_header->msg_type = SPI.transfer(0xff);
+      p_header->msg_type = spixfer(0xff);
     }
     memset( (&p_header->msg_type)+1, 0xff, sizeof(sdepMsgHeader_t) - 1);
-    SPI.transfer((&p_header->msg_type)+1, sizeof(sdepMsgHeader_t) - 1);
+    spixfer((&p_header->msg_type)+1, sizeof(sdepMsgHeader_t) - 1);
 
     // Command is 16-bit at odd address, may have alignment issue with 32-bit chip
     uint16_t cmd_id = word(p_header->cmd_id_high, p_header->cmd_id_low);
@@ -530,13 +560,41 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 
     // read payload
     memset(p_response->payload, 0xff, p_header->length);
-    SPI.transfer(p_response->payload, p_header->length);
+    spixfer(p_response->payload, p_header->length);
 
     result = true;
   }while(0);
 
   SPI_CS_DISABLE();
-  SPI.endTransaction();
+  if (m_sck_pin == -1)
+    SPI.endTransaction();
 
   return result;
+}
+
+void Adafruit_BluefruitLE_SPI::spixfer(void *buff, size_t len) {
+  uint8_t *p = (uint8_t *)buff;
+
+  while (len--) {
+    p[0] = spixfer(p[0]);
+    p++;
+  }
+}
+
+uint8_t Adafruit_BluefruitLE_SPI::spixfer(uint8_t x) {
+  if (m_sck_pin == -1) 
+    return SPI.transfer(x);
+  
+  // software spi
+  //Serial.println("Software SPI");
+  uint8_t reply = 0;
+  for (int i=7; i>=0; i--) {
+    reply <<= 1;
+    digitalWrite(m_sck_pin, LOW);
+    digitalWrite(m_mosi_pin, x & (1<<i));
+    digitalWrite(m_sck_pin, HIGH);
+    if (digitalRead(m_miso_pin)) 
+      reply |= 1;
+  }
+  return reply;
 }

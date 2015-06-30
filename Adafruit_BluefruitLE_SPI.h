@@ -58,6 +58,11 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     int8_t          m_irq_pin;
     int8_t          m_rst_pin;
 
+    // software SPI pins
+    int8_t          m_sck_pin;
+    int8_t          m_mosi_pin;
+    int8_t          m_miso_pin;
+
     // TX
     uint8_t         m_tx_buffer[SDEP_MAX_PACKETSIZE];
     uint8_t         m_tx_count;
@@ -75,9 +80,13 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     void    simulateSwitchMode(void);
 //    bool    handleSwitchCmdInDataMode(uint8_t ch);
 
+    uint8_t spixfer(uint8_t x);
+    void spixfer(void *x, size_t len);
+
   public:
     // Constructor
     Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, int8_t rstPin = -1);
+    Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin, int8_t mosiPin, int8_t csPin, int8_t irqPin, int8_t rstPin);
 
     // HW initialisation
     bool begin(boolean v);
