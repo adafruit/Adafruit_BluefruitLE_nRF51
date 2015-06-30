@@ -37,7 +37,7 @@
 #include <Arduino.h>
 #include <stdlib.h>
 
-SPISettings bluefruitSPI(4000000, MSBFIRST, SPI_MODE0);
+SPISettings bluefruitSPI(4000, MSBFIRST, SPI_MODE0);
 
 
 /******************************************************************************/
@@ -70,8 +70,8 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin
     m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
 {
   m_sck_pin = clkPin;
-  m_mosi_pin = mosiPin;
   m_miso_pin = misoPin;
+  m_mosi_pin = mosiPin;
   m_cs_pin  = csPin;
   m_irq_pin = irqPin;
   m_rst_pin = rstPin;
@@ -104,6 +104,7 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v)
     SPI.begin();
   } else {
     pinMode(m_sck_pin, OUTPUT);
+    digitalWrite(m_sck_pin, LOW);
     pinMode(m_miso_pin, INPUT);
     pinMode(m_mosi_pin, OUTPUT);
   }
@@ -582,11 +583,13 @@ void Adafruit_BluefruitLE_SPI::spixfer(void *buff, size_t len) {
 }
 
 uint8_t Adafruit_BluefruitLE_SPI::spixfer(uint8_t x) {
-  if (m_sck_pin == -1) 
-    return SPI.transfer(x);
-  
+  if (m_sck_pin == -1) {
+    uint8_t reply = SPI.transfer(x);
+    //Serial.println(reply, HEX);
+    return reply;
+  }
+
   // software spi
-  //Serial.println("Software SPI");
   uint8_t reply = 0;
   for (int i=7; i>=0; i--) {
     reply <<= 1;
@@ -596,5 +599,7 @@ uint8_t Adafruit_BluefruitLE_SPI::spixfer(uint8_t x) {
     if (digitalRead(m_miso_pin)) 
       reply |= 1;
   }
+  digitalWrite(m_sck_pin, LOW);
+  //Serial.println(reply, HEX);
   return reply;
 }
