@@ -41,6 +41,6 @@
 // SCK, MISO and MOSI should be connected to the HW SPI pins on the Uno, etc.
 // This should be used with nRF51822 based Bluefruit LE modules that use SPI.
 // ----------------------------------------------------------------------------------------------
-#define BLUEFRUIT_SPI_CS               10
-#define BLUEFRUIT_SPI_IRQ              9
-#define BLUEFRUIT_SPI_RST              8    // Optional but recommended, set to -1 if unused
+#define BLUEFRUIT_SPI_CS               8
+#define BLUEFRUIT_SPI_IRQ              7
+#define BLUEFRUIT_SPI_RST              6    // Optional but recommended, set to -1 if unused

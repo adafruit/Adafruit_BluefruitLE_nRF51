@@ -18,7 +18,7 @@ There are two variants of the nRF51 Bluefruit LE modules.  One uses SPI to commu
 
 On both boards, power should be connected as shown below:
 
-Bluefruit LE | Arduino Uno 
+Bluefruit LE | Arduino Uno
 -------------|------------
 VIN          | 5V (assuming a 5V board)
 GND          | GND
@@ -27,7 +27,7 @@ GND          | GND
 
 If you are using a UART Bluefruit LE board, your Arduino should be connected to the Bluefruit LE UART module using the following pinout:
 
-Bluefruit LE UART | Arduino Uno 
+Bluefruit LE UART | Arduino Uno
 ------------------|------------
 RTS               | 8
 RXI               | 9
@@ -36,7 +36,7 @@ CTS               | 11
 
 Optional Pins
 
-Bluefruit LE UART | Arduino Uno 
+Bluefruit LE UART | Arduino Uno
 ------------------|------------
 MODE              | 12
 
@@ -44,16 +44,16 @@ MODE              | 12
 
 If you are using an SPI Bluefruit LE board, your Arduino should be connected to the Bluefruit LE SPI module using the following pinout:
 
-Bluefruit LE SPI | Arduino Uno 
+Bluefruit LE SPI | Arduino Uno
 -----------------|------------
 SCLK             | 13
 MISO             | 12
 MOSI             | 11
-CS               | 10
-IRQ              | 9
+CS               | 8
+IRQ              | 7
 
 Optional Pins (enable these in the sample sketches)
 
-Bluefruit LE SPI | Arduino Uno 
+Bluefruit LE SPI | Arduino Uno
 -----------------|------------
-RESET            | 8
+RESET            | 6
