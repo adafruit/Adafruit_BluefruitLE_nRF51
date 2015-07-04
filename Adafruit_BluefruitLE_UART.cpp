@@ -38,15 +38,6 @@
 /******************************************************************************/
 /*!
     @brief Instantiates a new instance of the Adafruit_BluefruitLE_UART class
-
-    @param[in]  csPin
-                The location of the CS pin for the SPI interface
-    @param[in]  irqPin
-                The location of the HW IRQ pin (pin 2 or pin 3 on the Arduino
-                Uno). This must be a HW interrupt pin!
-    @param[in]  cts_pin
-    @param[in]  rts_pin
-    @param[in]  mode_pin
 */
 /******************************************************************************/
 Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
@@ -61,7 +52,12 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_
 }
 
 #if not defined (_VARIANT_ARDUINO_DUE_X_)
-
+/******************************************************************************/
+/*!
+    @brief Instantiates a new instance of the Adafruit_BluefruitLE_UART class
+           using software serial
+*/
+/******************************************************************************/
 Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
   _cts_pin(cts_pin), _rts_pin(rts_pin), _mode_pin(mode_pin)
 {
@@ -69,7 +65,6 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_
   ss = &port;
   mySerial = &port;
 }
-
 #endif
 
 
@@ -144,13 +139,14 @@ void Adafruit_BluefruitLE_UART::end(void)
 
 /******************************************************************************/
 /*!
-    @brief  Set the hardware Mode Pin if it is enabled
+    @brief  Set the hardware MODE Pin if it is enabled, or performs a SW based
+            mode switch if no MODE pin is available (SPI Friend, etc.)
 
     @param[in]  mode
-                The mode to change, either is BLUEFRUIT_MODE_COMMAND or
+                The mode to change to, either BLUEFRUIT_MODE_COMMAND or
                 BLUEFRUIT_MODE_DATA
 
-    @return false if Mode Pin is not previously enabled, otherwise true.
+    @return     true if the mode switch was successful, otherwise false
 */
 /******************************************************************************/
 bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
@@ -166,7 +162,7 @@ bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
     digitalWrite(_mode_pin, new_mode);
     delay(1);
     isOK = true;
-  }else
+  } else
   {
     // Switch mode using +++ command, at worst switch 2 times
     int32_t updated_mode;
@@ -191,8 +187,9 @@ bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
 
 /******************************************************************************/
 /*!
-    @brief Print API, either buffered data internally or send to bus
-    if possible. An \r, \n is command terminator will force the packet to be sent
+    @brief  Print API. Either buffer the data internally or send it to bus
+            if possible. \r and \n are command terminators and will force the
+            packet to be sent to the Bluefruit LE module.
 
     @param[in]  c
                 Character to send

@@ -64,17 +64,35 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, 
   m_tx_count = 0;
 }
 
-// software SPI version!
-Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin, int8_t mosiPin, 
-						   int8_t csPin, int8_t irqPin, int8_t rstPin) :
+/******************************************************************************/
+/*!
+    @brief Instantiates a new instance of the Adafruit_BluefruitLE_SPI class
+           using software SPI
+
+    @param[in]  clkPin
+                The location of the SCK/clock pin for the SPI interface
+    @param[in]  misoPin
+                The location of the MISO pin for the SPI interface
+    @param[in]  mosiPin
+                The location of the MOSI pin for the SPI interface
+    @param[in]  csPin
+                The location of the CS pin for the SPI interface
+    @param[in]  irqPin
+                The location of the HW IRQ pin (pin 2 or pin 3 on the Arduino
+                Uno). This must be a HW interrupt pin!
+    @param[in]  rstPin
+*/
+/******************************************************************************/
+Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin,
+    int8_t mosiPin, int8_t csPin, int8_t irqPin, int8_t rstPin) :
     m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
 {
-  m_sck_pin = clkPin;
+  m_sck_pin  = clkPin;
   m_miso_pin = misoPin;
   m_mosi_pin = mosiPin;
-  m_cs_pin  = csPin;
-  m_irq_pin = irqPin;
-  m_rst_pin = rstPin;
+  m_cs_pin   = csPin;
+  m_irq_pin  = irqPin;
+  m_rst_pin  = rstPin;
 
   m_tx_count = 0;
 }
@@ -248,15 +266,11 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, 
   return result;
 }
 
-//bool Adafruit_BluefruitLE_SPI::handleSwitchCmdInDataMode(uint8_t ch)
-//{
-//  static char cmdBuf[4] = { 0 };
-//}
-
 /******************************************************************************/
 /*!
-    @brief Print API, either buffered data internally or send SDEP packet to bus
-    if possible. An \r, \n is command terminator will force the packet to be sent
+    @brief  Print API. Either buffer the data internally or send it to bus
+            if possible. \r and \n are command terminators and will force the
+            packet to be sent to the Bluefruit LE module.
 
     @param[in]  c
                 Character to send
@@ -308,6 +322,11 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
   return 1;
 }
 
+/******************************************************************************/
+/*!
+
+*/
+/******************************************************************************/
 size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
 {
   if ( _mode == BLUEFRUIT_MODE_DATA )
@@ -573,6 +592,11 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
   return result;
 }
 
+/******************************************************************************/
+/*!
+
+*/
+/******************************************************************************/
 void Adafruit_BluefruitLE_SPI::spixfer(void *buff, size_t len) {
   uint8_t *p = (uint8_t *)buff;
 
@@ -582,6 +606,11 @@ void Adafruit_BluefruitLE_SPI::spixfer(void *buff, size_t len) {
   }
 }
 
+/******************************************************************************/
+/*!
+
+*/
+/******************************************************************************/
 uint8_t Adafruit_BluefruitLE_SPI::spixfer(uint8_t x) {
   if (m_sck_pin == -1) {
     uint8_t reply = SPI.transfer(x);
@@ -596,7 +625,7 @@ uint8_t Adafruit_BluefruitLE_SPI::spixfer(uint8_t x) {
     digitalWrite(m_sck_pin, LOW);
     digitalWrite(m_mosi_pin, x & (1<<i));
     digitalWrite(m_sck_pin, HIGH);
-    if (digitalRead(m_miso_pin)) 
+    if (digitalRead(m_miso_pin))
       reply |= 1;
   }
   digitalWrite(m_sck_pin, LOW);
