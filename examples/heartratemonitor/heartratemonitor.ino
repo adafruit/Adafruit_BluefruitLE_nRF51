@@ -3,10 +3,10 @@
 
  Pick one up today in the adafruit shop!
 
- Adafruit invests time and resources providing this open source code, 
- please support Adafruit and open-source hardware by purchasing 
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
  products from Adafruit!
- 
+
  MIT license, check LICENSE for more information
  All text above, and the splash screen below must be included in
  any redistribution
@@ -44,7 +44,9 @@ Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 /* ...software SPI, using SCK/MOSI/MISO user-defined SPI pins and then user selected CS/IRQ/RST */
-//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_SCK, BLUEFRUIT_SPI_MISO,
+//                             BLUEFRUIT_SPI_MOSI, BLUEFRUIT_SPI_CS,
+//                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 
 // A small helper
@@ -68,15 +70,15 @@ void setup(void)
 {
   while (!Serial); // required for Flora & Micro
   delay(500);
-  
+
   boolean success;
-   
+
   Serial.begin(115200);
   Serial.println(F("Adafruit Bluefruit Heart Rate Monitor (HRM) Example"));
   Serial.println(F("---------------------------------------------------"));
 
   randomSeed(micros());
-  
+
   /* Initialise the module */
   Serial.print(F("Initialising the Bluefruit LE module: "));
 
@@ -99,14 +101,14 @@ void setup(void)
   /* Print Bluefruit information */
   ble.info();
 
-  // this line is particularly required for Flora, but is a good idea 
+  // this line is particularly required for Flora, but is a good idea
   // anyways for the super long lines ahead!
   // ble.setInterCharWriteDelay(5); // 5 ms
 
   /* Change the device name to make it easier to find */
   Serial.println(F("Setting device name to 'Bluefruit HRM': "));
-  
-  if (! ble.sendCommandCheckOK(F("AT+GAPDEVNAME=Bluefruit HRM")) ) { 
+
+  if (! ble.sendCommandCheckOK(F("AT+GAPDEVNAME=Bluefruit HRM")) ) {
     error(F("Could not set device name?"));
   }
 
@@ -125,7 +127,7 @@ void setup(void)
     if (! success) {
     error(F("Could not add HRM characteristic"));
   }
-  
+
   /* Add the Body Sensor Location characteristic */
   /* Chars ID for Body should be 2 */
   Serial.println(F("Adding the Body Sensor Location characteristic (UUID = 0x2A38): "));
@@ -137,7 +139,7 @@ void setup(void)
   /* Add the Heart Rate Service to the advertising data (needed for Nordic apps to detect the service) */
   Serial.print(F("Adding Heart Rate Service UUID to the advertising payload: "));
   ble.sendCommandCheckOK( F("AT+GAPSETADVDATA=02-01-06-05-02-0d-18-0a-18") );
- 
+
   /* Reset the device for the new service setting changes to take effect */
   Serial.print(F("Performing a SW reset (service changes require a reset): "));
   ble.reset();

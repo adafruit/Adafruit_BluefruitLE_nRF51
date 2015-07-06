@@ -3,10 +3,10 @@
 
  Pick one up today in the adafruit shop!
 
- Adafruit invests time and resources providing this open source code, 
- please support Adafruit and open-source hardware by purchasing 
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
  products from Adafruit!
- 
+
  MIT license, check LICENSE for more information
  All text above, and the splash screen below must be included in
  any redistribution
@@ -60,7 +60,9 @@ Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 /* ...software SPI, using SCK/MOSI/MISO user-defined SPI pins and then user selected CS/IRQ/RST */
-//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_SCK, BLUEFRUIT_SPI_MISO,
+//                             BLUEFRUIT_SPI_MOSI, BLUEFRUIT_SPI_CS,
+//                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 
 // A small helper
@@ -98,7 +100,7 @@ void setup(void)
   if (! ble.factoryReset() ){
        error(F("Couldn't factory reset"));
   }
-  
+
   /* Disable command echo from Bluefruit */
   ble.echo(false);
 

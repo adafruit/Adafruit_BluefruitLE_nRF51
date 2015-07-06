@@ -3,10 +3,10 @@
 
  Pick one up today in the adafruit shop!
 
- Adafruit invests time and resources providing this open source code, 
- please support Adafruit and open-source hardware by purchasing 
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
  products from Adafruit!
- 
+
  MIT license, check LICENSE for more information
  All text above, and the splash screen below must be included in
  any redistribution
@@ -44,7 +44,9 @@ Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 /* ...software SPI, using SCK/MOSI/MISO user-defined SPI pins and then user selected CS/IRQ/RST */
-//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_SCK, BLUEFRUIT_SPI_MISO,
+//                             BLUEFRUIT_SPI_MOSI, BLUEFRUIT_SPI_CS,
+//                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 
 // A small helper
@@ -63,7 +65,7 @@ void setup(void)
 {
   while (!Serial);  // required for Flora & Micro
   delay(500);
-  
+
   Serial.begin(115200);
   Serial.println(F("Adafruit Bluefruit HID Keyboard Example"));
   Serial.println(F("---------------------------------------"));
@@ -92,7 +94,7 @@ void setup(void)
 
   /* Change the device name to make it easier to find */
   Serial.println(F("Setting device name to 'Bluefruit Keyboard': "));
-  if (! ble.sendCommandCheckOK(F( "AT+GAPDEVNAME=Bluefruit Keyboard" )) ) { 
+  if (! ble.sendCommandCheckOK(F( "AT+GAPDEVNAME=Bluefruit Keyboard" )) ) {
     error(F("Could not set device name?"));
   }
 
@@ -107,7 +109,7 @@ void setup(void)
   if (! ble.reset() ) {
     error(F("Couldnt reset??"));
   }
-  
+
   Serial.println();
   Serial.println(F("Go to your phone's Bluetooth settings to pair your device"));
   Serial.println(F("then open an application that accepts keyboard input"));

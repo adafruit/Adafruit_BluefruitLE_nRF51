@@ -3,10 +3,10 @@
 
  Pick one up today in the adafruit shop!
 
- Adafruit invests time and resources providing this open source code, 
- please support Adafruit and open-source hardware by purchasing 
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
  products from Adafruit!
- 
+
  MIT license, check LICENSE for more information
  All text above, and the splash screen below must be included in
  any redistribution
@@ -52,7 +52,9 @@ Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 /* ...software SPI, using SCK/MOSI/MISO user-defined SPI pins and then user selected CS/IRQ/RST */
-//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_SCK, BLUEFRUIT_SPI_MISO,
+//                             BLUEFRUIT_SPI_MOSI, BLUEFRUIT_SPI_CS,
+//                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 
 // A small helper
@@ -80,14 +82,14 @@ void setup(void)
 {
   while (!Serial);  // required for Flora & Micro
   delay(500);
-  
+
   // turn off neopixel
   pixel.begin(); // This initializes the NeoPixel library.
   for(uint8_t i=0; i<NUMPIXELS; i++) {
     pixel.setPixelColor(i, pixel.Color(0,0,0)); // off
   }
   pixel.show();
-  
+
   Serial.begin(115200);
   Serial.println(F("Adafruit Bluefruit App Controller Example"));
   Serial.println(F("-----------------------------------------"));
@@ -106,7 +108,7 @@ void setup(void)
   if (! ble.factoryReset() ){
        error(F("Couldn't factory reset"));
   }
-  
+
   /* Disable command echo from Bluefruit */
   ble.echo(false);
 
@@ -117,20 +119,20 @@ void setup(void)
   Serial.println(F("Please use Adafruit Bluefruit LE app to connect in Controller mode"));
   Serial.println(F("Then activate/use the sensors, color picker, game controller, etc!"));
   Serial.println();
-  
+
   ble.verbose(false);  // debug info is a little annoying after this point!
-  
+
   /* Wait for connection */
   while (! ble.isConnected()) {
       delay(500);
   }
-  
+
   Serial.println(F("*****************"));
 
   // Set Bluefruit to DATA mode
   Serial.println( F("Switching to DATA mode!") );
   ble.setMode(BLUEFRUIT_MODE_DATA);
-  
+
   Serial.println(F("*****************"));
 
 }
@@ -141,7 +143,7 @@ void setup(void)
 */
 /**************************************************************************/
 void loop(void)
-{  
+{
   /* Wait for new data to arrive */
   uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
   if (len == 0) return;
@@ -154,14 +156,14 @@ void loop(void)
     uint8_t red = packetbuffer[2];
     uint8_t green = packetbuffer[3];
     uint8_t blue = packetbuffer[4];
-    Serial.print ("RGB #"); 
+    Serial.print ("RGB #");
     if (red < 0x10) Serial.print("0");
     Serial.print(red, HEX);
     if (green < 0x10) Serial.print("0");
     Serial.print(green, HEX);
     if (blue < 0x10) Serial.print("0");
     Serial.println(blue, HEX);
-    
+
     for(uint8_t i=0; i<NUMPIXELS; i++) {
       pixel.setPixelColor(i, pixel.Color(red,green,blue));
     }
