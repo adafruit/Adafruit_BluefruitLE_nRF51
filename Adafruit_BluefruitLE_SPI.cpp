@@ -37,6 +37,11 @@
 #include <Arduino.h>
 #include <stdlib.h>
 
+#ifndef min
+  #define min(a,b) ((a) < (b) ? (a) : (b))
+#endif
+
+
 SPISettings bluefruitSPI(4000000, MSBFIRST, SPI_MODE0);
 
 

@@ -43,7 +43,7 @@
 Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
   _cts_pin(cts_pin), _rts_pin(rts_pin), _mode_pin(mode_pin)
 {
-#if not defined (_VARIANT_ARDUINO_DUE_X_)
+#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
   ss = 0;
 #endif
 
@@ -51,7 +51,7 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_
   mySerial = &port;
 }
 
-#if not defined (_VARIANT_ARDUINO_DUE_X_)
+#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
 /******************************************************************************/
 /*!
     @brief Instantiates a new instance of the Adafruit_BluefruitLE_UART class
@@ -106,7 +106,7 @@ bool Adafruit_BluefruitLE_UART::begin(boolean debug)
   if (hs) {
     hs->begin(9600);
   } else {
-#if not defined (_VARIANT_ARDUINO_DUE_X_)
+#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
     ss->begin(9600);
 #endif
   }
@@ -131,7 +131,7 @@ void Adafruit_BluefruitLE_UART::end(void)
   if (hs) {
     hs->end();
   } else {
-#if not defined (_VARIANT_ARDUINO_DUE_X_)
+#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
     ss->end();
 #endif
   }
