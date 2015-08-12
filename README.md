@@ -4,6 +4,7 @@ Current nRF51 based Bluefruit LE products include:
 
 * [Adafruit Bluefruit LE UART Friend](https://www.adafruit.com/product/2479)
 * [Adafruit Bluefruit LE SPI Friend](www.adafruit.com/products/2633)
+* [Adafruit Bluefruit LE Micro](https://www.adafruit.com/product/2661)
 
 # AT Commands
 
