@@ -48,7 +48,6 @@ Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_
 //                             BLUEFRUIT_SPI_MOSI, BLUEFRUIT_SPI_CS,
 //                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
-
 // A small helper
 void error(const __FlashStringHelper*err) {
   Serial.println(err);
@@ -98,10 +97,13 @@ void setup(void)
     error(F("Could not set device name?"));
   }
 
-  /* Enable HID Keyboard Service */
+  /* Enable HID Service */
   Serial.println(F("Enable HID Service (including Keyboard): "));
   if (! ble.sendCommandCheckOK(F( "AT+BleHIDEn=On"  ))) {
-    error(F("Could not set Keyboard"));
+    // AT+BLEHIDEN is only available from 0.6.6, maybe it is using the older firmware
+    if (! ble.sendCommandCheckOK(F( "AT+BleKeyboardEn=On"  ))) {
+      error(F("Could not enable Keyboard"));
+    }
   }
 
   /* Add or remove service requires a reset */

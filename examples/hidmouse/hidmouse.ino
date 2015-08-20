@@ -12,9 +12,17 @@
  any redistribution
 *********************************************************************/
 
+/*
+  This example shows how to send HID (keyboard/mouse/etc) data via BLE
+  Note that not all devices support BLE Mouse!
+  - OSX, Windows 10 both work
+  - Android has limited support
+  - iOS completely ignore mouse
+*/
+
 #include <Arduino.h>
 #include <SPI.h>
-#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
+#if not defined (_VARIANT_ARDUINO_DUE_X_)
   #include <SoftwareSerial.h>
 #endif
 
@@ -23,14 +31,6 @@
 #include "Adafruit_BluefruitLE_UART.h"
 
 #include "BluefruitConfig.h"
-
-/*=========================================================================
- The URL that is advertised. It must not longer than 17 bytes
- (excluding http:// and www.) Note: ".com/" ".net/" count as 1
- --------------------------------------------------------------------------*/
- #define URL                             "http://www.adafruit.com"
-/*=========================================================================*/
-
 
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
@@ -51,8 +51,6 @@ Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_
 //                             BLUEFRUIT_SPI_MOSI, BLUEFRUIT_SPI_CS,
 //                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
-bool isFirmware066orLater;
-
 // A small helper
 void error(const __FlashStringHelper*err) {
   Serial.println(err);
@@ -71,8 +69,8 @@ void setup(void)
   delay(500);
 
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit UriBeacon Example"));
-  Serial.println(F("------------------------------------"));
+  Serial.println(F("Adafruit Bluefruit HID Keyboard Example"));
+  Serial.println(F("---------------------------------------"));
 
   /* Initialise the module */
   Serial.print(F("Initialising the Bluefruit LE module: "));
@@ -95,38 +93,30 @@ void setup(void)
   Serial.println("Requesting Bluefruit info:");
   /* Print Bluefruit information */
   ble.info();
-  
-  // EddyStone commands are added from firmware 0.6.6
-  // fallback to uribeacon command if firmware is 0.6.5 or former
-  // Request Bluefruit's firmware version only.
-  ble.println(F("ATI=4"));
-  ble.readline();
-  isFirmware066orLater = (strcmp(ble.buffer, "0.6.6") >= 0);
-  ble.readline(); // read line again for OK
-  
-  /* Set EddyStone URL beacon data */
-  Serial.println(F("Setting uri beacon to Adafruit website: "));
 
-  if (isFirmware066orLater)
-  {
-    if (! ble.sendCommandCheckOK(F( "AT+EDDYSTONEURL=" URL ))) {
-      error(F("Couldnt set, is URL too long !?"));
-    }
-  }
-  else
-  {
-    // Prompt user to upgrade
-    Serial.println(F("There is firmware update available, please upgrade to have more features"));
-
-    // 0.6.5 use AT+BLEURIBEACON command
-    if (! ble.sendCommandCheckOK(F( "AT+BLEURIBEACON=" URL ))) {
-      error(F("Couldnt set, is URL too long !?"));
-    }
+  /* Enable HID Service (including Mouse) */
+  Serial.println(F("Enable HID Service (including Mouse): "));
+  if (! ble.sendCommandCheckOK(F( "AT+BleHIDEn=On"  ))) {
+    error(F("Could not enable HID"));
   }
 
-  Serial.println(F("**************************************************"));
-  Serial.println(F("Please use Google Physical Web application to test"));
-  Serial.println(F("**************************************************"));
+  /* Add or remove service requires a reset */
+  Serial.println(F("Performing a SW reset (service changes require a reset): "));
+  if (! ble.reset() ) {
+    error(F("Could not reset??"));
+  }
+
+  Serial.println();
+  Serial.println(F("Go to your phone's Bluetooth settings to pair your device"));
+  Serial.println(F("then open an application that accepts mouse input"));
+  Serial.println();
+
+  Serial.println(F("the example will try to draw an rectangle using left mouse with your input"));
+  Serial.println(F("Parameters are 8-bit signed number (x,y) e.g:"));
+  Serial.println(F("  100,100  : draw toward bottom right corner"));
+  Serial.println(F("  -100,-100: draw toward top left corner"));
+
+  Serial.println();
 }
 
 /**************************************************************************/
@@ -136,41 +126,42 @@ void setup(void)
 /**************************************************************************/
 void loop(void)
 {
-  // EddyStone command only available for firmware from 0.6.6
-  if (isFirmware066orLater)
+  Serial.println(F("x,y = "));
+
+  // Check for user input and echo it back if anything was found
+  char input[BUFSIZE+1];
+  getUserInput(input, BUFSIZE);
+
+  Serial.println(input);
+
+  // Press (and hold) the Left mouse's button
+  if ( ble.sendCommandCheckOK(F("AT+BleHidMouseButton=L,press")) )
   {
-    // Print user's option
-    Serial.println(F("Please choose:"));
-    Serial.println(F("0 : Disable EddyStone URL"));
-    Serial.println(F("1 : Enable EddyStone URL"));
-    Serial.println(F("2 : Put EddyStone URL to Config Mode"));
+    // delay a bit
+    delay(250);
 
-    // Get User's input
-    char option[BUFSIZE+1];
-    getUserInput(option, BUFSIZE);
+    // Mouse moves according to the user's input
+    ble.print(F("AT+BleHidMouseMove="));
+    ble.println(input);
 
-    // Proccess option
-    switch ( option[0] - '0' )
+    if( ble.waitForOK() )
     {
-      case 0:
-        ble.sendCommandCheckOK(F("AT+EDDYSTONEENABLE=off"));
-        break;
-
-      case 1:
-        ble.sendCommandCheckOK(F("AT+EDDYSTONEENABLE=on"));
-        break;
-
-      case 2:
-        Serial.println(F("EddyStone config's mode is enabled for 300 seconds"));
-        Serial.println(F("Please use Physical Web app to edit URL"));
-        ble.sendCommandCheckOK(F("AT+EDDYSTONECONFIGEN=300"));
-        break;
-
-      default:
-        Serial.print(F("Invalid input; "));
-        Serial.println(option);
-        break;
+      Serial.println( F("OK!") );
+    }else
+    {
+      Serial.println( F("FAILED!") );
     }
+
+    // Way for user to release left button
+    Serial.println( F("Enter anything to release Left Button") );
+    getUserInput(input, BUFSIZE);
+
+    // Release the Left mouse's button
+    ble.sendCommandCheckOK(F("AT+BleHidMouseButton=0"));
+  }else
+  {
+    // Failed, probably pairing is not complete yet
+    Serial.println( F("Please make sure Bluefruit is paired and try again") );
   }
 }
 
