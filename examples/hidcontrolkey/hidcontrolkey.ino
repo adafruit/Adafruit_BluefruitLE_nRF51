@@ -13,8 +13,21 @@
 *********************************************************************/
 
 /*
-  This example shows how to send HID (keyboard/mouse/etc) data via BLE
-  Note that not all devices support BLE keyboard! BLE Keyboard != Bluetooth Keyboard
+  This example shows how to send HID Consumer Control Key, these include
+  System control (work on most systems: windows/osx/android/ios)
+    - Sound Mute
+    - Brightness Increase, decrease
+  Media control (work on most systems)
+    - PlayPause
+    - MediaNext
+  Application launcher (work mainly on Windows 8/10)
+    - EmailReader
+    - Calculator
+  Browser Specific (firefox,file explorer: mainly on Windows 8/10)
+    - Back
+    - Forward
+    - Refresh
+    - Search
 */
 
 #include <Arduino.h>
@@ -66,7 +79,7 @@ void setup(void)
   delay(500);
 
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit HID Keyboard Example"));
+  Serial.println(F("Adafruit Bluefruit HID Control Key Example"));
   Serial.println(F("---------------------------------------"));
 
   /* Initialise the module */
@@ -91,19 +104,10 @@ void setup(void)
   /* Print Bluefruit information */
   ble.info();
 
-  /* Change the device name to make it easier to find */
-  Serial.println(F("Setting device name to 'Bluefruit Keyboard': "));
-  if (! ble.sendCommandCheckOK(F( "AT+GAPDEVNAME=Bluefruit Keyboard" )) ) {
-    error(F("Could not set device name?"));
-  }
-
   /* Enable HID Service */
-  Serial.println(F("Enable HID Service (including Keyboard): "));
+  Serial.println(F("Enable HID Service (including Control Key): "));
   if (! ble.sendCommandCheckOK(F( "AT+BleHIDEn=On"  ))) {
-    // AT+BLEHIDEN is only available from 0.6.6, maybe it is using the older firmware
-    if (! ble.sendCommandCheckOK(F( "AT+BleKeyboardEn=On"  ))) {
-      error(F("Could not enable Keyboard"));
-    }
+    error(F("Could not enable Keyboard"));
   }
 
   /* Add or remove service requires a reset */
@@ -113,15 +117,14 @@ void setup(void)
   }
 
   Serial.println();
+  Serial.println(F("**********************************************************"));
   Serial.println(F("Go to your phone's Bluetooth settings to pair your device"));
-  Serial.println(F("then open an application that accepts keyboard input"));
+  Serial.println(F("Some Control Key works system-wide: mute, brightness ..."));
+  Serial.println(F("Some requires application specific: Media play/pause"));
+  Serial.println(F("**********************************************************"));
 
-  Serial.println();
-  Serial.println(F("Enter the character(s) to send:"));
-  Serial.println(F("- \\r for Enter"));
-  Serial.println(F("- \\n for newline"));
-  Serial.println(F("- \\t for tab"));
-  Serial.println(F("- \\b for backspace"));
+  // Print pre-defined control keys
+  printDefinedControlKey();
 
   Serial.println();
 }
@@ -134,24 +137,31 @@ void setup(void)
 void loop(void)
 {
   // Display prompt
-  Serial.print(F("keyboard > "));
+  Serial.print(F("Control (? for help) > "));
 
   // Check for user input and echo it back if anything was found
   char keys[BUFSIZE+1];
   getUserInput(keys, BUFSIZE);
 
-  Serial.print("\nSending ");
   Serial.println(keys);
 
-  ble.print("AT+BleKeyboard=");
-  ble.println(keys);
-
-  if( ble.waitForOK() )
+  if ( keys[0] == '?')
   {
-    Serial.println( F("OK!") );
+    printDefinedControlKey();
   }else
   {
-    Serial.println( F("FAILED!") );
+    ble.print("AT+BleHidControlKey=");
+    ble.println(keys);
+
+    if( ble.waitForOK() )
+    {
+      Serial.println( F("OK!") );
+    }else
+    {
+      Serial.println( F("FAILED!") );
+      // Failed, probably pairing is not complete yet
+      Serial.println( F("Please make sure Bluefruit is paired and try again") );
+    }
   }
 }
 
@@ -173,4 +183,47 @@ void getUserInput(char buffer[], uint8_t maxSize)
     count += Serial.readBytes(buffer+count, maxSize);
     delay(2);
   } while( (count < maxSize) && !(Serial.peek() < 0) );
+}
+
+/**************************************************************************/
+/*!
+    @brief  Print pre-defined control keys
+*/
+/**************************************************************************/
+void printDefinedControlKey(void)
+{
+  Serial.println();
+  Serial.println(F("You can send a raw 16-bit (e.g 0x1234) usage key" "\n" 
+                    "from USB HID Consumer Control Page or using the following"));
+                    
+  Serial.println(F("List of pre-defined control key:"));
+  Serial.print(F(
+    "- BRIGHTNESS+" "\n"
+    "- BRIGHTNESS-" "\n"
+    "- PLAYPAUSE" "\n"
+    "- MEDIANEXT" "\n"
+    "- MEDIAPREVIOUS" "\n"
+    "- MEDIASTOP" "\n"
+    "- VOLUME" "\n"
+    "- MUTE" "\n"
+    "- BASS" "\n"
+    "- TREBLE" "\n"
+    "- BASS_BOOST" "\n"
+    "- VOLUME+" "\n"
+    "- VOLUME-" "\n"
+    "- BASS+" "\n"
+    "- BASS-" "\n"
+    "- TREBLE+" "\n"
+    "- TREBLE-" "\n"
+    "- EMAILREADER" "\n"
+    "- CALCULATOR" "\n"
+    "- FILEBROWSER" "\n"
+    "- SEARCH" "\n"
+    "- HOME" "\n"
+    "- BACK" "\n"
+    "- FORWARD" "\n"
+    "- STOP" "\n"
+    "- REFRESH" "\n"
+    "- BOOKMARKS" "\n"
+  ));
 }

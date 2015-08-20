@@ -69,7 +69,7 @@ void setup(void)
   delay(500);
 
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit HID Keyboard Example"));
+  Serial.println(F("Adafruit Bluefruit HID Mouse Example"));
   Serial.println(F("---------------------------------------"));
 
   /* Initialise the module */
