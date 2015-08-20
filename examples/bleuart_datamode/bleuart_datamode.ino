@@ -24,6 +24,13 @@
 
 #include "BluefruitConfig.h"
 
+/*=========================================================================
+ Define the LED Activity, this function is only available from firmware 0.6.6
+ Valid option is "DISABLE" "MODE" "BLEUART" "HWUART" "SPI" "MANUAL"
+ --------------------------------------------------------------------------*/
+ #define MODE_LED_BEHAVIOUR       "MODE"
+/*=========================================================================*/
+
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
@@ -100,9 +107,13 @@ void setup(void)
 
   Serial.println(F("******************************"));
 
-  // Make Mode LED blinks when sending/receiving BLEUART data
-  Serial.println(F("Change LED activity to BLEUART"));
-  ble.sendCommandCheckOK("AT+HWModeLED=BLEUART");
+  // LED Activity command is only supported from 0.6.6
+  if ( isFirmwareFrom("0.6.6") )
+  {
+    // Change Mode LED Activity
+    Serial.println(F("Change LED activity to " MODE_LED_BEHAVIOUR));
+    ble.sendCommandCheckOK("AT+HWModeLED=" MODE_LED_BEHAVIOUR);
+  }
   
   // Set module to DATA mode
   Serial.println( F("Switching to DATA mode!") );
@@ -146,4 +157,20 @@ void loop(void)
     Serial.print(c, HEX);
     Serial.print("] ");
   }
+}
+
+/**************************************************************************/
+/*!
+    @brief  Checks if firmware is equal or later than specified version
+*/
+/**************************************************************************/
+bool isFirmwareFrom(char startVersion[])
+{
+  ble.println(F("ATI=4"));
+  ble.readline();
+
+  bool result = ( strcmp(ble.buffer, startVersion) >= 0 );
+  ble.waitForOK();
+
+  return result;
 }
