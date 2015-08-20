@@ -104,6 +104,17 @@ void setup(void)
   /* Print Bluefruit information */
   ble.info();
 
+  // This demo only available for firmware from 0.6.6
+  // Request Bluefruit's firmware and check if it is valid
+  ble.println(F("ATI=4"));
+  ble.readline();
+  if ( strcmp(ble.buffer, "0.6.6") < 0 )
+  {
+    ble.waitForOK();
+    error(F("This sketch requires firmware version 0.6.6 or higher!"));
+  }
+  ble.waitForOK();
+
   /* Enable HID Service */
   Serial.println(F("Enable HID Service (including Control Key): "));
   if (! ble.sendCommandCheckOK(F( "AT+BleHIDEn=On"  ))) {

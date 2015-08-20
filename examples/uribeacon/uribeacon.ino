@@ -102,7 +102,7 @@ void setup(void)
   ble.println(F("ATI=4"));
   ble.readline();
   isFirmware066orLater = (strcmp(ble.buffer, "0.6.6") >= 0);
-  ble.readline(); // read line again for OK
+  ble.waitForOK();
   
   /* Set EddyStone URL beacon data */
   Serial.println(F("Setting uri beacon to Adafruit website: "));
