@@ -97,7 +97,7 @@ void setup(void)
   /* Enable HID Service (including Mouse) */
   Serial.println(F("Enable HID Service (including Mouse): "));
   if (! ble.sendCommandCheckOK(F( "AT+BleHIDEn=On"  ))) {
-    error(F("Could not enable HID"));
+    error(F("Failed to enable HID (firmware >=0.6.6?)"));
   }
 
   /* Add or remove service requires a reset */
