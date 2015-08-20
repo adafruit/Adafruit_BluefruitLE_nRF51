@@ -107,7 +107,7 @@ void setup(void)
   /* Enable HID Service */
   Serial.println(F("Enable HID Service (including Control Key): "));
   if (! ble.sendCommandCheckOK(F( "AT+BleHIDEn=On"  ))) {
-    error(F("Could not enable Keyboard"));
+    error(F("Failed to enable HID (firmware >=0.6.6?)"));
   }
 
   /* Add or remove service requires a reset */
