@@ -94,15 +94,16 @@ void setup(void)
   Serial.println("Requesting Bluefruit info:");
   /* Print Bluefruit information */
   ble.info();
-
-  /* Set URI beacon data */
+  
+  /* Set EddyStone URL beacon data */
   Serial.print(F("Setting uri beacon to Adafruit website: "));
-  if (! ble.sendCommandCheckOK(F( "AT+BLEURIBEACON=" URL ))) {
-    error(F("Couldnt set URL?"));
-  }
+  if (! ble.sendCommandCheckOK(F( "AT+EDDYSTONEURL=" URL ))) {
+    error(F("Couldnt set URL, URL cannot be longer than 18 after encoded !!"));
+  } 
 
-  Serial.println();
+  Serial.println(F("**************************************************"));
   Serial.println(F("Please use Google Physical Web application to test"));
+  Serial.println(F("**************************************************"));
 }
 
 /**************************************************************************/
@@ -112,4 +113,56 @@ void setup(void)
 /**************************************************************************/
 void loop(void)
 {
+  // Print user's option
+  Serial.println(F("Please choose:"));
+  Serial.println(F("0 : Disable EddyStone URL"));
+  Serial.println(F("1 : Enable EddyStone URL"));
+  Serial.println(F("2 : Put EddyStone URL to Config Mode"));
+  
+  // Get User's input
+  char option[BUFSIZE+1];
+  getUserInput(option, BUFSIZE);
+  
+  // Proccess option
+  switch ( option[0] - '0' )
+  {
+    case 0:
+      ble.sendCommandCheckOK(F("AT+EDDYSTONEENABLE=off"));
+    break;
+    
+    case 1:
+      ble.sendCommandCheckOK(F("AT+EDDYSTONEENABLE=on"));
+    break;
+    
+    case 2:
+      Serial.println(F("EddyStone config's mode is enabled for 300 seconds"));
+      Serial.println(F("Please use Physical Web app to edit URL"));
+      ble.sendCommandCheckOK(F("AT+EDDYSTONECONFIGEN=300"));
+    break;
+    
+    default:
+       Serial.print(F("Invalid input; "));
+       Serial.println(option);
+    break;
+  }
+}
+
+/**************************************************************************/
+/*!
+    @brief  Checks for user input (via the Serial Monitor)
+*/
+/**************************************************************************/
+void getUserInput(char buffer[], uint8_t maxSize)
+{
+  memset(buffer, 0, maxSize);
+  while( Serial.peek() < 0 ) {}
+  delay(2);
+
+  uint8_t count=0;
+
+  do
+  {
+    count += Serial.readBytes(buffer+count, maxSize);
+    delay(2);
+  } while( (count < maxSize) && !(Serial.peek() < 0) );
 }

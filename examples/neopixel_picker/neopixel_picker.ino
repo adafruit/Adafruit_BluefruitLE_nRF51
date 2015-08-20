@@ -28,7 +28,7 @@
 #include <Adafruit_NeoPixel.h>
 
 // Which pin on the Arduino is connected to the NeoPixels?
-#define PIN            6
+#define PIN            5
 // How many NeoPixels are attached to the Arduino?
 #define NUMPIXELS      1
 
@@ -91,8 +91,8 @@ void setup(void)
   pixel.show();
 
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit App Controller Example"));
-  Serial.println(F("-----------------------------------------"));
+  Serial.println(F("Adafruit Bluefruit Neopixel Color Picker Example"));
+  Serial.println(F("------------------------------------------------"));
 
   /* Initialise the module */
   Serial.print(F("Initialising the Bluefruit LE module: "));
@@ -127,13 +127,13 @@ void setup(void)
       delay(500);
   }
 
-  Serial.println(F("*****************"));
+  Serial.println(F("***********************"));
 
   // Set Bluefruit to DATA mode
   Serial.println( F("Switching to DATA mode!") );
   ble.setMode(BLUEFRUIT_MODE_DATA);
 
-  Serial.println(F("*****************"));
+  Serial.println(F("***********************"));
 
 }
 

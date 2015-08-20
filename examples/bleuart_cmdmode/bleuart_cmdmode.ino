@@ -33,10 +33,10 @@ Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
 */
 
 /* ...or hardware serial, which does not need the RTS/CTS pins. Uncomment this line */
- Adafruit_BluefruitLE_UART ble(Serial1, BLUEFRUIT_UART_MODE_PIN);
+// Adafruit_BluefruitLE_UART ble(Serial1, BLUEFRUIT_UART_MODE_PIN);
 
 /* ...hardware SPI, using SCK/MOSI/MISO hardware SPI pins and then user selected CS/IRQ/RST */
-//Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 /* ...software SPI, using SCK/MOSI/MISO user-defined SPI pins and then user selected CS/IRQ/RST */
 //Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_SCK, BLUEFRUIT_SPI_MISO,
@@ -97,8 +97,14 @@ void setup(void)
   while (! ble.isConnected()) {
       delay(500);
   }
+  
+  Serial.println(F("******************************"));
+  
+  // Make Mode LED blinks when sending/receiving BLEUART data
+  Serial.println(F("Change LED activity to BLEUART"));
+  ble.sendCommandCheckOK("AT+HWModeLED=BLEUART");
 
-  Serial.println(F("*****************"));
+  Serial.println(F("******************************"));
 }
 
 /**************************************************************************/

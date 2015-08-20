@@ -108,13 +108,17 @@ void setup(void)
       delay(500);
   }
 
-  Serial.println(F("*****************"));
+  Serial.println(F("******************************"));
+  
+  // Make Mode LED blinks when sending/receiving BLEUART data
+  Serial.println(F("Change LED activity to BLEUART"));
+  ble.sendCommandCheckOK("AT+HWModeLED=BLEUART");
 
   // Set Bluefruit to DATA mode
   Serial.println( F("Switching to DATA mode!") );
   ble.setMode(BLUEFRUIT_MODE_DATA);
 
-  Serial.println(F("*****************"));
+  Serial.println(F("******************************"));
 
 }
 

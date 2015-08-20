@@ -99,8 +99,8 @@ void setup(void)
   }
 
   /* Enable HID Keyboard Service */
-  Serial.println(F("Enable Keyboard Service: "));
-  if (! ble.sendCommandCheckOK(F( "AT+BleKeyboardEn=On"  ))) {
+  Serial.println(F("Enable HID Service (including Keyboard): "));
+  if (! ble.sendCommandCheckOK(F( "AT+BleHIDEn=On"  ))) {
     error(F("Could not set Keyboard"));
   }
 
