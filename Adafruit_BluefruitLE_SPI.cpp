@@ -60,6 +60,8 @@ SPISettings bluefruitSPI(4000000, MSBFIRST, SPI_MODE0);
 Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, int8_t rstPin) :
     m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
 {
+  _physical_transport = BLUEFRUIT_TRANSPORT_HWSPI;
+
   m_cs_pin  = csPin;
   m_irq_pin = irqPin;
   m_rst_pin = rstPin;
@@ -92,6 +94,8 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin
     int8_t mosiPin, int8_t csPin, int8_t irqPin, int8_t rstPin) :
     m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
 {
+  _physical_transport = BLUEFRUIT_TRANSPORT_SWSPI;
+
   m_sck_pin  = clkPin;
   m_miso_pin = misoPin;
   m_mosi_pin = mosiPin;

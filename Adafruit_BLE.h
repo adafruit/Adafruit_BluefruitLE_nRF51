@@ -53,10 +53,19 @@
 class Adafruit_BLE : public Stream
 {
   protected:
+    enum
+    {
+      BLUEFRUIT_TRANSPORT_INVALID,
+      BLUEFRUIT_TRANSPORT_HWUART,
+      BLUEFRUIT_TRANSPORT_SWUART,
+      BLUEFRUIT_TRANSPORT_HWSPI,
+      BLUEFRUIT_TRANSPORT_SWSPI,
+    };
+
     bool     _verbose;
     uint8_t  _mode;
     uint16_t _timeout;
-
+    uint8_t  _physical_transport;
 
   public:
     // Constructor
@@ -66,6 +75,15 @@ class Adafruit_BLE : public Stream
     // Auto print out TX & RX data to normal Serial
     void verbose(bool enable) { _verbose = enable; }
 
+    // Physical transportation checking
+    bool isTransportHwUart (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_HWUART; }
+    bool isTransportSwUart (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_SWUART; }
+    bool isTransportUart   (void) { return isTransportHwUart() || isTransportSwUart();        }
+
+    bool isTransportHwSpi  (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_HWSPI;  }
+    bool isTransportSwSpi  (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_SWSPI;  }
+    bool isTransportSpi    (void) { return isTransportHwSpi() || isTransportSwSpi();          }
+
     // Functions implemented in this base class
     bool reset(void);
     bool factoryReset(void);
@@ -73,6 +91,7 @@ class Adafruit_BLE : public Stream
     bool echo(bool enable);
     bool waitForOK(void);
     bool isConnected(void);
+    bool isVersionAtLeast(char * versionString);
 
     virtual bool setMode(uint8_t mode) = 0;
 

@@ -162,6 +162,21 @@ void Adafruit_BLE::info(void)
   _verbose = v;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Checks if firmware is equal or later than specified version
+*/
+/**************************************************************************/
+bool Adafruit_BLE::isVersionAtLeast(char * versionString)
+{
+  println(F("ATI=4"));
+
+  readline();
+  bool result = ( strcmp(buffer, versionString) >= 0 );
+  waitForOK();
+
+  return result;
+}
 
 /******************************************************************************/
 /*!

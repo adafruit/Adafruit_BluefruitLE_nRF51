@@ -17,7 +17,7 @@
   Note that not all devices support BLE Mouse!
   - OSX, Windows 10 both work
   - Android has limited support
-  - iOS completely ignore mouse
+  - iOS completely ignores mouse
 */
 
 #include <Arduino.h>
@@ -31,6 +31,12 @@
 #include "Adafruit_BluefruitLE_UART.h"
 
 #include "BluefruitConfig.h"
+
+/*=========================================================================
+ HID Mouse requires Bluefruit's firmware at least 0.6.6
+ --------------------------------------------------------------------------*/
+ #define MINIMUM_FIRMWARE_VERSION "0.6.6"
+/*=========================================================================*/
 
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
@@ -95,16 +101,10 @@ void setup(void)
   ble.info();
 
   // This demo only available for firmware from 0.6.6
-  // Request Bluefruit's firmware and check if it is valid
-  ble.println(F("ATI=4"));
-  ble.readline();
-  if ( strcmp(ble.buffer, "0.6.6") < 0 )
+  if ( !ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
   {
-    ble.waitForOK();
-    error(F("This sketch requires firmware version 0.6.6 or higher!"));
+    error(F("This sketch requires firmware version " MINIMUM_FIRMWARE_VERSION " or higher!"));
   }
-  ble.waitForOK();
-
 
   /* Enable HID Service (including Mouse) */
   Serial.println(F("Enable HID Service (including Mouse): "));

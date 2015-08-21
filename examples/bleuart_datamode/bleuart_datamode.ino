@@ -26,8 +26,9 @@
 
 /*=========================================================================
  Define the LED Activity, this function is only available from firmware 0.6.6
- Valid option is "DISABLE" "MODE" "BLEUART" "HWUART" "SPI" "MANUAL"
+ Valid option is "DISABLE" | "MODE" | "BLEUART" | "HWUART" | "SPI" | "MANUAL"
  --------------------------------------------------------------------------*/
+ #define MINIMUM_FIRMWARE_VERSION "0.6.6"
  #define MODE_LED_BEHAVIOUR       "MODE"
 /*=========================================================================*/
 
@@ -108,7 +109,7 @@ void setup(void)
   Serial.println(F("******************************"));
 
   // LED Activity command is only supported from 0.6.6
-  if ( isFirmwareFrom("0.6.6") )
+  if ( ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
   {
     // Change Mode LED Activity
     Serial.println(F("Change LED activity to " MODE_LED_BEHAVIOUR));
@@ -157,20 +158,4 @@ void loop(void)
     Serial.print(c, HEX);
     Serial.print("] ");
   }
-}
-
-/**************************************************************************/
-/*!
-    @brief  Checks if firmware is equal or later than specified version
-*/
-/**************************************************************************/
-bool isFirmwareFrom(char startVersion[])
-{
-  ble.println(F("ATI=4"));
-  ble.readline();
-
-  bool result = ( strcmp(ble.buffer, startVersion) >= 0 );
-  ble.waitForOK();
-
-  return result;
 }

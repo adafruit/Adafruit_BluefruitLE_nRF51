@@ -29,6 +29,12 @@
 
 #include "BluefruitConfig.h"
 
+/*=========================================================================
+ AT+BLEKEYBOARDEN is deprecated and renamed to AT+BLEHIDEN from 0.6.6
+ --------------------------------------------------------------------------*/
+ #define MINIMUM_FIRMWARE_VERSION "0.6.6"
+/*=========================================================================*/
+
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
@@ -99,8 +105,13 @@ void setup(void)
 
   /* Enable HID Service */
   Serial.println(F("Enable HID Service (including Keyboard): "));
-  if (! ble.sendCommandCheckOK(F( "AT+BleHIDEn=On"  ))) {
-    // AT+BLEHIDEN is only available from 0.6.6, maybe it is using the older firmware
+  if ( ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
+  {
+    if ( !ble.sendCommandCheckOK(F( "AT+BleHIDEn=On" ))) {
+      error(F("Could not enable Keyboard"));
+    }
+  }else
+  {
     if (! ble.sendCommandCheckOK(F( "AT+BleKeyboardEn=On"  ))) {
       error(F("Could not enable Keyboard"));
     }

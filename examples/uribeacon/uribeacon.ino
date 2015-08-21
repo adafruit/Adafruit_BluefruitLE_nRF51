@@ -25,10 +25,13 @@
 #include "BluefruitConfig.h"
 
 /*=========================================================================
+ EddyStone requires Bluefruit's firmware at least 0.6.6
+
  The URL that is advertised. It must not longer than 17 bytes
  (excluding http:// and www.) Note: ".com/" ".net/" count as 1
  --------------------------------------------------------------------------*/
  #define URL                             "http://www.adafruit.com"
+ #define MINIMUM_FIRMWARE_VERSION        "0.6.6"
 /*=========================================================================*/
 
 
@@ -98,11 +101,7 @@ void setup(void)
   
   // EddyStone commands are added from firmware 0.6.6
   // fallback to uribeacon command if firmware is 0.6.5 or former
-  // Request Bluefruit's firmware version only.
-  ble.println(F("ATI=4"));
-  ble.readline();
-  isFirmware066orLater = (strcmp(ble.buffer, "0.6.6") >= 0);
-  ble.waitForOK();
+  isFirmware066orLater = ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION);
   
   /* Set EddyStone URL beacon data */
   Serial.println(F("Setting uri beacon to Adafruit website: "));

@@ -42,6 +42,13 @@
 
 #include "BluefruitConfig.h"
 
+/*=========================================================================
+ HID Control Key requires Bluefruit's firmware at least 0.6.6
+ --------------------------------------------------------------------------*/
+ #define MINIMUM_FIRMWARE_VERSION "0.6.6"
+/*=========================================================================*/
+
+
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
@@ -106,14 +113,11 @@ void setup(void)
 
   // This demo only available for firmware from 0.6.6
   // Request Bluefruit's firmware and check if it is valid
-  ble.println(F("ATI=4"));
-  ble.readline();
-  if ( strcmp(ble.buffer, "0.6.6") < 0 )
+  // This demo only available for firmware from 0.6.6
+  if ( !ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
   {
-    ble.waitForOK();
-    error(F("This sketch requires firmware version 0.6.6 or higher!"));
+    error(F("This sketch requires firmware version " MINIMUM_FIRMWARE_VERSION " or higher!"));
   }
-  ble.waitForOK();
 
   /* Enable HID Service */
   Serial.println(F("Enable HID Service (including Control Key): "));
