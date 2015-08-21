@@ -153,8 +153,8 @@ void setup(void)
   Serial.println(F("then open an application that accepts mouse input"));
   Serial.println();
 
-  Serial.println(F("the example will try to draw an rectangle using left mouse with your input"));
-  Serial.println(F("Parameters are 8-bit signed number (x,y) e.g:"));
+  Serial.println(F("The example will try to draw a rectangle using the left mouse button with your input"));
+  Serial.println(F("Parameters are a pair of 8-bit signed numbers (x,y) e.g:"));
   Serial.println(F("  100,100  : draw toward bottom right corner"));
   Serial.println(F("  -100,-100: draw toward top left corner"));
 
