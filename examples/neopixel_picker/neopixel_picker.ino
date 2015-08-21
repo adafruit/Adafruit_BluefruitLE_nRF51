@@ -27,15 +27,20 @@
 
 #include <Adafruit_NeoPixel.h>
 
-// Which pin on the Arduino is connected to the NeoPixels?
-#define PIN            5
-// How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS      1
+/*=========================================================================
+    APPLICATION SETTINGS
 
-Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUMPIXELS, PIN);
-
+    FACTORYRESET_ENABLE       Perform a factory reset when running this sketch
+    PIN                       Which pin on the Arduino is connected to the NeoPixels?
+    NUMPIXELS                 How many NeoPixels are attached to the Arduino?
+    -----------------------------------------------------------------------*/
+    #define FACTORYRESET_ENABLE     1
+    
+    #define PIN                     5
+    #define NUMPIXELS               1
 /*=========================================================================*/
 
+Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUMPIXELS, PIN);
 
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
@@ -103,10 +108,13 @@ void setup(void)
   }
   Serial.println( F("OK!") );
 
-  /* Perform a factory reset to make sure everything is in a known state */
-  Serial.println(F("Performing a factory reset: "));
-  if (! ble.factoryReset() ){
-       error(F("Couldn't factory reset"));
+  if ( FACTORYRESET_ENABLE )
+  {
+    /* Perform a factory reset to make sure everything is in a known state */
+    Serial.println(F("Performing a factory reset: "));
+    if ( ! ble.factoryReset() ){
+      error(F("Couldn't factory reset"));
+    }
   }
 
   /* Disable command echo from Bluefruit */

@@ -27,6 +27,8 @@
 /*=========================================================================
     APPLICATION SETTINGS
 
+    FACTORYRESET_ENABLE     Perform a factory reset when running this sketch
+
     BEACON_MANUFACTURER_ID  Company Identifier assigned by Bluetooth SIG
                             Full list of Manufacturer ID can be found here
                             https://www.bluetooth.org/en-us/specification/assigned-numbers/company-identifiers
@@ -35,6 +37,8 @@
     BEACON_MINOR            16-bit minor nunber
     BEACON_RSSI_1M
     -----------------------------------------------------------------------*/
+    #define FACTORYRESET_ENABLE      1
+
     #define MANUFACTURER_APPLE         "0x004C"
     #define MANUFACTURER_NORDIC        "0x0059"
 
@@ -95,10 +99,13 @@ void setup(void)
   }
   Serial.println( F("OK!") );
 
-  /* Perform a factory reset to make sure everything is in a known state */
-  Serial.println(F("Performing a factory reset: "));
-  if (! ble.factoryReset() ){
-       error(F("Couldn't factory reset"));
+  if ( FACTORYRESET_ENABLE )
+  {
+    /* Perform a factory reset to make sure everything is in a known state */
+    Serial.println(F("Performing a factory reset: "));
+    if ( ! ble.factoryReset() ){
+      error(F("Couldn't factory reset"));
+    }
   }
 
   /* Disable command echo from Bluefruit */

@@ -25,11 +25,17 @@
 #include "BluefruitConfig.h"
 
 /*=========================================================================
- Define the LED Activity, this function is only available from firmware 0.6.6
- Valid option is "DISABLE" | "MODE" | "BLEUART" | "HWUART" | "SPI" | "MANUAL"
- --------------------------------------------------------------------------*/
- #define MINIMUM_FIRMWARE_VERSION "0.6.6"
- #define MODE_LED_BEHAVIOUR       "MODE"
+    APPLICATION SETTINGS
+
+    FACTORYRESET_ENABLE       Perform a factory reset when running this sketch
+    MINIMUM_FIRMWARE_VERSION  Minimum firmware version to have some new features
+    MODE_LED_BEHAVIOUR        LED activity, valid options are
+                              "DISABLE" or "MODE" or "BLEUART" or
+                              "HWUART"  or "SPI"  or "MANUAL"
+    -----------------------------------------------------------------------*/
+    #define FACTORYRESET_ENABLE         1
+    #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
+    #define MODE_LED_BEHAVIOUR          "MODE"
 /*=========================================================================*/
 
 // Create the bluefruit object, either software serial...uncomment these lines
@@ -82,10 +88,13 @@ void setup(void)
   }
   Serial.println( F("OK!") );
 
-  /* Perform a factory reset to make sure everything is in a known state */
-  Serial.println(F("Performing a factory reset: "));
-  if (! ble.factoryReset() ){
-       error(F("Couldn't factory reset"));
+  if ( FACTORYRESET_ENABLE )
+  {
+    /* Perform a factory reset to make sure everything is in a known state */
+    Serial.println(F("Performing a factory reset: "));
+    if ( ! ble.factoryReset() ){
+      error(F("Couldn't factory reset"));
+    }
   }
 
   /* Disable command echo from Bluefruit */

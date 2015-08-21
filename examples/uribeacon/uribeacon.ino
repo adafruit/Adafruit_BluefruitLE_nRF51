@@ -25,13 +25,17 @@
 #include "BluefruitConfig.h"
 
 /*=========================================================================
- EddyStone requires Bluefruit's firmware at least 0.6.6
+    APPLICATION SETTINGS
 
- The URL that is advertised. It must not longer than 17 bytes
- (excluding http:// and www.) Note: ".com/" ".net/" count as 1
- --------------------------------------------------------------------------*/
- #define URL                             "http://www.adafruit.com"
- #define MINIMUM_FIRMWARE_VERSION        "0.6.6"
+    FACTORYRESET_ENABLE       Perform a factory reset when running this sketch
+    MINIMUM_FIRMWARE_VERSION  Minimum firmware version to have some new features
+    URL                       The URL that is advertised. It must not longer
+                              than 17 bytes (excluding http:// and www.).
+                              Note: ".com/" ".net/" count as 1
+    -----------------------------------------------------------------------*/
+    #define FACTORYRESET_ENABLE         1
+    #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
+    #define URL                         "http://www.adafruit.com"
 /*=========================================================================*/
 
 
@@ -86,10 +90,13 @@ void setup(void)
   }
   Serial.println( F("OK!") );
 
-  /* Perform a factory reset to make sure everything is in a known state */
-  Serial.println(F("Performing a factory reset: "));
-  if (! ble.factoryReset() ){
-       error(F("Couldn't factory reset"));
+  if ( FACTORYRESET_ENABLE )
+  {
+    /* Perform a factory reset to make sure everything is in a known state */
+    Serial.println(F("Performing a factory reset: "));
+    if ( ! ble.factoryReset() ){
+      error(F("Couldn't factory reset"));
+    }
   }
 
   /* Disable command echo from Bluefruit */

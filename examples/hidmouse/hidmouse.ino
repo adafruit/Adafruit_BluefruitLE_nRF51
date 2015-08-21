@@ -33,10 +33,15 @@
 #include "BluefruitConfig.h"
 
 /*=========================================================================
- HID Mouse requires Bluefruit's firmware at least 0.6.6
- --------------------------------------------------------------------------*/
- #define MINIMUM_FIRMWARE_VERSION "0.6.6"
+    APPLICATION SETTINGS
+
+    FACTORYRESET_ENABLE       Perform a factory reset when running this sketch
+    MINIMUM_FIRMWARE_VERSION  Minimum firmware version to have some new features
+    -----------------------------------------------------------------------*/
+    #define FACTORYRESET_ENABLE         1
+    #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
 /*=========================================================================*/
+
 
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
@@ -87,10 +92,13 @@ void setup(void)
   }
   Serial.println( F("OK!") );
 
-  /* Perform a factory reset to make sure everything is in a known state */
-  Serial.println(F("Performing a factory reset: "));
-  if (! ble.factoryReset() ){
-       error(F("Couldn't factory reset"));
+  if ( FACTORYRESET_ENABLE )
+  {
+    /* Perform a factory reset to make sure everything is in a known state */
+    Serial.println(F("Performing a factory reset: "));
+    if ( ! ble.factoryReset() ){
+      error(F("Couldn't factory reset"));
+    }
   }
 
   /* Disable command echo from Bluefruit */

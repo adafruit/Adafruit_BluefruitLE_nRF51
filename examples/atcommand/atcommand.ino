@@ -24,6 +24,15 @@
 
 #include "BluefruitConfig.h"
 
+/*=========================================================================
+    APPLICATION SETTINGS
+
+    FACTORYRESET_ENABLE     Perform a factory reset when running this sketch
+    -----------------------------------------------------------------------*/
+    #define FACTORYRESET_ENABLE      1
+/*=========================================================================*/
+
+
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
@@ -74,10 +83,13 @@ void setup(void)
   }
   Serial.println( F("OK!") );
 
-  /* Perform a factory reset to make sure everything is in a known state */
-  Serial.println(F("Performing a factory reset: "));
-  if (! ble.factoryReset() ){
-       error(F("Couldn't factory reset"));
+  if ( FACTORYRESET_ENABLE )
+  {
+    /* Perform a factory reset to make sure everything is in a known state */
+    Serial.println(F("Performing a factory reset: "));
+    if ( ! ble.factoryReset() ){
+      error(F("Couldn't factory reset"));
+    }
   }
 
   /* Disable command echo from Bluefruit */
