@@ -165,6 +165,11 @@ void transmitCalStatus(void)
   ble.print(gyro, DEC);
   ble.print(accel, DEC);
   ble.println(mag, DEC);
+
+  if (! ble.waitForOK() )
+  {
+    Serial.println(F("Failed to send?"));
+  }
 }
 
 /**************************************************************************/
@@ -258,32 +263,40 @@ void loop(void)
   // Send sensor data out
   if (ble.isConnected())
   {
-    // Get a new sensor event
-    sensors_event_t event;
-    bno.getEvent(&event);
+    // Get Quaternion data (no 'Gimbal Lock' like with Euler angles)
+    imu::Quaternion quat = bno.getQuat();
 
-    // Display the full floating point data in Serial Monitor
-    Serial.print("X: ");
-    Serial.print(event.orientation.x, 4);
-    Serial.print("\tY: ");
-    Serial.print(event.orientation.y, 4);
-    Serial.print("\tZ: ");
-    Serial.print(event.orientation.z, 4);
+    // Display the full data in Serial Monitor
+    Serial.print("qW: ");
+    Serial.print(quat.w(), 4);
+    Serial.print(" qX: ");
+    Serial.print(quat.y(), 4);
+    Serial.print(" qY: ");
+    Serial.print(quat.x(), 4);
+    Serial.print(" qZ: ");
+    Serial.print(quat.z(), 4);
     displayCalStatus();
     Serial.println("");
 
-    // Send the abbreviated integer data out over BLE UART
-    // Note: the data is shortened here since BLE UART is quite slow
+    // Send abbreviated integer data out over BLE UART
     ble.print("AT+BLEUARTTX=");
-    ble.print(int(event.orientation.x));
+    ble.print(quat.w(), 4);
     ble.print(",");
-    ble.print(int(event.orientation.y));
+    ble.print(quat.y(), 4);
     ble.print(",");
-    ble.println(int(event.orientation.z));
-    transmitCalStatus();
-    ble.println("AT+BLEUARTTX=\\r\\n");
+    ble.print(quat.x(), 4);
+    ble.print(",");
+    ble.println(quat.z(), 4);
+    if (! ble.waitForOK() )
+    {
+      Serial.println(F("Failed to send?"));
+    }
 
-    // Check the AT response
+    // Optional: Send the calibration data as well
+    transmitCalStatus();
+
+    // Send a new line character for the next record
+    ble.println("AT+BLEUARTTX=\\r\\n");
     if (! ble.waitForOK() )
     {
       Serial.println(F("Failed to send?"));
