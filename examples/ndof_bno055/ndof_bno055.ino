@@ -49,6 +49,7 @@ Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_
 //                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 /* Set the delay between fresh samples (not too fast, BLE UART is slow!) */
+/* Firware <=0.6.6 should use 500ms, >=0.6.7 can use 200ms */
 #define BNO055_SAMPLERATE_DELAY_MS (500)
 
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
@@ -301,6 +302,14 @@ void loop(void)
     {
       Serial.println(F("Failed to send?"));
     }
+
+    /*
+    // Display the buffer size (firmware 0.6.7 and higher only!)
+    ble.println("AT+BLEUARTFIFO=TX");
+    ble.readline();
+    Serial.print("TX FIFO: ");
+    Serial.println(ble.buffer);
+    */
 
     // Wait a bit ...
     delay(BNO055_SAMPLERATE_DELAY_MS);
