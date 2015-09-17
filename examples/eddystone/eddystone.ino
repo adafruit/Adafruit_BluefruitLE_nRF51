@@ -56,7 +56,7 @@
                               Note: ".com/" ".net/" count as 1
     -----------------------------------------------------------------------*/
     #define FACTORYRESET_ENABLE         1
-    #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
+    #define MINIMUM_FIRMWARE_VERSION    "0.6.7"
     #define URL                         "http://www.adafruit.com"
 /*=========================================================================*/
 
