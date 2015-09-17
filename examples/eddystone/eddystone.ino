@@ -43,8 +43,20 @@
                               the non-volatile memory where config data is
                               stored, setting it back to factory default
                               values.
+
+                              Some sketches that require you to bond to a
+                              central device (HID mouse, keyboard, etc.)
+                              won't work at all with this feature enabled
+                              since the factory reset will clear all of the
+                              bonding data stored on the chip, meaning the
+                              central device won't be able to reconnect.
+    MINIMUM_FIRMWARE_VERSION  Minimum firmware version to have some new features
+    URL                       The URL that is advertised. It must not longer
+                              than 17 bytes (excluding http:// and www.).
+                              Note: ".com/" ".net/" count as 1
     -----------------------------------------------------------------------*/
     #define FACTORYRESET_ENABLE         1
+    #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
     #define URL                         "http://www.adafruit.com"
 /*=========================================================================*/
 
@@ -86,7 +98,7 @@ void setup(void)
   delay(500);
 
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit UriBeacon Example"));
+  Serial.println(F("Adafruit Bluefruit EddyStone Example"));
   Serial.println(F("------------------------------------"));
 
   /* Initialise the module */
@@ -114,14 +126,16 @@ void setup(void)
   /* Print Bluefruit information */
   ble.info();
 
-  // Prompt user to migrate to EddyStone
-  Serial.println(F("Please consider to migrate to EddyStone since Google has retired uribeacon"));
+  // EddyStone commands are added from firmware 0.6.6
+  if ( !ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
+  {
+    error(F("EddyStone is only available from 0.6.6. Please perform firmware upgrade"));
+  }
 
   /* Set EddyStone URL beacon data */
-  Serial.println(F("Setting uri beacon to Adafruit website: "));
+  Serial.println(F("Setting EddyStone-url to Adafruit website: "));
 
-  // Older firmware use AT+BLEURIBEACON command
-  if (! ble.sendCommandCheckOK(F( "AT+BLEURIBEACON=" URL ))) {
+  if (! ble.sendCommandCheckOK(F( "AT+EDDYSTONEURL=" URL ))) {
     error(F("Couldnt set, is URL too long !?"));
   }
 
@@ -137,7 +151,38 @@ void setup(void)
 /**************************************************************************/
 void loop(void)
 {
+  // Print user's option
+  Serial.println(F("Please choose:"));
+  Serial.println(F("0 : Disable EddyStone URL"));
+  Serial.println(F("1 : Enable EddyStone URL"));
+  Serial.println(F("2 : Put EddyStone URL to Config Mode"));
 
+  // Get User's input
+  char option[BUFSIZE+1];
+  getUserInput(option, BUFSIZE);
+
+  // Proccess option
+  switch ( option[0] - '0' )
+  {
+    case 0:
+      ble.sendCommandCheckOK(F("AT+EDDYSTONEENABLE=off"));
+      break;
+
+    case 1:
+      ble.sendCommandCheckOK(F("AT+EDDYSTONEENABLE=on"));
+      break;
+
+    case 2:
+      Serial.println(F("EddyStone config's mode is enabled for 300 seconds"));
+      Serial.println(F("Please use Physical Web app to edit URL"));
+      ble.sendCommandCheckOK(F("AT+EDDYSTONECONFIGEN=300"));
+      break;
+
+    default:
+      Serial.print(F("Invalid input; "));
+      Serial.println(option);
+      break;
+  }
 }
 
 /**************************************************************************/
