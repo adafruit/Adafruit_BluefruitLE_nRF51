@@ -43,6 +43,12 @@
 #include "utility/errors.h"
 #include "utility/TimeoutTimer.h"
 
+#ifdef ARDUINO_SAMD_ZERO
+#define SerialDebug SerialUSB
+#else
+#define SerialDebug Serial
+#endif
+
 #define BLUEFRUIT_MODE_COMMAND   HIGH
 #define BLUEFRUIT_MODE_DATA      LOW
 #define BLE_DEFAULT_TIMEOUT      250

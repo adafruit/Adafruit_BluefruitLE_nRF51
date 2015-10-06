@@ -123,8 +123,8 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v)
   pinMode(m_irq_pin, INPUT);
 
   // Set CS pin to output and de-assert by default
-  digitalWrite(m_cs_pin, HIGH);
   pinMode(m_cs_pin, OUTPUT);
+  digitalWrite(m_cs_pin, HIGH);
 
   if (m_sck_pin == -1) {
     // hardware SPI
@@ -326,7 +326,7 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
     m_tx_buffer[m_tx_count++] = c;
   }
 
-  if (_verbose) Serial.print((char) c);
+  if (_verbose) SerialDebug.print((char) c);
 
   return 1;
 }
@@ -382,7 +382,6 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
 int Adafruit_BluefruitLE_SPI::available(void)
 {
   if (! m_rx_fifo.empty() ) {
-    //Serial.println( m_rx_fifo.count());
     return m_rx_fifo.count();
   }
 
@@ -397,7 +396,6 @@ int Adafruit_BluefruitLE_SPI::available(void)
     return m_rx_fifo.count();
   }else
   {
-    //Serial.print('.');
     return (digitalRead(m_irq_pin));
   }
 }
@@ -623,7 +621,7 @@ void Adafruit_BluefruitLE_SPI::spixfer(void *buff, size_t len) {
 uint8_t Adafruit_BluefruitLE_SPI::spixfer(uint8_t x) {
   if (m_sck_pin == -1) {
     uint8_t reply = SPI.transfer(x);
-    //Serial.println(reply, HEX);
+    //SerialDebug.println(reply, HEX);
     return reply;
   }
 
@@ -638,6 +636,6 @@ uint8_t Adafruit_BluefruitLE_SPI::spixfer(uint8_t x) {
       reply |= 1;
   }
   digitalWrite(m_sck_pin, LOW);
-  //Serial.println(reply, HEX);
+  //SerialDebug.println(reply, HEX);
   return reply;
 }
