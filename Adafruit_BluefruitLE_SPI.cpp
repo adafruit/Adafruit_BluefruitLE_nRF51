@@ -353,10 +353,10 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
         size -= len;
 
         sendPacket(SDEP_CMDTYPE_BLE_UARTTX, buf, (uint8_t) len, size ? 1 : 0);
-        getResponse();
-
         buf += len;
       }
+
+      getResponse();
     }
 
     return size;

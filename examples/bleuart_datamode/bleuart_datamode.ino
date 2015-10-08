@@ -170,7 +170,7 @@ void loop(void)
     inputs[n] = 0;
     // Send characters to Bluefruit
     Serial.print("Sending: ");
-    Serial.print(inputs);
+    Serial.println(inputs);
 
     // Send input data to host via Bluefruit
     ble.print(inputs);
