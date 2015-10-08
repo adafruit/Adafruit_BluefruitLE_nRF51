@@ -13,17 +13,19 @@
 *********************************************************************/
 
 /*
-  This example shows how to send HID Consumer Control Key, these include
-  System control (work on most systems: windows/osx/android/ios)
+  This example shows how to send HID Consumer Control Keys,
+  ncluding the following control key definitions:
+
+  System Control (works on most systems: Windows/OS X/Android/iOS)
     - Sound Mute
     - Brightness Increase, decrease
-  Media control (work on most systems)
+  Media Control (works on most systems)
     - PlayPause
     - MediaNext
-  Application launcher (work mainly on Windows 8/10)
+  Application Launchers (works mainly on Windows 8/10)
     - EmailReader
     - Calculator
-  Browser Specific (firefox,file explorer: mainly on Windows 8/10)
+  Browser Specific (Firefox, file explorer: mainly on Windows 8/10)
     - Back
     - Forward
     - Refresh
@@ -109,7 +111,7 @@ void error(const __FlashStringHelper*err) {
 /**************************************************************************/
 void setup(void)
 {
-  while (!Serial);  // required for Flora & Micro
+  while (!Serial);  // Required for Flora & Micro
   delay(500);
 
   Serial.begin(115200);
@@ -130,7 +132,7 @@ void setup(void)
     /* Perform a factory reset to make sure everything is in a known state */
     Serial.println(F("Performing a factory reset: "));
     if ( ! ble.factoryReset() ){
-      error(F("Couldn't factory reset"));
+      error(F("Factory reset failed!"));
     }
   }
 
@@ -141,21 +143,20 @@ void setup(void)
   /* Print Bluefruit information */
   ble.info();
 
-  // This demo only available for firmware from 0.6.6
-  // Request Bluefruit's firmware and check if it is valid
-  // This demo only available for firmware from 0.6.6
+  // This demo only works with firmware 0.6.6 and higher!
+  // Request the Bluefruit firmware rev and check if it is valid
   if ( !ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
   {
     error(F("This sketch requires firmware version " MINIMUM_FIRMWARE_VERSION " or higher!"));
   }
 
   /* Enable HID Service */
-  Serial.println(F("Enable HID Service (including Control Key): "));
-  if (! ble.sendCommandCheckOK(F( "AT+BleHIDEn=On"  ))) {
+  Serial.println(F("Enable HID Services (including Control Key): "));
+  if (! ble.sendCommandCheckOK(F( "AT+BLEHIDEN=On"  ))) {
     error(F("Failed to enable HID (firmware >=0.6.6?)"));
   }
 
-  /* Add or remove service requires a reset */
+  /* Adding or removing services requires a reset */
   Serial.println(F("Performing a SW reset (service changes require a reset): "));
   if (! ble.reset() ) {
     error(F("Couldn't reset??"));
@@ -165,7 +166,7 @@ void setup(void)
   Serial.println(F("**********************************************************"));
   Serial.println(F("Go to your phone's Bluetooth settings to pair your device"));
   Serial.println(F("Some Control Key works system-wide: mute, brightness ..."));
-  Serial.println(F("Some requires application specific: Media play/pause"));
+  Serial.println(F("Some are application specific: Media play/pause"));
   Serial.println(F("**********************************************************"));
 
   // Print pre-defined control keys
@@ -238,10 +239,10 @@ void getUserInput(char buffer[], uint8_t maxSize)
 void printDefinedControlKey(void)
 {
   Serial.println();
-  Serial.println(F("You can send a raw 16-bit (e.g 0x1234) usage key" "\n"
-                    "from USB HID Consumer Control Page or using the following"));
+  Serial.println(F("You can send a raw 16-bit (e.g 0x1234) usage key from the USB" "\n"
+                    "HID Consumer Control Page or use one of the the following keys:"));
 
-  Serial.println(F("List of pre-defined control key:"));
+  Serial.println(F("List of pre-defined control keys:"));
   Serial.print(F(
     "- BRIGHTNESS+" "\n"
     "- BRIGHTNESS-" "\n"

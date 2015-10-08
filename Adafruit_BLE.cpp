@@ -148,16 +148,16 @@ void Adafruit_BLE::info(void)
   bool v = _verbose;
   _verbose = false;
 
-  Serial.println(F("----------------"));
+  SerialDebug.println(F("----------------"));
 
   println(F("ATI"));
 
   while ( readline() ) {
     if ( !strcmp(buffer, "OK") || !strcmp(buffer, "ERROR")  ) break;
-    Serial.println(buffer);
+    SerialDebug.println(buffer);
   }
 
-  Serial.println(F("----------------"));
+  SerialDebug.println(F("----------------"));
 
   _verbose = v;
 }
@@ -186,7 +186,7 @@ bool Adafruit_BLE::isVersionAtLeast(char * versionString)
 bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply) {
   println(cmd);                   // send command
   if (_verbose) {
-    Serial.print("\n<- ");
+    SerialDebug.print("\n<- ");
   }
   (*reply) = readline_parseInt(); // parse integer response
   return waitForOK();
@@ -200,7 +200,7 @@ bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, int32
 bool Adafruit_BLE::sendCommandWithIntReply(const char cmd[], int32_t *reply) {
   println(cmd);                   // send command
   if (_verbose) {
-    Serial.print("\n<- ");
+    SerialDebug.print("\n<- ");
   }
   (*reply) = readline_parseInt(); // parse integer response
   return waitForOK();
@@ -236,11 +236,11 @@ bool Adafruit_BLE::sendCommandCheckOK(const char cmd[]) {
 bool Adafruit_BLE::waitForOK(void)
 {
   if (_verbose) {
-    Serial.print("\n<- ");
+    SerialDebug.print("\n<- ");
   }
 
   while ( readline() ) {
-    //Serial.println(buffer);
+    //SerialDebug.println(buffer);
     if ( strcmp(buffer, "OK") == 0 ) return true;
     if ( strcmp(buffer, "ERROR") == 0 ) return false;
   }
@@ -317,7 +317,7 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline)
   while (timeout--) {
     while(available()) {
       char c =  read();
-      //Serial.println(c);
+      //SerialDebug.println(c);
       if (c == '\r') continue;
 
       if (c == '\n') {
@@ -334,7 +334,7 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline)
 
       // Buffer is full
       if (replyidx >= BLE_BUFSIZE) {
-        //if (_verbose) { Serial.println("*overflow*"); }  // for my debuggin' only!
+        //if (_verbose) { SerialDebug.println("*overflow*"); }  // for my debuggin' only!
         timeout = 0;
         break;
       }
@@ -348,8 +348,8 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline)
   // Print out if is verbose
   if (_verbose && replyidx > 0)
   {
-    Serial.print(buffer);
-    if (replyidx < BLE_BUFSIZE) Serial.println();
+    SerialDebug.print(buffer);
+    if (replyidx < BLE_BUFSIZE) SerialDebug.println();
   }
 
   return replyidx;
