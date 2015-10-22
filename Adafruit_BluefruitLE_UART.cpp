@@ -45,7 +45,7 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_
 {
   _physical_transport = BLUEFRUIT_TRANSPORT_HWUART;
 
-#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
+#if SOFTWARE_SERIAL_AVAILABLE
   ss = 0;
 #endif
 
@@ -53,7 +53,7 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_
   mySerial = &port;
 }
 
-#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
+#if SOFTWARE_SERIAL_AVAILABLE
 /******************************************************************************/
 /*!
     @brief Instantiates a new instance of the Adafruit_BluefruitLE_UART class
@@ -110,7 +110,7 @@ bool Adafruit_BluefruitLE_UART::begin(boolean debug)
   if (hs) {
     hs->begin(9600);
   } else {
-#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
+#if SOFTWARE_SERIAL_AVAILABLE
     ss->begin(9600);
 #endif
   }
@@ -135,7 +135,7 @@ void Adafruit_BluefruitLE_UART::end(void)
   if (hs) {
     hs->end();
   } else {
-#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
+#if SOFTWARE_SERIAL_AVAILABLE
     ss->end();
 #endif
   }
