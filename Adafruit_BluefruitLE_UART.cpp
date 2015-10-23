@@ -109,6 +109,10 @@ bool Adafruit_BluefruitLE_UART::begin(boolean debug)
   // Bluefruit baudrate is fixed to 9600
   if (hs) {
     hs->begin(9600);
+
+    #ifdef ARDUINO_STM32F2_FEATHER
+    hs->enableFlowControl();
+    #endif
   } else {
 #if SOFTWARE_SERIAL_AVAILABLE
     ss->begin(9600);
