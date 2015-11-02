@@ -108,7 +108,7 @@ bool Adafruit_BLE::reset(void)
 /******************************************************************************/
 bool Adafruit_BLE::factoryReset(void)
 {
-  println("AT+FACTORYRESET");
+  println( F("AT+FACTORYRESET") );
   bool isOK = waitForOK();
 
   // Bluefruit need 1 second to reboot
@@ -225,7 +225,7 @@ bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, int32
 
   println(cmd);                   // send command
   if (_verbose) {
-    SerialDebug.print("\n<- ");
+    SerialDebug.print( F("\n<- ") );
   }
   (*reply) = readline_parseInt(); // parse integer response
   result = waitForOK();
@@ -250,7 +250,7 @@ bool Adafruit_BLE::sendCommandWithIntReply(const char cmd[], int32_t *reply) {
 
   println(cmd);                   // send command
   if (_verbose) {
-    SerialDebug.print("\n<- ");
+    SerialDebug.print( F("\n<- ") );
   }
   (*reply) = readline_parseInt(); // parse integer response
   result = waitForOK();
@@ -315,7 +315,7 @@ bool Adafruit_BLE::sendCommandCheckOK(const char cmd[])
 bool Adafruit_BLE::waitForOK(void)
 {
   if (_verbose) {
-    SerialDebug.print("\n<- ");
+    SerialDebug.print( F("\n<- ") );
   }
 
   while ( readline() ) {
@@ -445,12 +445,45 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline)
 /******************************************************************************/
 void Adafruit_BLE::loop(uint32_t period_ms)
 {
-//  static TimeoutTimer tt(0, 0);
-//
-//  if ( tt.expired() )
-//  {
-//    tt.set(period_ms)
-//  }
+  static TimeoutTimer tt;
+
+  if ( tt.expired() )
+  {
+    tt.set(period_ms);
+
+    bool v = _verbose;
+    _verbose = false;
+
+    uint8_t current_mode = _mode;
+
+    // switch mode if necessary to execute command
+    if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+
+    println( F("AT+EVENTSTATUS") );
+    readline();
+
+    // parse event status system_event, gatts_event
+    uint32_t system_event, gatts_event;
+    char * p_comma = NULL;
+
+    system_event = strtoul(this->buffer, &p_comma, 16);
+    gatts_event  = strtoul(p_comma+1, NULL, 16);
+
+    if ( this->_connect_callback && bitRead(system_event, EVENT_SYSTEM_CONNECT) )
+    {
+      this->_connect_callback();
+    }
+
+    if ( this->_disconnect_callback && bitRead(system_event, EVENT_SYSTEM_DISCONNECT) )
+    {
+      this->_disconnect_callback();
+    }
+
+    _verbose = v;
+
+    // switch back if necessary
+    if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+  }
 }
 
 /******************************************************************************/
@@ -460,9 +493,17 @@ void Adafruit_BLE::loop(uint32_t period_ms)
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void setHandleConnect( void (*fp) (void) )
+void Adafruit_BLE::setHandleConnect( void (*fp) (void) )
 {
+  this->_connect_callback = fp;
 
+  if ( fp )
+  {
+    sendCommandCheckOK( F("AT+EVENTENABLE=0x01") );
+  }else
+  {
+    sendCommandCheckOK( F("AT+EVENTDISABLE=0x01") );
+  }
 }
 
 /******************************************************************************/
@@ -472,9 +513,17 @@ void setHandleConnect( void (*fp) (void) )
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void setHandleDisconnect( void (*fp) (void) )
+void Adafruit_BLE::setHandleDisconnect( void (*fp) (void) )
 {
+  this->_disconnect_callback = fp;
 
+  if ( fp )
+  {
+    sendCommandCheckOK( F("AT+EVENTENABLE=0x02") );
+  }else
+  {
+    sendCommandCheckOK( F("AT+EVENTDISABLE=0x02") );
+  }
 }
 
 
