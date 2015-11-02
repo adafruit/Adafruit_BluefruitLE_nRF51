@@ -130,11 +130,21 @@ class Adafruit_BLE : public Stream
     void loop(uint32_t period_ms = 200);
 
     void setHandleDisconnect( void (*fp) (void) );
-    void setHandleConnect( void (*fp) (void) );
+    void setHandleConnect   ( void (*fp) (void) );
+
+    void setHandleBleUartRx( void (*fp) (char data[], uint16_t len) );
+    void setHandleBleMidiRx( void (*fp) (uint8_t data[], uint16_t len) );
 
   protected:
+    // helper
+    void install_callback(bool enable, uint8_t system_id, uint8_t gatts_id);
+//    void bytearray_parse(char* bytearray, )
+
     void (*_disconnect_callback) (void);
     void (*_connect_callback) (void);
+
+    void (*_ble_uart_rx_callback) (char data[], uint16_t len);
+    void (*_ble_midi_rx_callback) (uint8_t data[], uint16_t len);
 };
 
 //struct GattServer_t

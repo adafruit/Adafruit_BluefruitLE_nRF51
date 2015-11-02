@@ -43,10 +43,28 @@ enum {
   EVENT_SYSTEM_CONNECT     = 0,
   EVENT_SYSTEM_DISCONNECT  = 1,
   EVENT_SYSTEM_BLE_UART_RX = 8,
-  EVENT_SYSTEM_BLE_MIDI_RX = 9,
+  EVENT_SYSTEM_BLE_MIDI_RX = 10,
 };
 
+void Adafruit_BLE::install_callback(bool enable, uint8_t system_id, uint8_t gatts_id)
+{
+  bool v = _verbose;
+  _verbose = true;
 
+  uint8_t current_mode = _mode;
+
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+
+  print( enable ?  F("AT+EVENTENABLE=0x") : F("AT+EVENTDISABLE=0x") );
+  println( bit(system_id), HEX );
+  waitForOK();
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+
+  _verbose = v;
+}
 /******************************************************************************/
 /*!
     @brief  Constructor
@@ -58,8 +76,10 @@ Adafruit_BLE::Adafruit_BLE(void)
   _mode    = BLUEFRUIT_MODE_COMMAND;
   _timeout = BLE_DEFAULT_TIMEOUT;
 
-  _disconnect_callback = NULL;
-  _connect_callback    = NULL;
+  _disconnect_callback  = NULL;
+  _connect_callback     = NULL;
+  _ble_uart_rx_callback = NULL;
+  _ble_midi_rx_callback = NULL;
 }
 
 /******************************************************************************/
@@ -479,10 +499,33 @@ void Adafruit_BLE::loop(uint32_t period_ms)
       this->_disconnect_callback();
     }
 
-    _verbose = v;
+    if ( this->_ble_uart_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX) )
+    {
+      //     uint8_t _verbose = true;
+      println( F("AT+BLEUARTRX") );
+      uint16_t len = readline();
+
+      this->_ble_uart_rx_callback(this->buffer, len);
+
+      waitForOK();
+    }
+
+    if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
+    {
+
+      //    uint8_t _verbose = true;
+      println( F("AT+BLEMIDIRX") );
+      uint16_t len = readline();
+
+      this->_ble_midi_rx_callback( (uint8_t*) this->buffer, len);
+
+      waitForOK();
+    }
 
     // switch back if necessary
     if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+
+    _verbose = v;
   }
 }
 
@@ -496,14 +539,7 @@ void Adafruit_BLE::loop(uint32_t period_ms)
 void Adafruit_BLE::setHandleConnect( void (*fp) (void) )
 {
   this->_connect_callback = fp;
-
-  if ( fp )
-  {
-    sendCommandCheckOK( F("AT+EVENTENABLE=0x01") );
-  }else
-  {
-    sendCommandCheckOK( F("AT+EVENTDISABLE=0x01") );
-  }
+  install_callback(fp != NULL, EVENT_SYSTEM_CONNECT, 0);
 }
 
 /******************************************************************************/
@@ -516,15 +552,33 @@ void Adafruit_BLE::setHandleConnect( void (*fp) (void) )
 void Adafruit_BLE::setHandleDisconnect( void (*fp) (void) )
 {
   this->_disconnect_callback = fp;
-
-  if ( fp )
-  {
-    sendCommandCheckOK( F("AT+EVENTENABLE=0x02") );
-  }else
-  {
-    sendCommandCheckOK( F("AT+EVENTDISABLE=0x02") );
-  }
+  install_callback(fp != NULL, EVENT_SYSTEM_DISCONNECT, 0);
 }
 
+/******************************************************************************/
+/*!
+    @brief  Set handle for BLE Uart Rx callback
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setHandleBleUartRx( void (*fp) (char data[], uint16_t len) )
+{
+  this->_ble_uart_rx_callback = fp;
+  install_callback(fp != NULL, EVENT_SYSTEM_BLE_UART_RX, 0);
+}
+
+/******************************************************************************/
+/*!
+    @brief  Set handle for BLE MIDI Rx callback
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setHandleBleMidiRx( void (*fp) (uint8_t data[], uint16_t len) )
+{
+  this->_ble_midi_rx_callback = fp;
+  install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, 0);
+}
 
 
