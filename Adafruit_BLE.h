@@ -123,6 +123,18 @@ class Adafruit_BLE : public Stream
 
     // read one line and convert the string to integer number
     int32_t readline_parseInt(void);
+
+    /////////////////////
+    // callback functions
+    /////////////////////
+    void loop(uint32_t period_ms = 200);
+
+    void setHandleDisconnect( void (*fp) (void) );
+    void setHandleConnect( void (*fp) (void) );
+
+  protected:
+    void (*_disconnect_callback) (void);
+    void (*_connect_callback) (void);
 };
 
 //struct GattServer_t
