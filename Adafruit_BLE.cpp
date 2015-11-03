@@ -467,7 +467,7 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline)
     @return    None
 */
 /******************************************************************************/
-void Adafruit_BLE::loop(uint32_t period_ms)
+void Adafruit_BLE::update(uint32_t period_ms)
 {
   static TimeoutTimer tt;
 
@@ -487,7 +487,7 @@ void Adafruit_BLE::loop(uint32_t period_ms)
     readline();
 
     // parse event status system_event, gatts_event
-    char tempbuf[BLE_BUFSIZE+1];
+    uint8_t tempbuf[BLE_BUFSIZE+1];
     uint32_t system_event, gatts_event;
     char * p_comma = NULL;
 
@@ -514,7 +514,7 @@ void Adafruit_BLE::loop(uint32_t period_ms)
 
       waitForOK();
 
-      this->_ble_uart_rx_callback(tempbuf, len);
+      this->_ble_uart_rx_callback( (char*) tempbuf, len);
 
     }
 
@@ -528,7 +528,7 @@ void Adafruit_BLE::loop(uint32_t period_ms)
 
       waitForOK();
 
-      this->_ble_midi_rx_callback( tempbuf, len);
+      this->_ble_midi_rx_callback(tempbuf, len);
     }
 
     // switch back if necessary
@@ -545,7 +545,7 @@ void Adafruit_BLE::loop(uint32_t period_ms)
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setHandleConnect( void (*fp) (void) )
+void Adafruit_BLE::setConnectCallback( void (*fp) (void) )
 {
   this->_connect_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_CONNECT, 0);
@@ -558,7 +558,7 @@ void Adafruit_BLE::setHandleConnect( void (*fp) (void) )
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setHandleDisconnect( void (*fp) (void) )
+void Adafruit_BLE::setDisconnectCallback( void (*fp) (void) )
 {
   this->_disconnect_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_DISCONNECT, 0);
@@ -571,7 +571,7 @@ void Adafruit_BLE::setHandleDisconnect( void (*fp) (void) )
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setHandleBleUartRx( void (*fp) (char data[], uint16_t len) )
+void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) )
 {
   this->_ble_uart_rx_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_BLE_UART_RX, 0);
@@ -584,7 +584,7 @@ void Adafruit_BLE::setHandleBleUartRx( void (*fp) (char data[], uint16_t len) )
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setHandleBleMidiRx( void (*fp) (uint8_t data[], uint16_t len) )
+void Adafruit_BLE::setBleMidiRxCallback( void (*fp) (uint8_t data[], uint16_t len) )
 {
   this->_ble_midi_rx_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, 0);

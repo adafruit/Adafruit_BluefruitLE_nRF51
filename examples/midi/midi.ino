@@ -44,7 +44,7 @@ void error(const __FlashStringHelper*err) {
 }
 
 // callback
-void handleConnected(void)
+void connected(void)
 {
   isConnected = true;
   
@@ -59,13 +59,13 @@ void handleConnected(void)
   Serial.println(F("HOLD ONTO YOUR BUTTS."));
 }
 
-void handleDisconnected(void)
+void disconnected(void)
 {
   Serial.println("disconnected");
   isConnected = false;
 }
 
-void handleMidiReceive(uint8_t data[], uint16_t len)
+void BleMidiRX(uint8_t data[], uint16_t len)
 {
   Serial.println("MIDI received");
 
@@ -113,9 +113,9 @@ void setup(void)
   ble.info();
   
   /* Set callbacks */
-  ble.setHandleConnect(handleConnected);
-  ble.setHandleDisconnect(handleDisconnected);
-  ble.setHandleBleMidiRx(handleMidiReceive);
+  ble.setConnectCallback(connected);
+  ble.setDisconnectCallback(disconnected);
+  ble.setBleMidiRxCallback(BleMidiRX);
 
   /* Change the device name to make it easier to find */
   Serial.println(F("Setting device name to MIDI': "));
@@ -155,7 +155,7 @@ void setup(void)
 void loop(void)
 {
   // interval for each scanning ~ 500ms (non blocking)
-  ble.loop(500);
+  ble.update(500);
   
   if ( isConnected )
   {  

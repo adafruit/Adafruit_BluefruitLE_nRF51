@@ -127,13 +127,13 @@ class Adafruit_BLE : public Stream
     /////////////////////
     // callback functions
     /////////////////////
-    void loop(uint32_t period_ms = 200);
+    void update(uint32_t period_ms = 200);
 
-    void setHandleDisconnect( void (*fp) (void) );
-    void setHandleConnect   ( void (*fp) (void) );
+    void setDisconnectCallback( void (*fp) (void) );
+    void setConnectCallback   ( void (*fp) (void) );
 
-    void setHandleBleUartRx( void (*fp) (char data[], uint16_t len) );
-    void setHandleBleMidiRx( void (*fp) (uint8_t data[], uint16_t len) );
+    void setBleUartRxCallback( void (*fp) (char data[], uint16_t len) );
+    void setBleMidiRxCallback( void (*fp) (uint8_t data[], uint16_t len) );
 
   protected:
     // helper
