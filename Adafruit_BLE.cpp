@@ -50,7 +50,7 @@ enum {
   //  11 reserved
 };
 
-void Adafruit_BLE::install_callback(bool enable, uint8_t system_id, uint8_t gatts_id)
+void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_id)
 {
   bool v = _verbose;
   _verbose = true;
@@ -61,7 +61,17 @@ void Adafruit_BLE::install_callback(bool enable, uint8_t system_id, uint8_t gatt
   if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
 
   print( enable ?  F("AT+EVENTENABLE=0x") : F("AT+EVENTDISABLE=0x") );
-  println( bit(system_id), HEX );
+  print( (system_id < 0) ? 0 : bit(system_id), HEX );
+
+  if ( gatts_id >= 0 )
+  {
+    print( F(",0x") );
+    println( bit(gatts_id), HEX );
+  }
+
+  println();
+
+
   waitForOK();
 
   // switch back if necessary
@@ -84,6 +94,7 @@ Adafruit_BLE::Adafruit_BLE(void)
   _connect_callback     = NULL;
   _ble_uart_rx_callback = NULL;
   _ble_midi_rx_callback = NULL;
+  _ble_gatt_rx_callback = NULL;
 }
 
 /******************************************************************************/
@@ -561,6 +572,9 @@ void Adafruit_BLE::update(uint32_t period_ms)
     system_event = strtoul(this->buffer, &p_comma, 16);
     gatts_event  = strtoul(p_comma+1, NULL, 16);
 
+    //
+    // System Event
+    //
     if ( this->_connect_callback && bitRead(system_event, EVENT_SYSTEM_CONNECT) )
     {
       this->_connect_callback();
@@ -593,6 +607,27 @@ void Adafruit_BLE::update(uint32_t period_ms)
       this->_ble_midi_rx_callback(tempbuf, len);
     }
 
+    //
+    // Gatt Event
+    //
+    if ( this->_ble_gatt_rx_callback && gatts_event )
+    {
+//      _verbose = true;
+      for(uint8_t charid=1; charid < 30; charid++)
+      {
+        if ( bitRead(gatts_event, charid-1) )
+        {
+          print( F("AT+GATTCHARRAW=") ); // use RAW command version
+          println(charid);
+
+          uint16_t len = readraw(); // readraw swallow OK/ERROR already
+          memcpy(tempbuf, this->buffer, len);
+
+          this->_ble_gatt_rx_callback(charid, tempbuf, len);
+        }
+      }
+    }
+
     // switch back if necessary
     if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
 
@@ -610,7 +645,7 @@ void Adafruit_BLE::update(uint32_t period_ms)
 void Adafruit_BLE::setConnectCallback( void (*fp) (void) )
 {
   this->_connect_callback = fp;
-  install_callback(fp != NULL, EVENT_SYSTEM_CONNECT, 0);
+  install_callback(fp != NULL, EVENT_SYSTEM_CONNECT, -1);
 }
 
 /******************************************************************************/
@@ -623,7 +658,7 @@ void Adafruit_BLE::setConnectCallback( void (*fp) (void) )
 void Adafruit_BLE::setDisconnectCallback( void (*fp) (void) )
 {
   this->_disconnect_callback = fp;
-  install_callback(fp != NULL, EVENT_SYSTEM_DISCONNECT, 0);
+  install_callback(fp != NULL, EVENT_SYSTEM_DISCONNECT, -1);
 }
 
 /******************************************************************************/
@@ -636,7 +671,7 @@ void Adafruit_BLE::setDisconnectCallback( void (*fp) (void) )
 void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) )
 {
   this->_ble_uart_rx_callback = fp;
-  install_callback(fp != NULL, EVENT_SYSTEM_BLE_UART_RX, 0);
+  install_callback(fp != NULL, EVENT_SYSTEM_BLE_UART_RX, -1);
 }
 
 /******************************************************************************/
@@ -649,6 +684,21 @@ void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) 
 void Adafruit_BLE::setBleMidiRxCallback( void (*fp) (uint8_t data[], uint16_t len) )
 {
   this->_ble_midi_rx_callback = fp;
-  install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, 0);
+  install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, -1);
+}
+
+/******************************************************************************/
+/*!
+    @brief  Set handle for BLE Gatt Rx callback
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setBleGattRxCallback(int32_t chars_idx,  void (*fp) (int32_t, uint8_t[], uint16_t) )
+{
+  if ( chars_idx == 0) return;
+
+  this->_ble_gatt_rx_callback = fp;
+  install_callback(fp != NULL, -1, chars_idx-1);
 }
 

@@ -140,17 +140,22 @@ class Adafruit_BLE : public Stream
 
     void setBleUartRxCallback( void (*fp) (char data[], uint16_t len) );
     void setBleMidiRxCallback( void (*fp) (uint8_t data[], uint16_t len) );
+    void setBleGattRxCallback( int32_t chars_idx, void (*fp) (int32_t, uint8_t[], uint16_t) );
 
   protected:
     // helper
-    void install_callback(bool enable, uint8_t system_id, uint8_t gatts_id);
-//    void bytearray_parse(char* bytearray, )
+    void install_callback(bool enable, int8_t system_id, int8_t gatts_id);
+
 
     void (*_disconnect_callback) (void);
     void (*_connect_callback) (void);
 
     void (*_ble_uart_rx_callback) (char data[], uint16_t len);
     void (*_ble_midi_rx_callback) (uint8_t data[], uint16_t len);
+
+    void (*_ble_gatt_rx_callback) (int32_t chars_id, uint8_t data[], uint16_t len);
+
+
 };
 
 //struct GattServer_t
