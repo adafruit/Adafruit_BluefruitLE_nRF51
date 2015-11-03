@@ -487,6 +487,7 @@ void Adafruit_BLE::loop(uint32_t period_ms)
     readline();
 
     // parse event status system_event, gatts_event
+    char tempbuf[BLE_BUFSIZE+1];
     uint32_t system_event, gatts_event;
     char * p_comma = NULL;
 
@@ -507,22 +508,27 @@ void Adafruit_BLE::loop(uint32_t period_ms)
     {
       //     uint8_t _verbose = true;
       println( F("AT+BLEUARTRX") );
-      uint16_t len = readline();
 
-      this->_ble_uart_rx_callback(this->buffer, len);
+      uint16_t len = readline();
+      memcpy(tempbuf, this->buffer, len);
 
       waitForOK();
+
+      this->_ble_uart_rx_callback(tempbuf, len);
+
     }
 
     if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
     {
       //    uint8_t _verbose = true;
       println( F("AT+BLEMIDIRX") );
-      uint16_t len = readline();
 
-      this->_ble_midi_rx_callback( (uint8_t*) this->buffer, len);
+      uint16_t len = readline();
+      memcpy(tempbuf, this->buffer, len);
 
       waitForOK();
+
+      this->_ble_midi_rx_callback( tempbuf, len);
     }
 
     // switch back if necessary
