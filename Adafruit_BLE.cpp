@@ -42,8 +42,12 @@
 enum {
   EVENT_SYSTEM_CONNECT     = 0,
   EVENT_SYSTEM_DISCONNECT  = 1,
+
   EVENT_SYSTEM_BLE_UART_RX = 8,
+  // 9 reserved
+
   EVENT_SYSTEM_BLE_MIDI_RX = 10,
+  //  11 reserved
 };
 
 void Adafruit_BLE::install_callback(bool enable, uint8_t system_id, uint8_t gatts_id)
@@ -512,7 +516,6 @@ void Adafruit_BLE::loop(uint32_t period_ms)
 
     if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
     {
-
       //    uint8_t _verbose = true;
       println( F("AT+BLEMIDIRX") );
       uint16_t len = readline();
@@ -580,5 +583,4 @@ void Adafruit_BLE::setHandleBleMidiRx( void (*fp) (uint8_t data[], uint16_t len)
   this->_ble_midi_rx_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, 0);
 }
-
 
