@@ -124,6 +124,12 @@ class Adafruit_BLE : public Stream
     // read one line and convert the string to integer number
     int32_t readline_parseInt(void);
 
+    uint16_t readraw(uint16_t timeout);
+    uint16_t readraw(void)
+    {
+      return readraw(_timeout);
+    }
+
     /////////////////////
     // callback functions
     /////////////////////

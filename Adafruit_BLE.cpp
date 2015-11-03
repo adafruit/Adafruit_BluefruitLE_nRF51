@@ -384,14 +384,16 @@ uint16_t Adafruit_BLE::readline(char * buf, uint16_t bufsize)
   uint16_t len = bufsize;
   uint16_t rd  = 0;
 
-  while ( (len > 0) && ((rd = readline()) == BLE_BUFSIZE)  )
+  do
   {
+    rd = readline();
+
     uint16_t n = min(len, rd);
     memcpy(buf, buffer, n);
 
     buf += n;
     len -= n;
-  }
+  } while ( (len > 0) && (rd == BLE_BUFSIZE) );
 
 //  buf[bufsize - len] = 0; // null terminator
 
@@ -460,6 +462,71 @@ uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline)
 
 /******************************************************************************/
 /*!
+    @brief  Get raw binary data to internal buffer, only stop when encountering
+            either "OK\r\n" or "ERROR\r\n" or timed out. Buffer does not contain
+            OK or ERROR
+
+    @param[in] timeout
+               Timeout for each read() operation
+
+    @return    The number of bytes read excluding OK, ERROR ending.
+*/
+/******************************************************************************/
+uint16_t Adafruit_BLE::readraw(uint16_t timeout)
+{
+  uint16_t replyidx = 0;
+
+  while (timeout--) {
+    while(available()) {
+      char c =  read();
+
+      if (c == '\n')
+      {
+        // done if ends with "OK\r\n"
+        if ( (replyidx >= 3) && !strncmp(this->buffer + replyidx-3, "OK\r", 3) )
+        {
+          replyidx -= 3; // chop OK\r
+          timeout = 0;
+          break;
+        }
+        // done if ends with "ERROR\r\n"
+        else if ((replyidx >= 6) && !strncmp(this->buffer + replyidx-6, "ERROR\r", 6))
+        {
+          replyidx -= 6; // chop ERROR\r
+          timeout = 0;
+          break;
+        }
+      }
+
+      this->buffer[replyidx] = c;
+      replyidx++;
+
+      // Buffer is full
+      if (replyidx >= BLE_BUFSIZE) {
+        //if (_verbose) { SerialDebug.println("*overflow*"); }  // for my debuggin' only!
+        timeout = 0;
+        break;
+      }
+    }
+
+    if (timeout == 0) break;
+    delay(1);
+  }
+  this->buffer[replyidx] = 0;  // null term
+
+  // Print out if is verbose
+//  if (_verbose && replyidx > 0)
+//  {
+//    SerialDebug.print(buffer);
+//    if (replyidx < BLE_BUFSIZE) SerialDebug.println();
+//  }
+
+  return replyidx;
+}
+
+
+/******************************************************************************/
+/*!
     @brief  Get (multiple) lines of response data into internal buffer.
 
     @param[in] period_ms
@@ -506,27 +573,22 @@ void Adafruit_BLE::update(uint32_t period_ms)
 
     if ( this->_ble_uart_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX) )
     {
-      //     uint8_t _verbose = true;
+      // _verbose = true;
       println( F("AT+BLEUARTRX") );
 
-      uint16_t len = readline();
-      memcpy(tempbuf, this->buffer, len);
-
+      uint16_t len = readline(tempbuf, BLE_BUFSIZE);
       waitForOK();
 
       this->_ble_uart_rx_callback( (char*) tempbuf, len);
-
     }
 
     if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
     {
-      //    uint8_t _verbose = true;
-      println( F("AT+BLEMIDIRX") );
+//      _verbose = true;
+      println( F("AT+BLEMIDIRXRAW") ); // use RAW command version
 
-      uint16_t len = readline();
+      uint16_t len = readraw(); // readraw swallow OK/ERROR already
       memcpy(tempbuf, this->buffer, len);
-
-      waitForOK();
 
       this->_ble_midi_rx_callback(tempbuf, len);
     }
