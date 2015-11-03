@@ -105,7 +105,7 @@ void setup(void)
     }
   }
 
-  
+  //ble.sendCommandCheckOK(F("AT+uartflow=off"));
   ble.echo(false);
 
   Serial.println("Requesting Bluefruit info:");
@@ -154,14 +154,14 @@ void setup(void)
 
 void loop(void)
 {
-  // interval for each scanning ~ 200ms (non blocking)
-  ble.loop(200);
+  // interval for each scanning ~ 500ms (non blocking)
+  ble.loop(500);
   
   if ( isConnected )
   {  
-//    ble.println("AT+BLEMIDITX=90-30-64-34-64-37-64");
-//    delay(LOAD_TEST_MS);
-//    ble.println("AT+BLEMIDITX=80-30-64-34-64-37-64");
-//    delay(LOAD_TEST_MS);
+    ble.sendCommandCheckOK( F("AT+BLEMIDITX=90-30-64-34-64-37-64") );
+    delay(LOAD_TEST_MS);
+    ble.sendCommandCheckOK( F("AT+BLEMIDITX=80-30-64-34-64-37-64") );
+    delay(LOAD_TEST_MS);
   }
 }
