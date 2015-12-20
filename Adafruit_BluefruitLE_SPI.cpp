@@ -41,6 +41,10 @@
   #define min(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
+#define SPI_CS_ENABLE()           digitalWrite(m_cs_pin, LOW)
+#define SPI_CS_DISABLE()          digitalWrite(m_cs_pin, HIGH)
+
+
 
 SPISettings bluefruitSPI(4000000, MSBFIRST, SPI_MODE0);
 
@@ -493,12 +497,8 @@ void Adafruit_BluefruitLE_SPI::flush(void)
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::getResponse(void)
 {
-  // Blocking wait until IRQ is asserted
-  while ( !digitalRead(m_irq_pin) ) {}
-
-  // There is data from Bluefruit & enough room in the fifo
-  while ( digitalRead(m_irq_pin) &&
-          m_rx_fifo.remaining() >= SDEP_MAX_PACKETSIZE )
+  bool hasData = true;
+  while ( hasData && m_rx_fifo.remaining() >= SDEP_MAX_PACKETSIZE )
   {
     // Get a SDEP packet
     sdepMsgResponse_t msg_response;
@@ -513,8 +513,7 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
     }
 
     // No more packet data
-    if ( !msg_response.header.more_data ) break;
-
+    hasData = msg_response.header.more_data;
     // It takes a bit since all Data received to IRQ to get LOW
     // May need to delay a bit for it to be stable before the next try
     // delayMicroseconds(SPI_DEFAULT_DELAY_US);
@@ -536,35 +535,68 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 {
+  // Blocking wait until IRQ is asserted
+  TimeoutTimer tt(_timeout);
+  while (!digitalRead(m_irq_pin)) {
+    //    Serial.printf("wait on IRQ pin: %d\r\n", millis());
+    if (tt.expired()) {
+      break;
+    }
+  }
+  
   sdepMsgHeader_t* p_header = &p_response->header;
 
   if (m_sck_pin == -1)
     SPI.beginTransaction(bluefruitSPI);
   SPI_CS_ENABLE();
+  delayMicroseconds(100); // per spec
 
-  TimeoutTimer tt(_timeout);
 
-  // Bluefruit may not be ready
-  while ( ( (p_header->msg_type = spixfer(0xff)) == SPI_IGNORED_BYTE ) && !tt.expired() )
-  {
-    // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
-    SPI_CS_DISABLE();
-    delayMicroseconds(SPI_DEFAULT_DELAY_US);
-    SPI_CS_ENABLE();
-  }
+  tt.restart();
+
+  do {
+    p_header->msg_type = spixfer(0xff);
+    if (p_header->msg_type == SPI_IGNORED_BYTE) {
+      // give it a chance...
+      SPI_CS_DISABLE();
+      delayMicroseconds(SPI_DEFAULT_DELAY_US);
+      SPI_CS_ENABLE();
+    } else if (p_header->msg_type == SPI_OVERREAD_BYTE) {
+          Serial.printf("over read byte!\r\n");
+      SPI_CS_DISABLE();
+      // wait for the clock to be enabled..
+      while (!digitalRead(m_irq_pin)) {
+            Serial.printf("wait on IRQ pin: %d\r\n", millis());
+        if (tt.expired()) {
+          break;
+        }
+      }
+      if (!digitalRead(m_irq_pin)) {
+            Serial.println("data not ready!");
+        break;
+      }
+      SPI_CS_ENABLE();
+    }
+    if (tt.expired()) {
+      break;
+    }
+  }  while (p_header->msg_type == SPI_IGNORED_BYTE || p_header->msg_type == SPI_OVERREAD_BYTE);
 
   bool result=false;
 
   // Not a loop, just a way to avoid goto with error handling
   do
   {
-    if ( tt.expired() ) break;
-
-    // Look for the header
+    // Look for the header; note that we should always get ther right header at this point, and not doing so will really mess up things. This whole loop isn't needed with my fix above..
     while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR )
     {
       p_header->msg_type = spixfer(0xff);
+      // Also check the timeout..
+      if ( tt.expired() ) break;
     }
+    
+    if ( tt.expired() ) break;
+    
     memset( (&p_header->msg_type)+1, 0xff, sizeof(sdepMsgHeader_t) - 1);
     spixfer((&p_header->msg_type)+1, sizeof(sdepMsgHeader_t) - 1);
 
@@ -590,6 +622,7 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
     spixfer(p_response->payload, p_header->length);
 
     result = true;
+    break; // Uh, no break before? Seriously..how did this work at all?
   }while(0);
 
   SPI_CS_DISABLE();
