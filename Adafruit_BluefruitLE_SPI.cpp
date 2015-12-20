@@ -562,17 +562,17 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
       delayMicroseconds(SPI_DEFAULT_DELAY_US);
       SPI_CS_ENABLE();
     } else if (p_header->msg_type == SPI_OVERREAD_BYTE) {
-          Serial.printf("over read byte!\r\n");
+//          Serial.printf("over read byte!\r\n");
       SPI_CS_DISABLE();
       // wait for the clock to be enabled..
       while (!digitalRead(m_irq_pin)) {
-            Serial.printf("wait on IRQ pin: %d\r\n", millis());
+//            Serial.printf("wait on IRQ pin: %d\r\n", millis());
         if (tt.expired()) {
           break;
         }
       }
       if (!digitalRead(m_irq_pin)) {
-            Serial.println("data not ready!");
+//            Serial.println("data not ready!");
         break;
       }
       SPI_CS_ENABLE();
