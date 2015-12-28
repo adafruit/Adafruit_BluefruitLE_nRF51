@@ -162,7 +162,10 @@ void loop(void)
     while (remaining > 0)
     {
       ble.print("AT+BLEUARTTX=");
-      ble.println("98765432100123456789");
+      ble.print("AT+BLEUARTTX=");
+      ble.println("=^..^= =^..^= =^..^=");   // Cats
+      //ble.println("~(__^>        <^__)~"); // Rats
+      //ble.println("01234567899876543210"); // Yawn
       if (! ble.waitForOK() )
       {
         Serial.println(F("Failed to send?"));
