@@ -447,7 +447,7 @@ int Adafruit_BluefruitLE_SPI::peek(void)
   uint8_t ch;
 
   // try to grab from buffer first...
-  if ( !m_rx_fifo.peek(&ch) ) {
+  if ( m_rx_fifo.peek(&ch) ) {
     return (int)ch;
   }
 
