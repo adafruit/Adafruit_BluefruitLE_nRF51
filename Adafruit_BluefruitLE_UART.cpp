@@ -110,7 +110,7 @@ bool Adafruit_BluefruitLE_UART::begin(boolean debug)
   if (hs) {
     hs->begin(9600);
 
-    #ifdef ARDUINO_STM32F2_FEATHER
+    #ifdef ARDUINO_STM32_FEATHER
     hs->enableFlowControl();
     #endif
   } else {
