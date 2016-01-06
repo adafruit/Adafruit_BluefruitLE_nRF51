@@ -41,10 +41,6 @@
   #define min(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-#define SPI_CS_ENABLE()           digitalWrite(m_cs_pin, LOW)
-#define SPI_CS_DISABLE()          digitalWrite(m_cs_pin, HIGH)
-
-
 
 SPISettings bluefruitSPI(4000000, MSBFIRST, SPI_MODE0);
 
@@ -622,7 +618,6 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
     spixfer(p_response->payload, p_header->length);
 
     result = true;
-    break; // Uh, no break before? Seriously..how did this work at all?
   }while(0);
 
   SPI_CS_DISABLE();
