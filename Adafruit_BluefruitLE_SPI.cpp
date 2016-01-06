@@ -493,8 +493,8 @@ void Adafruit_BluefruitLE_SPI::flush(void)
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::getResponse(void)
 {
-  bool hasData = true;
-  while ( hasData && m_rx_fifo.remaining() >= SDEP_MAX_PACKETSIZE )
+  // Try to read data from Bluefruit if there is enough room in the fifo
+  while ( m_rx_fifo.remaining() >= SDEP_MAX_PACKETSIZE )
   {
     // Get a SDEP packet
     sdepMsgResponse_t msg_response;
@@ -509,7 +509,8 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
     }
 
     // No more packet data
-    hasData = msg_response.header.more_data;
+    if ( !msg_response.header.more_data ) break;
+
     // It takes a bit since all Data received to IRQ to get LOW
     // May need to delay a bit for it to be stable before the next try
     // delayMicroseconds(SPI_DEFAULT_DELAY_US);
@@ -531,13 +532,11 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 {
-  // Blocking wait until IRQ is asserted
-  TimeoutTimer tt(_timeout);
-  while (!digitalRead(m_irq_pin)) {
-    //    Serial.printf("wait on IRQ pin: %d\r\n", millis());
-    if (tt.expired()) {
-      break;
-    }
+  // Wait until IRQ is asserted, double timeout since some commands take long time to start responding
+  TimeoutTimer tt(2*_timeout);
+  
+  while ( !digitalRead(m_irq_pin) ) {
+    if (tt.expired()) return false;
   }
   
   sdepMsgHeader_t* p_header = &p_response->header;
@@ -545,36 +544,39 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
   if (m_sck_pin == -1)
     SPI.beginTransaction(bluefruitSPI);
   SPI_CS_ENABLE();
-  delayMicroseconds(100); // per spec
 
-
-  tt.restart();
+  tt.set(_timeout);
 
   do {
+    if ( tt.expired() ) break;
+
     p_header->msg_type = spixfer(0xff);
-    if (p_header->msg_type == SPI_IGNORED_BYTE) {
-      // give it a chance...
+
+    if (p_header->msg_type == SPI_IGNORED_BYTE)
+    {
+      // Bluefruit may not be ready
+      // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
       SPI_CS_DISABLE();
       delayMicroseconds(SPI_DEFAULT_DELAY_US);
       SPI_CS_ENABLE();
-    } else if (p_header->msg_type == SPI_OVERREAD_BYTE) {
-//          Serial.printf("over read byte!\r\n");
+    }
+    else if (p_header->msg_type == SPI_OVERREAD_BYTE)
+    {
+      // IRQ may not be pulled down by Bluefruit when returning all data in previous transfer.
+      // This could happen when Arduino MCU is running at fast rate comparing to Bluefruit's MCU,
+      // causing an SPI_OVERREAD_BYTE to be returned at stage.
+      //
+      // Walkaround: Disable & Re-enable CS with a bit of delay and keep waiting
+      // TODO IRQ is supposed to be OFF then ON, it is better to use GPIO trigger interrupt.
+
       SPI_CS_DISABLE();
       // wait for the clock to be enabled..
-      while (!digitalRead(m_irq_pin)) {
-//            Serial.printf("wait on IRQ pin: %d\r\n", millis());
-        if (tt.expired()) {
-          break;
-        }
-      }
-      if (!digitalRead(m_irq_pin)) {
-//            Serial.println("data not ready!");
-        break;
-      }
+//      while (!digitalRead(m_irq_pin)) {
+//        if ( tt.expired() ) break;
+//      }
+//      if (!digitalRead(m_irq_pin)) break;
+      delayMicroseconds(SPI_DEFAULT_DELAY_US);
       SPI_CS_ENABLE();
-    }
-    if (tt.expired()) {
-      break;
     }
   }  while (p_header->msg_type == SPI_IGNORED_BYTE || p_header->msg_type == SPI_OVERREAD_BYTE);
 
@@ -583,12 +585,12 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
   // Not a loop, just a way to avoid goto with error handling
   do
   {
-    // Look for the header; note that we should always get ther right header at this point, and not doing so will really mess up things. This whole loop isn't needed with my fix above..
-    while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR )
+    // Look for the header
+    // note that we should always get the right header at this point, and not doing so will really mess up things.
+    // This whole loop isn't needed with my fix above..
+    while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR && !tt.expired() )
     {
       p_header->msg_type = spixfer(0xff);
-      // Also check the timeout..
-      if ( tt.expired() ) break;
     }
     
     if ( tt.expired() ) break;
