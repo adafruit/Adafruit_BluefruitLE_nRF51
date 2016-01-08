@@ -140,6 +140,15 @@ bool Adafruit_BLE::isConnected(void)
   return connected;
 }
 
+/******************************************************************************/
+/*!
+    @brief  Disconnect if currently connected
+*/
+/******************************************************************************/
+void Adafruit_BLE::disconnect(void)
+{
+  sendCommandCheckOK( F("AT+GAPDISCONNECT") );
+}
 
 /******************************************************************************/
 /*!

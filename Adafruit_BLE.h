@@ -98,6 +98,7 @@ class Adafruit_BLE : public Stream
     bool waitForOK(void);
     bool isConnected(void);
     bool isVersionAtLeast(char * versionString);
+    void disconnect(void);
 
     virtual bool setMode(uint8_t mode) = 0;
 
