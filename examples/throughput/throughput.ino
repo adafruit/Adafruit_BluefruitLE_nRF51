@@ -162,7 +162,6 @@ void loop(void)
     while (remaining > 0)
     {
       ble.print("AT+BLEUARTTX=");
-      ble.print("AT+BLEUARTTX=");
       ble.println("=^..^= =^..^= =^..^=");   // Cats
       //ble.println("~(__^>        <^__)~"); // Rats
       //ble.println("01234567899876543210"); // Yawn
