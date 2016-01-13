@@ -182,6 +182,12 @@ void loop(void)
       }
       Serial.print("Sent: "); Serial.print(sent);
       Serial.print(" Remaining: "); Serial.println(remaining);
+
+      if (!ble.isConnected())
+      {
+        Serial.println("Connection lost");
+        remaining = 0;
+      }
     }
     stop = millis() - start;
 
