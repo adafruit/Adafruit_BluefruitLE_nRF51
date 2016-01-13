@@ -146,7 +146,7 @@ void setup(void)
 void loop(void)
 {
   uint32_t start, stop, sent;
-  uint32_t remaining = 1024 * 2;
+  uint32_t remaining = 1024 * (uint32_t)100;
   start = stop = sent = 0;
 
   if (ble.isConnected())
@@ -156,15 +156,17 @@ void loop(void)
     char command[BUFSIZE+1];
     getUserInput(command, BUFSIZE);
 
-    Serial.println("Sending data ...");
+    Serial.print("Sending ");
+    Serial.print(remaining);
+    Serial.println(" bytes ...");
 
     start = millis();
     while (remaining > 0)
     {
       ble.print("AT+BLEUARTTX=");
-      ble.println("=^..^= =^..^= =^..^=");   // Cats
+      //ble.println("=^..^= =^..^= =^..^=");   // Cats
       //ble.println("~(__^>        <^__)~"); // Rats
-      //ble.println("01234567899876543210"); // Yawn
+      ble.println("01234567899876543210"); // Yawn
       if (! ble.waitForOK() )
       {
         Serial.println(F("Failed to send?"));
