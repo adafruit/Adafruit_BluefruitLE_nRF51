@@ -183,11 +183,15 @@ void loop(void)
       Serial.print("Sent: "); Serial.print(sent);
       Serial.print(" Remaining: "); Serial.println(remaining);
 
+      /* Optional: Test for lost connection every packet */
+      /* Note that this will slow things down a bit! */
+      /*
       if (!ble.isConnected())
       {
         Serial.println("Connection lost");
         remaining = 0;
       }
+      */
     }
     stop = millis() - start;
 
