@@ -43,8 +43,8 @@
 #include "utility/errors.h"
 #include "utility/TimeoutTimer.h"
 
-#ifdef ARDUINO_SAMD_ZERO
-#define SerialDebug SerialUSB
+#if defined(ARDUINO_SAMD_ZERO) && defined(SERIAL_PORT_USBVIRTUAL) 
+#define SerialDebug SERIAL_PORT_USBVIRTUAL
 #else
 #define SerialDebug Serial
 #endif
