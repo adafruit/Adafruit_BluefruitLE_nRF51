@@ -2,7 +2,7 @@
   Bluefruit Feather Tester
 
   This sketch provides a simple tester for Bluefruit Feather boards from Adafruit
-  
+
   created 31 Jan. 2016
   by K. Townsend (KTOWN)
 */
@@ -51,7 +51,7 @@ void setup()
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
   }
-  
+
   // Display the test suite selection menu
   display_menu();
 }
@@ -113,7 +113,7 @@ void loop()
   int selection = 0;
 
   // Wait for user feedback, then parse feedback one byte at a time
-  while((Serial.peek() != 255) && !selection)
+  while((Serial.available()) && !selection)
   {
     char incoming = Serial.read();
     if (isdigit(incoming))
@@ -156,4 +156,3 @@ void loop()
     display_menu();
   }
 }
-
