@@ -196,7 +196,7 @@ bool getUserInput(char buffer[], uint8_t maxSize)
   TimeoutTimer timeout(100);
 
   memset(buffer, 0, maxSize);
-  while( (Serial.peek() < 0) && !timeout.expired() ) {}
+  while( (!Serial.available()) && !timeout.expired() ) { delay(1); }
 
   if ( timeout.expired() ) return false;
 
@@ -206,7 +206,7 @@ bool getUserInput(char buffer[], uint8_t maxSize)
   {
     count += Serial.readBytes(buffer+count, maxSize);
     delay(2);
-  } while( (count < maxSize) && !(Serial.peek() < 0) );
+  } while( (count < maxSize) && (Serial.available()) );
 
   return true;
 }

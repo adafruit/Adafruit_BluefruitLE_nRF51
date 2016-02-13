@@ -148,8 +148,9 @@ void loop(void)
 void getUserInput(char buffer[], uint8_t maxSize)
 {
   memset(buffer, 0, maxSize);
-  while( Serial.peek() < 0 ) {}
-  delay(2);
+  while( Serial.available() == 0 ) {
+    delay(1);
+  }
 
   uint8_t count=0;
 
@@ -157,5 +158,5 @@ void getUserInput(char buffer[], uint8_t maxSize)
   {
     count += Serial.readBytes(buffer+count, maxSize);
     delay(2);
-  } while( (count < maxSize) && !(Serial.peek() < 0) );
+  } while( (count < maxSize) && !(Serial.available() == 0) );
 }
