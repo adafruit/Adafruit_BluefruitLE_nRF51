@@ -54,7 +54,7 @@
 #define BLE_DEFAULT_TIMEOUT      250
 #define BLE_BUFSIZE              4*SDEP_MAX_PACKETSIZE
 
-#define ASSERT(condition, err)    if ( !(condition) ) return err;
+//#define ASSERT(condition, err)    if ( !(condition) ) return err;
 
 class Adafruit_BLE : public Stream
 {

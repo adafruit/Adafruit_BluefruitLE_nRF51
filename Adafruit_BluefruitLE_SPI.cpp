@@ -347,12 +347,13 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
       simulateSwitchMode();
     }else
     {
-      while(size)
+      size_t remain = size;
+      while(remain)
       {
-        size_t len = min(size, SDEP_MAX_PACKETSIZE);
-        size -= len;
+        size_t len = min(remain, SDEP_MAX_PACKETSIZE);
+        remain -= len;
 
-        sendPacket(SDEP_CMDTYPE_BLE_UARTTX, buf, (uint8_t) len, size ? 1 : 0);
+        sendPacket(SDEP_CMDTYPE_BLE_UARTTX, buf, (uint8_t) len, remain ? 1 : 0);
         buf += len;
       }
 
