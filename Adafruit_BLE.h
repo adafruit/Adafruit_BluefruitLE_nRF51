@@ -43,8 +43,8 @@
 #include "utility/errors.h"
 #include "utility/TimeoutTimer.h"
 
-#ifdef ARDUINO_SAMD_ZERO
-#define SerialDebug SerialUSB
+#if defined(ARDUINO_SAMD_ZERO) && defined(SERIAL_PORT_USBVIRTUAL) 
+#define SerialDebug SERIAL_PORT_USBVIRTUAL
 #else
 #define SerialDebug Serial
 #endif
@@ -54,7 +54,7 @@
 #define BLE_DEFAULT_TIMEOUT      250
 #define BLE_BUFSIZE              4*SDEP_MAX_PACKETSIZE
 
-#define ASSERT(condition, err)    if ( !(condition) ) return err;
+//#define ASSERT(condition, err)    if ( !(condition) ) return err;
 
 class Adafruit_BLE : public Stream
 {
@@ -98,6 +98,7 @@ class Adafruit_BLE : public Stream
     bool waitForOK(void);
     bool isConnected(void);
     bool isVersionAtLeast(char * versionString);
+    void disconnect(void);
 
     virtual bool setMode(uint8_t mode) = 0;
 

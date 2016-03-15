@@ -208,7 +208,7 @@ size_t Adafruit_BluefruitLE_UART::write(uint8_t c)
   // flush left-over before a new command
 //  if (c == '\r') flush();
 
-  if (_verbose) Serial.print((char) c);
+  if (_verbose) SerialDebug.print((char) c);
 
   if (_rts_pin >= 0) {
     while (digitalRead(_rts_pin)) {

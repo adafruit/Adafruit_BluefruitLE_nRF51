@@ -347,12 +347,13 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
       simulateSwitchMode();
     }else
     {
-      while(size)
+      size_t remain = size;
+      while(remain)
       {
-        size_t len = min(size, SDEP_MAX_PACKETSIZE);
-        size -= len;
+        size_t len = min(remain, SDEP_MAX_PACKETSIZE);
+        remain -= len;
 
-        sendPacket(SDEP_CMDTYPE_BLE_UARTTX, buf, (uint8_t) len, size ? 1 : 0);
+        sendPacket(SDEP_CMDTYPE_BLE_UARTTX, buf, (uint8_t) len, remain ? 1 : 0);
         buf += len;
       }
 
@@ -493,12 +494,8 @@ void Adafruit_BluefruitLE_SPI::flush(void)
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::getResponse(void)
 {
-  // Blocking wait until IRQ is asserted
-  while ( !digitalRead(m_irq_pin) ) {}
-
-  // There is data from Bluefruit & enough room in the fifo
-  while ( digitalRead(m_irq_pin) &&
-          m_rx_fifo.remaining() >= SDEP_MAX_PACKETSIZE )
+  // Try to read data from Bluefruit if there is enough room in the fifo
+  while ( m_rx_fifo.remaining() >= SDEP_MAX_PACKETSIZE )
   {
     // Get a SDEP packet
     sdepMsgResponse_t msg_response;
@@ -536,35 +533,69 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 {
+  // Wait until IRQ is asserted, double timeout since some commands take long time to start responding
+  TimeoutTimer tt(2*_timeout);
+  
+  while ( !digitalRead(m_irq_pin) ) {
+    if (tt.expired()) return false;
+  }
+  
   sdepMsgHeader_t* p_header = &p_response->header;
 
   if (m_sck_pin == -1)
     SPI.beginTransaction(bluefruitSPI);
   SPI_CS_ENABLE();
 
-  TimeoutTimer tt(_timeout);
+  tt.set(_timeout);
 
-  // Bluefruit may not be ready
-  while ( ( (p_header->msg_type = spixfer(0xff)) == SPI_IGNORED_BYTE ) && !tt.expired() )
-  {
-    // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
-    SPI_CS_DISABLE();
-    delayMicroseconds(SPI_DEFAULT_DELAY_US);
-    SPI_CS_ENABLE();
-  }
+  do {
+    if ( tt.expired() ) break;
+
+    p_header->msg_type = spixfer(0xff);
+
+    if (p_header->msg_type == SPI_IGNORED_BYTE)
+    {
+      // Bluefruit may not be ready
+      // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
+      SPI_CS_DISABLE();
+      delayMicroseconds(SPI_DEFAULT_DELAY_US);
+      SPI_CS_ENABLE();
+    }
+    else if (p_header->msg_type == SPI_OVERREAD_BYTE)
+    {
+      // IRQ may not be pulled down by Bluefruit when returning all data in previous transfer.
+      // This could happen when Arduino MCU is running at fast rate comparing to Bluefruit's MCU,
+      // causing an SPI_OVERREAD_BYTE to be returned at stage.
+      //
+      // Walkaround: Disable & Re-enable CS with a bit of delay and keep waiting
+      // TODO IRQ is supposed to be OFF then ON, it is better to use GPIO trigger interrupt.
+
+      SPI_CS_DISABLE();
+      // wait for the clock to be enabled..
+//      while (!digitalRead(m_irq_pin)) {
+//        if ( tt.expired() ) break;
+//      }
+//      if (!digitalRead(m_irq_pin)) break;
+      delayMicroseconds(SPI_DEFAULT_DELAY_US);
+      SPI_CS_ENABLE();
+    }
+  }  while (p_header->msg_type == SPI_IGNORED_BYTE || p_header->msg_type == SPI_OVERREAD_BYTE);
 
   bool result=false;
 
   // Not a loop, just a way to avoid goto with error handling
   do
   {
-    if ( tt.expired() ) break;
-
     // Look for the header
-    while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR )
+    // note that we should always get the right header at this point, and not doing so will really mess up things.
+    // This whole loop isn't needed with my fix above..
+    while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR && !tt.expired() )
     {
       p_header->msg_type = spixfer(0xff);
     }
+    
+    if ( tt.expired() ) break;
+    
     memset( (&p_header->msg_type)+1, 0xff, sizeof(sdepMsgHeader_t) - 1);
     spixfer((&p_header->msg_type)+1, sizeof(sdepMsgHeader_t) - 1);
 

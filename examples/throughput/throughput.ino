@@ -146,7 +146,7 @@ void setup(void)
 void loop(void)
 {
   uint32_t start, stop, sent;
-  uint32_t remaining = 1024 * 2;
+  uint32_t remaining = 1024 * (uint32_t)100;
   start = stop = sent = 0;
 
   if (ble.isConnected())
@@ -156,16 +156,17 @@ void loop(void)
     char command[BUFSIZE+1];
     getUserInput(command, BUFSIZE);
 
-    Serial.println("Sending data ...");
+    Serial.print("Sending ");
+    Serial.print(remaining);
+    Serial.println(" bytes ...");
 
     start = millis();
     while (remaining > 0)
     {
       ble.print("AT+BLEUARTTX=");
-      ble.print("AT+BLEUARTTX=");
-      ble.println("=^..^= =^..^= =^..^=");   // Cats
+      //ble.println("=^..^= =^..^= =^..^=");   // Cats
       //ble.println("~(__^>        <^__)~"); // Rats
-      //ble.println("01234567899876543210"); // Yawn
+      ble.println("01234567899876543210"); // Yawn
       if (! ble.waitForOK() )
       {
         Serial.println(F("Failed to send?"));
@@ -181,6 +182,16 @@ void loop(void)
       }
       Serial.print("Sent: "); Serial.print(sent);
       Serial.print(" Remaining: "); Serial.println(remaining);
+
+      /* Optional: Test for lost connection every packet */
+      /* Note that this will slow things down a bit! */
+      /*
+      if (!ble.isConnected())
+      {
+        Serial.println("Connection lost");
+        remaining = 0;
+      }
+      */
     }
     stop = millis() - start;
 
@@ -200,8 +211,9 @@ void loop(void)
 void getUserInput(char buffer[], uint8_t maxSize)
 {
   memset(buffer, 0, maxSize);
-  while( Serial.peek() < 0 ) {}
-  delay(2);
+  while( Serial.available() == 0 ) {
+    delay(1);
+  }
 
   uint8_t count=0;
 
@@ -209,5 +221,5 @@ void getUserInput(char buffer[], uint8_t maxSize)
   {
     count += Serial.readBytes(buffer+count, maxSize);
     delay(2);
-  } while( (count < maxSize) && !(Serial.peek() < 0) );
+  } while( (count < maxSize) && !(Serial.available() == 0) );
 }

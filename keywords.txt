@@ -1,0 +1,35 @@
+#######################################
+# Syntax Coloring Map For WiFi
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Adafruit_BLE	KEYWORD1
+Adafruit_BluefruitLE_SPI	KEYWORD1
+Adafruit_BluefruitLE_UART	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+reset	KEYWORD2
+factoryReset	KEYWORD2
+info	KEYWORD2
+echo	KEYWORD2
+waitForOK	KEYWORD2
+isConnected	KEYWORD2
+isVersionAtLeast	KEYWORD2
+disconnect	KEYWORD2
+setMode	KEYWORD2
+sendCommandCheckOK	KEYWORD2
+sendCommandWithIntReply	KEYWORD2
+readline	KEYWORD2
+readline_parseInt	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+BLUEFRUIT_MODE_COMMAND	LITERAL1
+BLUEFRUIT_MODE_DATA	LITERAL1
