@@ -97,10 +97,12 @@ class Adafruit_BLE : public Stream
     bool echo(bool enable);
     bool waitForOK(void);
     bool isConnected(void);
-    bool isVersionAtLeast(char * versionString);
+    bool isVersionAtLeast(const char * versionString);
     void disconnect(void);
 
     virtual bool setMode(uint8_t mode) = 0;
+
+    uint8_t convert2ByteArrayString(char *str, const uint8_t* buffer, uint8_t count);
 
     bool sendCommandCheckOK(const __FlashStringHelper *cmd);
     bool sendCommandCheckOK(const char cmd[]);
@@ -155,8 +157,6 @@ class Adafruit_BLE : public Stream
     void (*_ble_midi_rx_callback) (uint8_t data[], uint16_t len);
 
     void (*_ble_gatt_rx_callback) (int32_t chars_id, uint8_t data[], uint16_t len);
-
-
 };
 
 //struct GattServer_t

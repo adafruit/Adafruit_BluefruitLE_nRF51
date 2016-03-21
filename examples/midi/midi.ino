@@ -7,6 +7,7 @@
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
+#include "Adafruit_BLEMIDI.h"
 
 #include "BluefruitConfig.h"
 
@@ -34,6 +35,8 @@ Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_
 //Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_SCK, BLUEFRUIT_SPI_MISO,
 //                             BLUEFRUIT_SPI_MOSI, BLUEFRUIT_SPI_CS,
 //                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+
+Adafruit_BLEMIDI midi(ble);
 
 bool isConnected = false;
 
@@ -116,40 +119,16 @@ void setup(void)
   ble.setConnectCallback(connected);
   ble.setDisconnectCallback(disconnected);
   ble.setBleMidiRxCallback(BleMidiRX);
-
-  /* Change the device name to make it easier to find */
-  Serial.println(F("Setting device name to MIDI': "));
-  if (! ble.sendCommandCheckOK(F( "AT+GAPDEVNAME=BLUEFRUIT MIDI" )) ) {
-    error(F("Could not set device name?"));
-  }
   
   Serial.println(F("Enable MIDI: "));
-  if ( ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
+  if ( ! midi.begin() )
   {
-    if ( !ble.sendCommandCheckOK(F( "AT+BLEMIDIEN=1" ))) {
-      error(F("Could not enable MIDI"));
-    }
+    error(F("Could not enable MIDI"));
+  }
     
-  } else
-  {
-    error(F("Wrong version"));
-  }
-  
-  Serial.println(F("Performing a SW reset (service changes require a reset): "));
-  if (! ble.reset() ) {
-    error(F("Couldn't reset??"));
-  }
-  
   ble.verbose(false);
 
   Serial.print(F("Waiting for a connection..."));
-  
-  /*
-  while (ble.isConnected() == 0) {
-    Serial.print(F("."));
-    delay(500);
-  }
-  */
 }
 
 void loop(void)
@@ -158,10 +137,17 @@ void loop(void)
   ble.update(500);
   
   if ( isConnected )
-  {  
-    ble.sendCommandCheckOK( F("AT+BLEMIDITX=90-30-64-34-64-37-64") );
+  {
+    uint8_t multiple_event[] = { 0x30, 0x64, 0x34, 0x64, 0x37, 0x64 };
+    
+    // Note ON
+    //midi.send(0x90, 0x30, 0x64);
+    midi.send_n(0x90, multiple_event, 6);
     delay(LOAD_TEST_MS);
-    ble.sendCommandCheckOK( F("AT+BLEMIDITX=80-30-64-34-64-37-64") );
+
+    // Note OFF
+    //midi.send(0x80, 0x30, 0x64);
+    midi.send_n(0x80, multiple_event, 6);
     delay(LOAD_TEST_MS);
   }
 }
