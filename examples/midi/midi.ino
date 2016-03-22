@@ -13,7 +13,7 @@
 
 #define LOAD_TEST_MS 10
 
-#define FACTORYRESET_ENABLE         0
+#define FACTORYRESET_ENABLE         1
 #define MINIMUM_FIRMWARE_VERSION    "0.7.0"
 
 
@@ -68,15 +68,15 @@ void disconnected(void)
   isConnected = false;
 }
 
-void BleMidiRX(uint8_t data[], uint16_t len)
+void BleMidiRX(uint16_t timestamp, uint8_t status, uint8_t byte1, uint8_t byte2)
 {
-  Serial.println("MIDI received");
+  Serial.print("[MIDI ");
+  Serial.print(timestamp);
+  Serial.print(" ] ");
 
-  for(uint8_t i=0; i<len; i++)
-  {
-    Serial.print(data[i], HEX);
-    Serial.print(" ");
-  }
+  Serial.print(status, HEX); Serial.print(" ");
+  Serial.print(byte1 , HEX); Serial.print(" ");
+  Serial.print(byte2 , HEX); Serial.print(" ");
   
   Serial.println();
 }  
@@ -115,10 +115,12 @@ void setup(void)
   /* Print Bluefruit information */
   ble.info();
   
-  /* Set callbacks */
+  /* Set BLE callbacks */
   ble.setConnectCallback(connected);
   ble.setDisconnectCallback(disconnected);
-  ble.setBleMidiRxCallback(BleMidiRX);
+
+  // Set MIDI RX callback
+  midi.setRxCallback(BleMidiRX);
   
   Serial.println(F("Enable MIDI: "));
   if ( ! midi.begin() )
@@ -127,7 +129,6 @@ void setup(void)
   }
     
   ble.verbose(false);
-
   Serial.print(F("Waiting for a connection..."));
 }
 

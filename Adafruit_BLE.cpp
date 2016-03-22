@@ -608,24 +608,16 @@ void Adafruit_BLE::update(uint32_t period_ms)
     system_event = strtoul(this->buffer, &p_comma, 16);
     gatts_event  = strtoul(p_comma+1, NULL, 16);
 
-    //
+    //--------------------------------------------------------------------+
     // System Event
-    //
-    if ( this->_connect_callback && bitRead(system_event, EVENT_SYSTEM_CONNECT) )
-    {
-      this->_connect_callback();
-    }
-
-    if ( this->_disconnect_callback && bitRead(system_event, EVENT_SYSTEM_DISCONNECT) )
-    {
-      this->_disconnect_callback();
-    }
+    //--------------------------------------------------------------------+
+    if ( this->_connect_callback    && bitRead(system_event, EVENT_SYSTEM_CONNECT   ) ) this->_connect_callback();
+    if ( this->_disconnect_callback && bitRead(system_event, EVENT_SYSTEM_DISCONNECT) ) this->_disconnect_callback();
 
     if ( this->_ble_uart_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX) )
     {
       // _verbose = true;
       println( F("AT+BLEUARTRX") );
-
       uint16_t len = readline(tempbuf, BLE_BUFSIZE);
       waitForOK();
 
@@ -635,17 +627,34 @@ void Adafruit_BLE::update(uint32_t period_ms)
     if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
     {
 //      _verbose = true;
-      println( F("AT+BLEMIDIRXRAW") ); // use RAW command version
+      while(1)
+      {
+        // use RAW command version
+        println( F("AT+BLEMIDIRXRAW") );
 
-      uint16_t len = readraw(); // readraw swallow OK/ERROR already
-      memcpy(tempbuf, this->buffer, len);
+        // readraw swallow OK/ERROR already
+        uint16_t len = readraw();
 
-      this->_ble_midi_rx_callback(tempbuf, len);
+        // break if there is no more MIDI event
+        if ( len == 0 ) break;
+
+        // copy to internal buffer for other usage !
+        memcpy(tempbuf, this->buffer, len);
+
+        // only support one full event for now
+        if ( len == 5)
+        {
+          this->_ble_midi_rx_callback( *((uint16_t*) tempbuf), tempbuf[2], tempbuf[3], tempbuf[4]);
+        }else
+        {
+          // TODO support multiple event (running events) parsing
+        }
+      }
     }
 
-    //
+    //--------------------------------------------------------------------+
     // Gatt Event
-    //
+    //--------------------------------------------------------------------+
     if ( this->_ble_gatt_rx_callback && gatts_event )
     {
 //      _verbose = true;
@@ -717,7 +726,7 @@ void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) 
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setBleMidiRxCallback( void (*fp) (uint8_t data[], uint16_t len) )
+void Adafruit_BLE::setBleMidiRxCallback( bleMIDIRxCallback_t fp )
 {
   this->_ble_midi_rx_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, -1);

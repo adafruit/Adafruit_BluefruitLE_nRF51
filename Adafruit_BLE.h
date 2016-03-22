@@ -74,6 +74,7 @@ class Adafruit_BLE : public Stream
     uint8_t  _physical_transport;
 
   public:
+    typedef void (*bleMIDIRxCallback_t) (uint16_t timestamp, uint8_t status, uint8_t byte1, uint8_t byte2);
     // Constructor
     Adafruit_BLE(void);
     char buffer[BLE_BUFSIZE+1];
@@ -142,7 +143,7 @@ class Adafruit_BLE : public Stream
     void setConnectCallback   ( void (*fp) (void) );
 
     void setBleUartRxCallback( void (*fp) (char data[], uint16_t len) );
-    void setBleMidiRxCallback( void (*fp) (uint8_t data[], uint16_t len) );
+    void setBleMidiRxCallback( bleMIDIRxCallback_t fp );
     void setBleGattRxCallback( int32_t chars_idx, void (*fp) (int32_t, uint8_t[], uint16_t) );
 
   protected:
@@ -154,7 +155,7 @@ class Adafruit_BLE : public Stream
     void (*_connect_callback) (void);
 
     void (*_ble_uart_rx_callback) (char data[], uint16_t len);
-    void (*_ble_midi_rx_callback) (uint8_t data[], uint16_t len);
+    bleMIDIRxCallback_t _ble_midi_rx_callback;
 
     void (*_ble_gatt_rx_callback) (int32_t chars_id, uint8_t data[], uint16_t len);
 };

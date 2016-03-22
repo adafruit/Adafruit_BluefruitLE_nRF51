@@ -46,6 +46,7 @@ private:
   Adafruit_BLE& _ble;
 
 public:
+  typedef Adafruit_BLE::bleMIDIRxCallback_t midiRxCallback_t;
   Adafruit_BLEMIDI(Adafruit_BLE& ble);
 
   bool begin(void);
@@ -66,6 +67,8 @@ public:
   }
 
   bool send_n(uint8_t status, const uint8_t bytes[], uint8_t count);
+
+  void setRxCallback(midiRxCallback_t fp);
 };
 
 #endif /* _ADAFRUIT_BLEMIDI_H_ */
