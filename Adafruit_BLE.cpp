@@ -310,29 +310,6 @@ bool Adafruit_BLE::sendCommandWithIntReply(const char cmd[], int32_t *reply) {
   return result;
 }
 
-
-/******************************************************************************/
-/*!
-    @brief  Send a command from a flash string, and parse an int reply
-*/
-/******************************************************************************/
-bool Adafruit_BLE::sendCommandCheckOK(const __FlashStringHelper *cmd)
-{
-  bool result;
-  uint8_t current_mode = _mode;
-
-  // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
-
-  println(cmd);       // send command
-  result = waitForOK();
-
-  // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
-
-  return result;
-}
-
 /******************************************************************************/
 /*!
     @brief  Convert buffer data to Byte Array String format such as 11-22-33-44
@@ -357,10 +334,10 @@ uint8_t Adafruit_BLE::convert2ByteArrayString(char *str, const uint8_t* buffer, 
 
 /******************************************************************************/
 /*!
-    @brief  Send a command from a SRAM string, and parse an int reply
+    @brief  Send a command from a SRAM string, and wait for OK or ERROR
 */
 /******************************************************************************/
-bool Adafruit_BLE::sendCommandCheckOK(const char cmd[])
+bool Adafruit_BLE::sendCommandCheckOK(const char cmd[], int32_t para_arr[], uint8_t para_count)
 {
   bool result;
   uint8_t current_mode = _mode;
@@ -368,7 +345,45 @@ bool Adafruit_BLE::sendCommandCheckOK(const char cmd[])
   // switch mode if necessary to execute command
   if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
 
-  println(cmd);       // send command
+  // send command and integer parameters separated by comma
+  print(cmd);
+  for(uint8_t i=0; i<para_count; i++)
+  {
+    print(para_arr[i]);
+    if (i != para_count - 1) print(',');
+  }
+  println(); // execute command
+
+  result = waitForOK();
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+
+  return result;
+}
+
+/******************************************************************************/
+/*!
+    @brief  Send a command from a SRAM string, and wait for OK or ERROR
+*/
+/******************************************************************************/
+bool Adafruit_BLE::sendCommandCheckOK(const __FlashStringHelper *cmd, int32_t para_arr[], uint8_t para_count)
+{
+  bool result;
+  uint8_t current_mode = _mode;
+
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+
+  // send command and integer parameters separated by comma
+  print(cmd);
+  for(uint8_t i=0; i<para_count; i++)
+  {
+    print(para_arr[i]);
+    if (i != para_count - 1) print(',');
+  }
+  println(); // execute command
+
   result = waitForOK();
 
   // switch back if necessary

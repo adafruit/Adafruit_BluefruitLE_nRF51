@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_BLEMIDI.cpp
+    @file     Adafruit_Eddystone.cpp
     @author   hathach
 
     @section LICENSE
@@ -34,45 +34,35 @@
 */
 /**************************************************************************/
 
-#include "Adafruit_BLEMIDI.h"
+#include "Adafruit_Eddystone.h"
 
-#define MIDI_MINIMUM_FIRMWARE_VERSION    "0.7.0"
+#define EDDYSTONE_MINIMUM_FIRMWARE_VERSION    "0.7.0"
+
 
 /******************************************************************************/
 /*!
     @brief Constructor
 */
 /******************************************************************************/
-Adafruit_BLEMIDI::Adafruit_BLEMIDI(Adafruit_BLE& ble) :
+Adafruit_Eddystone::Adafruit_Eddystone(Adafruit_BLE& ble) :
   _ble(ble)
 {
 }
 
 /******************************************************************************/
 /*!
-    @brief Set callback
+    @brief Enable Eddystone service if not already enabled
 */
 /******************************************************************************/
-void Adafruit_BLEMIDI::setRxCallback(midiRxCallback_t fp)
+bool Adafruit_Eddystone::begin(void)
 {
-  _ble.setBleMidiRxCallback(fp);
-}
-
-
-/******************************************************************************/
-/*!
-    @brief Enable MIDI service if not already enabled
-*/
-/******************************************************************************/
-bool Adafruit_BLEMIDI::begin(void)
-{
-  VERIFY_( _ble.isVersionAtLeast(MIDI_MINIMUM_FIRMWARE_VERSION) );
+  VERIFY_( _ble.isVersionAtLeast(EDDYSTONE_MINIMUM_FIRMWARE_VERSION) );
 
   int32_t enabled = 0;
-  VERIFY_( _ble.sendCommandWithIntReply( F("AT+BLEMIDIEN"), &enabled) );
+  VERIFY_( _ble.sendCommandWithIntReply( F("AT+EDDYSTONESERVICEEN"), &enabled) );
 
   if ( enabled ) return true;
-  VERIFY_( _ble.sendCommandCheckOK( F("AT+BLEMIDIEN=1") ) );
+  VERIFY_( _ble.sendCommandCheckOK( F("AT+EDDYSTONESERVICEEN=1") ) );
 
   // Perform Bluefruit reset since service changed
   _ble.reset();
@@ -82,16 +72,16 @@ bool Adafruit_BLEMIDI::begin(void)
 
 /******************************************************************************/
 /*!
-    @brief Stop MIDI service if it is enabled
+    @brief Stop Eddystone service if it is enabled
 */
 /******************************************************************************/
-bool Adafruit_BLEMIDI::stop(void)
+bool Adafruit_Eddystone::stop(void)
 {
   int32_t enabled = 0;
-  VERIFY_( _ble.sendCommandWithIntReply( F("AT+BLEMIDIEN"), &enabled) );
+  VERIFY_( _ble.sendCommandWithIntReply( F("AT+EDDYSTONESERVICEEN"), &enabled) );
   if ( !enabled ) return true;
 
-  VERIFY_( _ble.sendCommandCheckOK( F("AT+BLEMIDIEN=0") ) );
+  VERIFY_( _ble.sendCommandCheckOK( F("AT+EDDYSTONESERVICEEN=0") ) );
 
   // Perform Bluefruit reset since service changed
   _ble.reset();
@@ -101,42 +91,63 @@ bool Adafruit_BLEMIDI::stop(void)
 
 /******************************************************************************/
 /*!
-    @brief Send a MIDI event data
-    @param bytes MIDI event data
+    @brief Change Bluefruit's URL setting in NVM
+    @param url  URL to be advertized
+    @param broadcastEvenConnect Keep broadcasting even Bluefruit is connected
+    @param rssi_at_0m RSSI value at 0m (check out EddyStone specs)
 */
 /******************************************************************************/
-bool Adafruit_BLEMIDI::send(const uint8_t bytes[3])
+bool Adafruit_Eddystone::setURL(const char* url, bool broadcastEvenConnect, int8_t rssi_at_0m)
 {
-  char command[] = "AT+BLEMIDITX=00-00-00";
-  uint8_t idx = strlen(command) - 8;
+  bool result;
+  uint8_t current_mode = _ble.getMode();
 
-  _ble.convert2ByteArrayString(command+idx, bytes, 3);
-  return _ble.sendCommandCheckOK(command);
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_COMMAND);
+
+  // send command and integer parameters separated by comma
+  _ble.print(  F("AT+EDDYSTONEURL=") );
+  _ble.print(url);
+
+  _ble.print(','); _ble.print(broadcastEvenConnect, DEC);
+  _ble.print(','); _ble.print(rssi_at_0m);
+
+  _ble.println(); // execute command
+
+  result = _ble.waitForOK();
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_DATA);
+
+  return result;
 }
 
 /******************************************************************************/
 /*!
-    @brief Send multiple MIDI event which shared the same status
-    @param status MIDI status
-    @param bytes MIDI events data
-    @param count number of data in bytes (must be multiple of 2)
-
-    @note count + 1 must less than (20-3) --> count <= 16
+    @brief Start Broadcasting (advertising) specified URL
 */
 /******************************************************************************/
-bool Adafruit_BLEMIDI::send_n(uint8_t status, const uint8_t bytes[], uint8_t count)
+bool Adafruit_Eddystone::startBroadcast(void)
 {
-  VERIFY_(count <= 16);
-  char command[64] = "AT+BLEMIDITX=";
-
-  uint8_t idx = strlen(command);
-
-  idx += _ble.convert2ByteArrayString(command+idx, &status, 1);
-  command[idx++] = '-';
-  _ble.convert2ByteArrayString(command+idx, bytes, count);
-
-  //Serial.println(command);
-
-  return _ble.sendCommandCheckOK(command);
+  return _ble.sendCommandCheckOK( F("AT+EDDYSTONEBROADCAST=1") );
 }
 
+/******************************************************************************/
+/*!
+    @brief Stop Broadcasting (advertising) specified URL
+*/
+/******************************************************************************/
+bool Adafruit_Eddystone::stopBroadcast(void)
+{
+  return _ble.sendCommandCheckOK( F("AT+EDDYSTONEBROADCAST=0") );
+}
+
+/******************************************************************************/
+/*!
+    @brief Broadcast (advertising) specified URL
+*/
+/******************************************************************************/
+bool Adafruit_Eddystone::startConfigMode(uint32_t seconds)
+{
+  return _ble.sendCommandCheckOK( F("AT+EDDYSTONECONFIGEN="), (int32_t) seconds );
+}

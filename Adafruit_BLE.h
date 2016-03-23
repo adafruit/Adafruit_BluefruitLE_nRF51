@@ -56,6 +56,9 @@
 
 //#define ASSERT(condition, err)    if ( !(condition) ) return err;
 
+#define VERIFY_(condition)                if ( !(condition) ) return false;
+#define VERIFY_RETURN_(condition, error)  if ( !(condition) ) return error;
+
 class Adafruit_BLE : public Stream
 {
   protected:
@@ -102,11 +105,60 @@ class Adafruit_BLE : public Stream
     void disconnect(void);
 
     virtual bool setMode(uint8_t mode) = 0;
+    uint8_t      getMode(void) { return _mode; }
 
     uint8_t convert2ByteArrayString(char *str, const uint8_t* buffer, uint8_t count);
 
-    bool sendCommandCheckOK(const __FlashStringHelper *cmd);
-    bool sendCommandCheckOK(const char cmd[]);
+    bool sendCommandCheckOK(const char cmd[], int32_t para_arr[], uint8_t para_count);
+    bool sendCommandCheckOK(const __FlashStringHelper *cmd, int32_t para_arr[], uint8_t para_count);
+
+    // No parameters
+    bool sendCommandCheckOK(const __FlashStringHelper *cmd)
+    {
+      return sendCommandCheckOK(cmd, (int32_t*) NULL, 0);
+    }
+
+    bool sendCommandCheckOK(const char cmd[])
+    {
+      return sendCommandCheckOK(cmd,  (int32_t*) NULL, 0);
+    }
+
+    // One parameter
+    bool sendCommandCheckOK(const __FlashStringHelper *cmd, int32_t para1)
+    {
+      return sendCommandCheckOK(cmd, &para1, 1);
+    }
+
+    bool sendCommandCheckOK(const char cmd[], int32_t para1)
+    {
+      return sendCommandCheckOK(cmd, &para1, 1);
+    }
+
+    // Two parameters
+    bool sendCommandCheckOK(const __FlashStringHelper *cmd, int32_t para1, int32_t para2)
+    {
+      int32_t buf[] = {para1, para2};
+      return sendCommandCheckOK(cmd, buf, 2);
+    }
+
+    bool sendCommandCheckOK(const char cmd[], int32_t para1, int32_t para2)
+    {
+      int32_t buf[] = {para1, para2};
+      return sendCommandCheckOK(cmd, buf, 2);
+    }
+
+    // Three parameters
+    bool sendCommandCheckOK(const __FlashStringHelper *cmd, int32_t para1, int32_t para2, int32_t para3)
+    {
+      int32_t buf[] = {para1, para2, para3};
+      return sendCommandCheckOK(cmd, buf, 3);
+    }
+
+    bool sendCommandCheckOK(const char cmd[], int32_t para1, int32_t para2, int32_t para3)
+    {
+      int32_t buf[] = {para1, para2, para3};
+      return sendCommandCheckOK(cmd, buf, 3);
+    }
 
     bool sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply);
     bool sendCommandWithIntReply(const char cmd[], int32_t *reply);

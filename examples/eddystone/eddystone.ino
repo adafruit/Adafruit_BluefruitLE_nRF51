@@ -21,6 +21,7 @@
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
+#include "Adafruit_Eddystone.h"
 
 #include "BluefruitConfig.h"
 
@@ -56,7 +57,7 @@
                               Note: ".com/" ".net/" count as 1
     -----------------------------------------------------------------------*/
     #define FACTORYRESET_ENABLE         1
-    #define MINIMUM_FIRMWARE_VERSION    "0.6.7"
+    #define MINIMUM_FIRMWARE_VERSION    "0.7.0"
     #define URL                         "http://www.adafruit.com"
 /*=========================================================================*/
 
@@ -79,6 +80,9 @@ Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_
 //Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_SCK, BLUEFRUIT_SPI_MISO,
 //                             BLUEFRUIT_SPI_MOSI, BLUEFRUIT_SPI_CS,
 //                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+
+
+Adafruit_Eddystone eddyBeacon(ble);
 
 // A small helper
 void error(const __FlashStringHelper*err) {
@@ -132,10 +136,13 @@ void setup(void)
     error(F("EddyStone is only available from 0.6.6. Please perform firmware upgrade"));
   }
 
+  // Enable Eddystone beacon service and reset Bluefruit if needed
+  eddyBeacon.begin();
+
   /* Set EddyStone URL beacon data */
   Serial.println(F("Setting EddyStone-url to Adafruit website: "));
 
-  if (! ble.sendCommandCheckOK(F( "AT+EDDYSTONEURL=" URL ))) {
+  if ( !eddyBeacon.setURL(URL) ) {
     error(F("Couldnt set, is URL too long !?"));
   }
 
@@ -153,8 +160,8 @@ void loop(void)
 {
   // Print user's option
   Serial.println(F("Please choose:"));
-  Serial.println(F("0 : Disable EddyStone URL"));
-  Serial.println(F("1 : Enable EddyStone URL"));
+  Serial.println(F("0 : Stop broadcasting EddyStone URL"));
+  Serial.println(F("1 : Start broadcasting EddyStone URL"));
   Serial.println(F("2 : Put EddyStone URL to Config Mode"));
 
   // Get User's input
@@ -165,17 +172,17 @@ void loop(void)
   switch ( option[0] - '0' )
   {
     case 0:
-      ble.sendCommandCheckOK(F("AT+EDDYSTONEENABLE=off"));
+      eddyBeacon.stopBroadcast();      
       break;
 
     case 1:
-      ble.sendCommandCheckOK(F("AT+EDDYSTONEENABLE=on"));
+      eddyBeacon.startBroadcast();
       break;
 
     case 2:
       Serial.println(F("EddyStone config's mode is enabled for 300 seconds"));
       Serial.println(F("Please use Physical Web app to edit URL"));
-      ble.sendCommandCheckOK(F("AT+EDDYSTONECONFIGEN=300"));
+      eddyBeacon.startConfigMode(300);
       break;
 
     default:
