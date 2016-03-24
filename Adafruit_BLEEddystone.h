@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_Eddystone.h
+    @file     Adafruit_BLEEddystone.h
     @author   hathach
 
     @section LICENSE
@@ -34,21 +34,21 @@
 */
 /**************************************************************************/
 
-#ifndef _ADAFRUIT_EDDYSTONE_H_
-#define _ADAFRUIT_EDDYSTONE_H_
+#ifndef _ADAFRUIT_BLEEDDYSTONE_H_
+#define _ADAFRUIT_BLEEDDYSTONE_H_
 
 #include <Arduino.h>
 #include "Adafruit_BLE.h"
 
 #define EDDYSTONE_DEFAULT_RSSI0M              (-18)
 
-class Adafruit_Eddystone
+class Adafruit_BLEEddystone
 {
 private:
   Adafruit_BLE& _ble;
 
 public:
-  Adafruit_Eddystone(Adafruit_BLE& ble);
+  Adafruit_BLEEddystone(Adafruit_BLE& ble);
 
   bool begin(void);
   bool stop(void);
@@ -62,4 +62,4 @@ public:
 
 };
 
-#endif /* _ADAFRUIT_EDDYSTONE_H_ */
+#endif /* _ADAFRUIT_BLEEDDYSTONE_H_ */

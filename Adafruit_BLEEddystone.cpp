@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_Eddystone.cpp
+    @file     Adafruit_BLEEddystone.cpp
     @author   hathach
 
     @section LICENSE
@@ -34,7 +34,7 @@
 */
 /**************************************************************************/
 
-#include "Adafruit_Eddystone.h"
+#include "Adafruit_BLEEddystone.h"
 
 #define EDDYSTONE_MINIMUM_FIRMWARE_VERSION    "0.7.0"
 
@@ -44,7 +44,7 @@
     @brief Constructor
 */
 /******************************************************************************/
-Adafruit_Eddystone::Adafruit_Eddystone(Adafruit_BLE& ble) :
+Adafruit_BLEEddystone::Adafruit_BLEEddystone(Adafruit_BLE& ble) :
   _ble(ble)
 {
 }
@@ -54,7 +54,7 @@ Adafruit_Eddystone::Adafruit_Eddystone(Adafruit_BLE& ble) :
     @brief Enable Eddystone service if not already enabled
 */
 /******************************************************************************/
-bool Adafruit_Eddystone::begin(void)
+bool Adafruit_BLEEddystone::begin(void)
 {
   VERIFY_( _ble.isVersionAtLeast(EDDYSTONE_MINIMUM_FIRMWARE_VERSION) );
 
@@ -75,7 +75,7 @@ bool Adafruit_Eddystone::begin(void)
     @brief Stop Eddystone service if it is enabled
 */
 /******************************************************************************/
-bool Adafruit_Eddystone::stop(void)
+bool Adafruit_BLEEddystone::stop(void)
 {
   int32_t enabled = 0;
   VERIFY_( _ble.sendCommandWithIntReply( F("AT+EDDYSTONESERVICEEN"), &enabled) );
@@ -97,7 +97,7 @@ bool Adafruit_Eddystone::stop(void)
     @param rssi_at_0m RSSI value at 0m (check out EddyStone specs)
 */
 /******************************************************************************/
-bool Adafruit_Eddystone::setURL(const char* url, bool broadcastEvenConnect, int8_t rssi_at_0m)
+bool Adafruit_BLEEddystone::setURL(const char* url, bool broadcastEvenConnect, int8_t rssi_at_0m)
 {
   bool result;
   uint8_t current_mode = _ble.getMode();
@@ -127,7 +127,7 @@ bool Adafruit_Eddystone::setURL(const char* url, bool broadcastEvenConnect, int8
     @brief Start Broadcasting (advertising) specified URL
 */
 /******************************************************************************/
-bool Adafruit_Eddystone::startBroadcast(void)
+bool Adafruit_BLEEddystone::startBroadcast(void)
 {
   return _ble.sendCommandCheckOK( F("AT+EDDYSTONEBROADCAST=1") );
 }
@@ -137,7 +137,7 @@ bool Adafruit_Eddystone::startBroadcast(void)
     @brief Stop Broadcasting (advertising) specified URL
 */
 /******************************************************************************/
-bool Adafruit_Eddystone::stopBroadcast(void)
+bool Adafruit_BLEEddystone::stopBroadcast(void)
 {
   return _ble.sendCommandCheckOK( F("AT+EDDYSTONEBROADCAST=0") );
 }
@@ -147,7 +147,7 @@ bool Adafruit_Eddystone::stopBroadcast(void)
     @brief Broadcast (advertising) specified URL
 */
 /******************************************************************************/
-bool Adafruit_Eddystone::startConfigMode(uint32_t seconds)
+bool Adafruit_BLEEddystone::startConfigMode(uint32_t seconds)
 {
   return _ble.sendCommandCheckOK( F("AT+EDDYSTONECONFIGEN="), (int32_t) seconds );
 }

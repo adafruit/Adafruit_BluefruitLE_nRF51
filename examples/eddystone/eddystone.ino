@@ -21,7 +21,7 @@
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
-#include "Adafruit_Eddystone.h"
+#include "Adafruit_BLEEddystone.h"
 
 #include "BluefruitConfig.h"
 
@@ -82,7 +82,7 @@ Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_
 //                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 
-Adafruit_Eddystone eddyBeacon(ble);
+Adafruit_BLEEddystone eddyBeacon(ble);
 
 // A small helper
 void error(const __FlashStringHelper*err) {
