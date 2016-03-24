@@ -123,7 +123,7 @@ void setup(void)
   midi.setRxCallback(BleMidiRX);
   
   Serial.println(F("Enable MIDI: "));
-  if ( ! midi.begin() )
+  if ( ! midi.begin(true) )
   {
     error(F("Could not enable MIDI"));
   }

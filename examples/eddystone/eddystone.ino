@@ -137,7 +137,7 @@ void setup(void)
   }
 
   // Enable Eddystone beacon service and reset Bluefruit if needed
-  eddyBeacon.begin();
+  eddyBeacon.begin(true);
 
   /* Set EddyStone URL beacon data */
   Serial.println(F("Setting EddyStone-url to Adafruit website: "));

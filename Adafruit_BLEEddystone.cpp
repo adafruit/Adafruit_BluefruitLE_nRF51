@@ -52,9 +52,10 @@ Adafruit_BLEEddystone::Adafruit_BLEEddystone(Adafruit_BLE& ble) :
 /******************************************************************************/
 /*!
     @brief Enable Eddystone service if not already enabled
+    @param reset true will reset Bluefruit
 */
 /******************************************************************************/
-bool Adafruit_BLEEddystone::begin(void)
+bool Adafruit_BLEEddystone::begin(bool reset)
 {
   VERIFY_( _ble.isVersionAtLeast(EDDYSTONE_MINIMUM_FIRMWARE_VERSION) );
 
@@ -64,8 +65,8 @@ bool Adafruit_BLEEddystone::begin(void)
   if ( enabled ) return true;
   VERIFY_( _ble.sendCommandCheckOK( F("AT+EDDYSTONESERVICEEN=1") ) );
 
-  // Perform Bluefruit reset since service changed
-  _ble.reset();
+  // Perform Bluefruit reset if needed
+  if (reset) _ble.reset();
 
   return true;
 }

@@ -49,7 +49,7 @@ public:
   typedef Adafruit_BLE::bleMIDIRxCallback_t midiRxCallback_t;
   Adafruit_BLEMIDI(Adafruit_BLE& ble);
 
-  bool begin(void);
+  bool begin(bool reset = true);
   bool stop(void);
 
   bool send(const uint8_t bytes[3]);

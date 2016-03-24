@@ -62,9 +62,10 @@ void Adafruit_BLEMIDI::setRxCallback(midiRxCallback_t fp)
 /******************************************************************************/
 /*!
     @brief Enable MIDI service if not already enabled
+    @param reset true will reset Bluefruit
 */
 /******************************************************************************/
-bool Adafruit_BLEMIDI::begin(void)
+bool Adafruit_BLEMIDI::begin(bool reset)
 {
   VERIFY_( _ble.isVersionAtLeast(MIDI_MINIMUM_FIRMWARE_VERSION) );
 
@@ -74,8 +75,8 @@ bool Adafruit_BLEMIDI::begin(void)
   if ( enabled ) return true;
   VERIFY_( _ble.sendCommandCheckOK( F("AT+BLEMIDIEN=1") ) );
 
-  // Perform Bluefruit reset since service changed
-  _ble.reset();
+  // Perform Bluefruit reset if needed
+  if (reset) _ble.reset();
 
   return true;
 }
