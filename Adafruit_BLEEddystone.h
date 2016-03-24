@@ -51,7 +51,7 @@ public:
   Adafruit_BLEEddystone(Adafruit_BLE& ble);
 
   bool begin(bool reset = true);
-  bool stop(void);
+  bool stop (bool reset = true);
 
   bool setURL(const char* url, bool broadcastEvenConnect = false, int8_t rssi_at_0m = EDDYSTONE_DEFAULT_RSSI0M);
 

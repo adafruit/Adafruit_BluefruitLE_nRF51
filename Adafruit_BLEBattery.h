@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_BLEMIDI.h
+    @file     Adafruit_BLEBatterry.h
     @author   hathach
 
     @section LICENSE
@@ -34,41 +34,24 @@
 */
 /**************************************************************************/
 
-#ifndef _ADAFRUIT_BLEMIDI_H_
-#define _ADAFRUIT_BLEMIDI_H_
+#ifndef _ADAFRUIT_BLEBATTERY_H_
+#define _ADAFRUIT_BLEBATTERY_H_
 
 #include <Arduino.h>
 #include "Adafruit_BLE.h"
 
-class Adafruit_BLEMIDI
+class Adafruit_BLEBattery
 {
 private:
   Adafruit_BLE& _ble;
 
 public:
-  typedef Adafruit_BLE::bleMIDIRxCallback_t midiRxCallback_t;
-  Adafruit_BLEMIDI(Adafruit_BLE& ble);
+  Adafruit_BLEBattery(Adafruit_BLE& ble);
 
   bool begin(bool reset = true);
   bool stop (bool reset = true);
 
-  bool send(const uint8_t bytes[3]);
-
-  bool send(uint8_t status, const uint8_t bytes[2])
-  {
-    uint8_t buffer[3] = { status, bytes[0], bytes[1] };
-    return send(buffer);
-  }
-
-  bool send(uint8_t status, uint8_t byte1, uint8_t byte2)
-  {
-    uint8_t buffer[3] = { status, byte1, byte2 };
-    return send(buffer);
-  }
-
-  bool send_n(uint8_t status, const uint8_t bytes[], uint8_t count);
-
-  void setRxCallback(midiRxCallback_t fp);
+  bool update(uint8_t percent);
 };
 
-#endif /* _ADAFRUIT_BLEMIDI_H_ */
+#endif /* _ADAFRUIT_BLEBATTERY_H_ */

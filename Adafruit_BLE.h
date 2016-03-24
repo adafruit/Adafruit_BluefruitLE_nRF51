@@ -39,6 +39,7 @@
 
 #include <stdint.h>
 #include <Arduino.h>
+#include "utility/common_header.h"
 #include "utility/sdep.h"
 #include "utility/errors.h"
 #include "utility/TimeoutTimer.h"
@@ -53,11 +54,6 @@
 #define BLUEFRUIT_MODE_DATA      LOW
 #define BLE_DEFAULT_TIMEOUT      250
 #define BLE_BUFSIZE              4*SDEP_MAX_PACKETSIZE
-
-//#define ASSERT(condition, err)    if ( !(condition) ) return err;
-
-#define VERIFY_(condition)                if ( !(condition) ) return false;
-#define VERIFY_RETURN_(condition, error)  if ( !(condition) ) return error;
 
 class Adafruit_BLE : public Stream
 {

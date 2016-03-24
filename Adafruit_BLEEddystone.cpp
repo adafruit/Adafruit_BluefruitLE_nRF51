@@ -74,9 +74,10 @@ bool Adafruit_BLEEddystone::begin(bool reset)
 /******************************************************************************/
 /*!
     @brief Stop Eddystone service if it is enabled
+    @param reset true will reset Bluefruit
 */
 /******************************************************************************/
-bool Adafruit_BLEEddystone::stop(void)
+bool Adafruit_BLEEddystone::stop(bool reset)
 {
   int32_t enabled = 0;
   VERIFY_( _ble.sendCommandWithIntReply( F("AT+EDDYSTONESERVICEEN"), &enabled) );
@@ -84,8 +85,8 @@ bool Adafruit_BLEEddystone::stop(void)
 
   VERIFY_( _ble.sendCommandCheckOK( F("AT+EDDYSTONESERVICEEN=0") ) );
 
-  // Perform Bluefruit reset since service changed
-  _ble.reset();
+  // Perform Bluefruit reset if needed
+  if (reset) _ble.reset();
 
   return true;
 }

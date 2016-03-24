@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_BLEMIDI.h
+    @file     common_header.h
     @author   hathach
 
     @section LICENSE
@@ -34,41 +34,20 @@
 */
 /**************************************************************************/
 
-#ifndef _ADAFRUIT_BLEMIDI_H_
-#define _ADAFRUIT_BLEMIDI_H_
+#ifndef _COMMON_HEADER_H_
+#define _COMMON_HEADER_H_
 
-#include <Arduino.h>
-#include "Adafruit_BLE.h"
+#include <stdint.h>
+#include <stdbool.h>
 
-class Adafruit_BLEMIDI
+//#define ASSERT(condition, err)    if ( !(condition) ) return err;
+
+#define VERIFY_(condition)                if ( !(condition) ) return false;
+#define VERIFY_RETURN_(condition, error)  if ( !(condition) ) return error;
+
+static inline bool is_within(uint32_t lower, uint32_t value, uint32_t upper)
 {
-private:
-  Adafruit_BLE& _ble;
+  return (lower <= value) && (value <= upper);
+}
 
-public:
-  typedef Adafruit_BLE::bleMIDIRxCallback_t midiRxCallback_t;
-  Adafruit_BLEMIDI(Adafruit_BLE& ble);
-
-  bool begin(bool reset = true);
-  bool stop (bool reset = true);
-
-  bool send(const uint8_t bytes[3]);
-
-  bool send(uint8_t status, const uint8_t bytes[2])
-  {
-    uint8_t buffer[3] = { status, bytes[0], bytes[1] };
-    return send(buffer);
-  }
-
-  bool send(uint8_t status, uint8_t byte1, uint8_t byte2)
-  {
-    uint8_t buffer[3] = { status, byte1, byte2 };
-    return send(buffer);
-  }
-
-  bool send_n(uint8_t status, const uint8_t bytes[], uint8_t count);
-
-  void setRxCallback(midiRxCallback_t fp);
-};
-
-#endif /* _ADAFRUIT_BLEMIDI_H_ */
+#endif /* _COMMON_HEADER_H_ */
