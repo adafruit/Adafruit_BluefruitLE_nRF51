@@ -61,24 +61,26 @@ bool Adafruit_BLEGatt::clear(void)
 /******************************************************************************/
 /*!
     @brief Add a service with 16-bit UUID
+    @return Service ID (starting from 1). If failed 0 is returned
 */
 /******************************************************************************/
 uint8_t Adafruit_BLEGatt::addService(uint16_t uuid16)
 {
   int32_t service_id;
-  VERIFY_RETURN_( _ble.atcommandIntReply( F("AT+GATTADDCHAR=UUID"), &service_id, uuid16), 0 );
+  VERIFY_RETURN_( _ble.atcommandIntReply( F("AT+GATTADDSERVICE=UUID"), &service_id, uuid16), 0 );
   return (uint8_t) service_id;
 }
 
 /******************************************************************************/
 /*!
     @brief Add a service with 128-bit UUID
+    @return Service ID (starting from 1). If failed 0 is returned
 */
 /******************************************************************************/
 uint8_t Adafruit_BLEGatt::addService(uint8_t uuid128[])
 {
   int32_t service_id;
-  VERIFY_RETURN_( _ble.atcommandIntReply( F("AT+GATTADDCHAR=UUID128"), &service_id, uuid128, 16), 0 );
+  VERIFY_RETURN_( _ble.atcommandIntReply( F("AT+GATTADDSERVICE=UUID128"), &service_id, uuid128, 16), 0 );
   return (uint8_t) service_id;
 }
 
