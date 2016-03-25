@@ -111,7 +111,6 @@ class Adafruit_BLE : public Adafruit_ATParser
     // helper
     void install_callback(bool enable, int8_t system_id, int8_t gatts_id);
 
-
     void (*_disconnect_callback) (void);
     void (*_connect_callback) (void);
 
@@ -121,14 +120,4 @@ class Adafruit_BLE : public Adafruit_ATParser
     void (*_ble_gatt_rx_callback) (int32_t chars_id, uint8_t data[], uint16_t len);
 };
 
-//struct GattServer_t
-//{
-//  bool clear(void)
-//  {
-//    ASSERT( sendATCommand("AT+GATTCLEAR"), false);
-//    ASSERT( getATResponse(), false);
-//
-//    return true;
-//  }
-//};
 #endif /* _Adafruit_BLE_H_ */

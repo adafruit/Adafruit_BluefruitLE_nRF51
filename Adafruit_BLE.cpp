@@ -93,7 +93,6 @@ void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_
 
   println();
 
-
   waitForOK();
 
   // switch back if necessary
@@ -112,7 +111,7 @@ bool Adafruit_BLE::reset(void)
   bool isOK;
   // println();
   for (uint8_t t=0; t < 5; t++) {
-    isOK = sendCommandCheckOK(F("ATZ"));
+    isOK = atcommand(F("ATZ"));
 
     if (isOK) break;
   }
@@ -124,7 +123,7 @@ bool Adafruit_BLE::reset(void)
     delay(50);
     
     for (uint8_t t=0; t < 5; t++) {
-      isOK = sendCommandCheckOK(F("ATZ"));
+      isOK = atcommand(F("ATZ"));
       
       if (isOK) break;
     }
@@ -170,13 +169,7 @@ bool Adafruit_BLE::factoryReset(void)
 /******************************************************************************/
 bool Adafruit_BLE::echo(bool enable)
 {
-  if (enable)
-  {
-    return sendCommandCheckOK( F("ATE=1") );
-  }else
-  {
-    return sendCommandCheckOK( F("ATE=0") );
-  }
+  return atcommand(F("ATE"), (int32_t) enable);
 }
 
 /******************************************************************************/
@@ -187,7 +180,7 @@ bool Adafruit_BLE::echo(bool enable)
 bool Adafruit_BLE::isConnected(void)
 {
   int32_t connected = 0;
-  sendCommandWithIntReply(F("AT+GAPGETCONN"), &connected);
+  atcommandIntReply(F("AT+GAPGETCONN"), &connected);
 
   return connected;
 }
@@ -199,7 +192,7 @@ bool Adafruit_BLE::isConnected(void)
 /******************************************************************************/
 void Adafruit_BLE::disconnect(void)
 {
-  sendCommandCheckOK( F("AT+GAPDISCONNECT") );
+  atcommand( F("AT+GAPDISCONNECT") );
 }
 
 /******************************************************************************/

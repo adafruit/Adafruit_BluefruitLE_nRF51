@@ -175,7 +175,7 @@ bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
     // Switch mode using +++ command, at worst switch 2 times
     int32_t updated_mode;
 
-    isOK = sendCommandWithIntReply(F("+++"), &updated_mode);
+    isOK = atcommandIntReply(F("+++"), &updated_mode);
 
     if ( isOK )
     {
@@ -183,7 +183,7 @@ bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
       // Switch again. This is required to make sure it is always correct
       if ( updated_mode != new_mode )
       {
-        isOK = sendCommandWithIntReply(F("+++"), &updated_mode);
+        isOK = atcommandIntReply(F("+++"), &updated_mode);
         // Still does not match -> give up
         if ( updated_mode != new_mode ) return false;
       }
