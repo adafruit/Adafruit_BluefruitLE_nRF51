@@ -60,10 +60,10 @@ bool Adafruit_BLEEddystone::begin(bool reset)
   VERIFY_( _ble.isVersionAtLeast(EDDYSTONE_MINIMUM_FIRMWARE_VERSION) );
 
   int32_t enabled = 0;
-  VERIFY_( _ble.sendCommandWithIntReply( F("AT+EDDYSTONESERVICEEN"), &enabled) );
+  VERIFY_( _ble.atcommandIntReply( F("AT+EDDYSTONESERVICEEN"), &enabled) );
 
   if ( enabled ) return true;
-  VERIFY_( _ble.sendCommandCheckOK( F("AT+EDDYSTONESERVICEEN=1") ) );
+  VERIFY_( _ble.atcommand( F("AT+EDDYSTONESERVICEEN=1") ) );
 
   // Perform Bluefruit reset if needed
   if (reset) _ble.reset();
@@ -80,10 +80,10 @@ bool Adafruit_BLEEddystone::begin(bool reset)
 bool Adafruit_BLEEddystone::stop(bool reset)
 {
   int32_t enabled = 0;
-  VERIFY_( _ble.sendCommandWithIntReply( F("AT+EDDYSTONESERVICEEN"), &enabled) );
+  VERIFY_( _ble.atcommandIntReply( F("AT+EDDYSTONESERVICEEN"), &enabled) );
   if ( !enabled ) return true;
 
-  VERIFY_( _ble.sendCommandCheckOK( F("AT+EDDYSTONESERVICEEN=0") ) );
+  VERIFY_( _ble.atcommand( F("AT+EDDYSTONESERVICEEN=0") ) );
 
   // Perform Bluefruit reset if needed
   if (reset) _ble.reset();
@@ -131,7 +131,7 @@ bool Adafruit_BLEEddystone::setURL(const char* url, bool broadcastEvenConnect, i
 /******************************************************************************/
 bool Adafruit_BLEEddystone::startBroadcast(void)
 {
-  return _ble.sendCommandCheckOK( F("AT+EDDYSTONEBROADCAST=1") );
+  return _ble.atcommand( F("AT+EDDYSTONEBROADCAST=1") );
 }
 
 /******************************************************************************/
@@ -141,7 +141,7 @@ bool Adafruit_BLEEddystone::startBroadcast(void)
 /******************************************************************************/
 bool Adafruit_BLEEddystone::stopBroadcast(void)
 {
-  return _ble.sendCommandCheckOK( F("AT+EDDYSTONEBROADCAST=0") );
+  return _ble.atcommand( F("AT+EDDYSTONEBROADCAST=0") );
 }
 
 /******************************************************************************/
@@ -151,5 +151,5 @@ bool Adafruit_BLEEddystone::stopBroadcast(void)
 /******************************************************************************/
 bool Adafruit_BLEEddystone::startConfigMode(uint32_t seconds)
 {
-  return _ble.sendCommandCheckOK( F("AT+EDDYSTONECONFIGEN="), (int32_t) seconds );
+  return _ble.atcommand( F("AT+EDDYSTONECONFIGEN"), (int32_t) seconds );
 }

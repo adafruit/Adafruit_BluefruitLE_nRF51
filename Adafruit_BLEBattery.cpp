@@ -56,10 +56,10 @@ Adafruit_BLEBattery::Adafruit_BLEBattery(Adafruit_BLE& ble) :
 bool Adafruit_BLEBattery::begin(bool reset)
 {
   int32_t enabled = 0;
-  VERIFY_( _ble.sendCommandWithIntReply( F("AT+BLEBATTEN"), &enabled) );
+  VERIFY_( _ble.atcommandIntReply( F("AT+BLEBATTEN"), &enabled) );
   if ( enabled ) return true;
 
-  VERIFY_( _ble.sendCommandCheckOK( F("AT+BLEBATTEN=1") ) );
+  VERIFY_( _ble.atcommand( F("AT+BLEBATTEN=1") ) );
 
   // Perform Bluefruit reset if needed
   if (reset) _ble.reset();
@@ -76,10 +76,10 @@ bool Adafruit_BLEBattery::begin(bool reset)
 bool Adafruit_BLEBattery::stop(bool reset)
 {
   int32_t enabled = 0;
-  VERIFY_( _ble.sendCommandWithIntReply( F("AT+BLEBATTEN"), &enabled) );
+  VERIFY_( _ble.atcommandIntReply( F("AT+BLEBATTEN"), &enabled) );
   if ( !enabled ) return true;
 
-  VERIFY_( _ble.sendCommandCheckOK( F("AT+BLEBATTEN=0") ) );
+  VERIFY_( _ble.atcommand( F("AT+BLEBATTEN=0") ) );
 
   // Perform Bluefruit reset if needed
   if (reset) _ble.reset();
@@ -96,7 +96,6 @@ bool Adafruit_BLEBattery::stop(bool reset)
 bool Adafruit_BLEBattery::update(uint8_t percent)
 {
   VERIFY_( is_within(0, percent, 100) );
-
-  return _ble.sendCommandCheckOK( F("AT+BLEBATTVAL="), percent ) ;
+  return _ble.atcommand( F("AT+BLEBATTVAL"), percent ) ;
 }
 

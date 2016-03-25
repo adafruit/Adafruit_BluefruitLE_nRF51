@@ -40,22 +40,13 @@
 #include <stdint.h>
 #include <Arduino.h>
 #include "utility/common_header.h"
-#include "utility/sdep.h"
 #include "utility/errors.h"
 #include "utility/TimeoutTimer.h"
+#include "Adafruit_ATParser.h"
 
-#if defined(ARDUINO_SAMD_ZERO) && defined(SERIAL_PORT_USBVIRTUAL) 
-#define SerialDebug SERIAL_PORT_USBVIRTUAL
-#else
-#define SerialDebug Serial
-#endif
-
-#define BLUEFRUIT_MODE_COMMAND   HIGH
-#define BLUEFRUIT_MODE_DATA      LOW
 #define BLE_DEFAULT_TIMEOUT      250
-#define BLE_BUFSIZE              4*SDEP_MAX_PACKETSIZE
 
-class Adafruit_BLE : public Stream
+class Adafruit_BLE : public Adafruit_ATParser
 {
   protected:
     enum
@@ -67,19 +58,16 @@ class Adafruit_BLE : public Stream
       BLUEFRUIT_TRANSPORT_SWSPI,
     };
 
-    bool     _verbose;
-    uint8_t  _mode;
-    uint16_t _timeout;
+
+//    uint8_t  _mode;
+//    uint16_t _timeout;
     uint8_t  _physical_transport;
 
   public:
     typedef void (*bleMIDIRxCallback_t) (uint16_t timestamp, uint8_t status, uint8_t byte1, uint8_t byte2);
+
     // Constructor
     Adafruit_BLE(void);
-    char buffer[BLE_BUFSIZE+1];
-
-    // Auto print out TX & RX data to normal Serial
-    void verbose(bool enable) { _verbose = enable; }
 
     // Physical transportation checking
     bool isTransportHwUart (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_HWUART; }
@@ -95,92 +83,19 @@ class Adafruit_BLE : public Stream
     bool factoryReset(void);
     void info(void);
     bool echo(bool enable);
-    bool waitForOK(void);
+
     bool isConnected(void);
     bool isVersionAtLeast(const char * versionString);
     void disconnect(void);
 
-    virtual bool setMode(uint8_t mode) = 0;
-    uint8_t      getMode(void) { return _mode; }
-
     uint8_t convert2ByteArrayString(char *str, const uint8_t* buffer, uint8_t count);
 
-    bool sendCommandCheckOK(const char cmd[], int32_t para_arr[], uint8_t para_count);
-    bool sendCommandCheckOK(const __FlashStringHelper *cmd, int32_t para_arr[], uint8_t para_count);
-
     // No parameters
-    bool sendCommandCheckOK(const __FlashStringHelper *cmd)
-    {
-      return sendCommandCheckOK(cmd, (int32_t*) NULL, 0);
-    }
+    bool sendCommandCheckOK(const __FlashStringHelper *cmd) { return this->atcommand(cmd); }
+    bool sendCommandCheckOK(const char cmd[])               { return this->atcommand(cmd); }
 
-    bool sendCommandCheckOK(const char cmd[])
-    {
-      return sendCommandCheckOK(cmd,  (int32_t*) NULL, 0);
-    }
-
-    // One parameter
-    bool sendCommandCheckOK(const __FlashStringHelper *cmd, int32_t para1)
-    {
-      return sendCommandCheckOK(cmd, &para1, 1);
-    }
-
-    bool sendCommandCheckOK(const char cmd[], int32_t para1)
-    {
-      return sendCommandCheckOK(cmd, &para1, 1);
-    }
-
-    // Two parameters
-    bool sendCommandCheckOK(const __FlashStringHelper *cmd, int32_t para1, int32_t para2)
-    {
-      int32_t buf[] = {para1, para2};
-      return sendCommandCheckOK(cmd, buf, 2);
-    }
-
-    bool sendCommandCheckOK(const char cmd[], int32_t para1, int32_t para2)
-    {
-      int32_t buf[] = {para1, para2};
-      return sendCommandCheckOK(cmd, buf, 2);
-    }
-
-    // Three parameters
-    bool sendCommandCheckOK(const __FlashStringHelper *cmd, int32_t para1, int32_t para2, int32_t para3)
-    {
-      int32_t buf[] = {para1, para2, para3};
-      return sendCommandCheckOK(cmd, buf, 3);
-    }
-
-    bool sendCommandCheckOK(const char cmd[], int32_t para1, int32_t para2, int32_t para3)
-    {
-      int32_t buf[] = {para1, para2, para3};
-      return sendCommandCheckOK(cmd, buf, 3);
-    }
-
-    bool sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply);
-    bool sendCommandWithIntReply(const char cmd[], int32_t *reply);
-
-    // Read one line of response into internal buffer
-    uint16_t readline(uint16_t timeout, boolean multiline = false);
-    uint16_t readline(void)
-    {
-      return readline(_timeout, false);
-    }
-
-    // Read one line of response into provided buffer
-    uint16_t readline(char    * buf, uint16_t bufsize);
-    uint16_t readline(uint8_t * buf, uint16_t bufsize)
-    {
-      return readline( (char*) buf, bufsize);
-    }
-
-    // read one line and convert the string to integer number
-    int32_t readline_parseInt(void);
-
-    uint16_t readraw(uint16_t timeout);
-    uint16_t readraw(void)
-    {
-      return readraw(_timeout);
-    }
+    bool sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply) { return this->atcommandIntReply(cmd, reply); }
+    bool sendCommandWithIntReply(const char cmd[]              , int32_t *reply) { return this->atcommandIntReply(cmd, reply); }
 
     /////////////////////
     // callback functions

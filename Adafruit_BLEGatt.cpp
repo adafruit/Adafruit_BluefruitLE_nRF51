@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_BLEMIDI.cpp
+    @file     Adafruit_BLEGatt.cpp
     @author   hathach
 
     @section LICENSE
@@ -34,111 +34,47 @@
 */
 /**************************************************************************/
 
-#include "Adafruit_BLEMIDI.h"
+#include "Adafruit_BLEGatt.h"
 
-#define MIDI_MINIMUM_FIRMWARE_VERSION    "0.7.0"
 
 /******************************************************************************/
 /*!
     @brief Constructor
 */
 /******************************************************************************/
-Adafruit_BLEMIDI::Adafruit_BLEMIDI(Adafruit_BLE& ble) :
+Adafruit_BLEGatt::Adafruit_BLEGatt(Adafruit_BLE& ble) :
   _ble(ble)
 {
+
 }
 
 /******************************************************************************/
 /*!
-    @brief Set callback
+    @brief Clear all GATT data
 */
 /******************************************************************************/
-void Adafruit_BLEMIDI::setRxCallback(midiRxCallback_t fp)
+bool Adafruit_BLEGatt::clear(void)
 {
-  _ble.setBleMidiRxCallback(fp);
-}
-
-
-/******************************************************************************/
-/*!
-    @brief Enable MIDI service if not already enabled
-    @param reset true will reset Bluefruit
-*/
-/******************************************************************************/
-bool Adafruit_BLEMIDI::begin(bool reset)
-{
-  VERIFY_( _ble.isVersionAtLeast(MIDI_MINIMUM_FIRMWARE_VERSION) );
-
-  int32_t enabled = 0;
-  VERIFY_( _ble.atcommandIntReply( F("AT+BLEMIDIEN"), &enabled) );
-
-  if ( enabled ) return true;
-  VERIFY_( _ble.atcommand( F("AT+BLEMIDIEN=1") ) );
-
-  // Perform Bluefruit reset if needed
-  if (reset) _ble.reset();
-
-  return true;
+  return _ble.atcommand( F("AT+GATTCLEAR") );
 }
 
 /******************************************************************************/
 /*!
-    @brief Stop MIDI service if it is enabled
-    @param reset true will reset Bluefruit
+    @brief Add a service with 16-bit UUID
 */
 /******************************************************************************/
-bool Adafruit_BLEMIDI::stop(bool reset)
+uint8_t Adafruit_BLEGatt::addService(uint16_t uuid16)
 {
-  int32_t enabled = 0;
-  VERIFY_( _ble.atcommandIntReply( F("AT+BLEMIDIEN"), &enabled) );
-  if ( !enabled ) return true;
 
-  VERIFY_( _ble.atcommand( F("AT+BLEMIDIEN=0") ) );
-
-  // Perform Bluefruit reset if needed
-  if (reset) _ble.reset();
-
-  return true;
 }
 
 /******************************************************************************/
 /*!
-    @brief Send a MIDI event data
-    @param bytes MIDI event data
+    @brief Add a service with 128-bit UUID
 */
 /******************************************************************************/
-bool Adafruit_BLEMIDI::send(const uint8_t bytes[3])
+uint8_t Adafruit_BLEGatt::addService(uint8_t uuid128[])
 {
-  char command[] = "AT+BLEMIDITX=00-00-00";
-  uint8_t idx = strlen(command) - 8;
 
-  _ble.convert2ByteArrayString(command+idx, bytes, 3);
-  return _ble.sendCommandCheckOK(command);
-}
-
-/******************************************************************************/
-/*!
-    @brief Send multiple MIDI event which shared the same status
-    @param status MIDI status
-    @param bytes MIDI events data
-    @param count number of data in bytes (must be multiple of 2)
-
-    @note count + 1 must less than (20-3) --> count <= 16
-*/
-/******************************************************************************/
-bool Adafruit_BLEMIDI::send_n(uint8_t status, const uint8_t bytes[], uint8_t count)
-{
-  VERIFY_(count <= 16);
-  char command[64] = "AT+BLEMIDITX=";
-
-  uint8_t idx = strlen(command);
-
-  idx += _ble.convert2ByteArrayString(command+idx, &status, 1);
-  command[idx++] = '-';
-  _ble.convert2ByteArrayString(command+idx, bytes, count);
-
-  //Serial.println(command);
-
-  return _ble.sendCommandCheckOK(command);
 }
 

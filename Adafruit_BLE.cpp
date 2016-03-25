@@ -55,6 +55,28 @@ enum {
   //  11 reserved
 };
 
+/******************************************************************************/
+/*!
+    @brief  Constructor
+*/
+/******************************************************************************/
+Adafruit_BLE::Adafruit_BLE(void)
+{
+  _timeout = BLE_DEFAULT_TIMEOUT;
+
+  _disconnect_callback  = NULL;
+  _connect_callback     = NULL;
+  _ble_uart_rx_callback = NULL;
+  _ble_midi_rx_callback = NULL;
+  _ble_gatt_rx_callback = NULL;
+}
+
+/******************************************************************************/
+/*!
+    @brief Helper to install callback
+    @param
+*/
+/******************************************************************************/
 void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_id)
 {
   bool v = _verbose;
@@ -83,23 +105,6 @@ void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_
   if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
 
   _verbose = v;
-}
-/******************************************************************************/
-/*!
-    @brief  Constructor
-*/
-/******************************************************************************/
-Adafruit_BLE::Adafruit_BLE(void)
-{
-  _verbose = false;
-  _mode    = BLUEFRUIT_MODE_COMMAND;
-  _timeout = BLE_DEFAULT_TIMEOUT;
-
-  _disconnect_callback  = NULL;
-  _connect_callback     = NULL;
-  _ble_uart_rx_callback = NULL;
-  _ble_midi_rx_callback = NULL;
-  _ble_gatt_rx_callback = NULL;
 }
 
 /******************************************************************************/
@@ -261,57 +266,6 @@ bool Adafruit_BLE::isVersionAtLeast(const char * versionString)
 
 /******************************************************************************/
 /*!
-    @brief  Send a command from a flash string, and parse an int reply
-*/
-/******************************************************************************/
-bool Adafruit_BLE::sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply)
-{
-  bool result;
-  uint8_t current_mode = _mode;
-
-  // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
-
-  println(cmd);                   // send command
-  if (_verbose) {
-    SerialDebug.print( F("\n<- ") );
-  }
-  (*reply) = readline_parseInt(); // parse integer response
-  result = waitForOK();
-
-  // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
-
-  return result;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Send a command from a SRAM string, and parse an int reply
-*/
-/******************************************************************************/
-bool Adafruit_BLE::sendCommandWithIntReply(const char cmd[], int32_t *reply) {
-  bool result;
-  uint8_t current_mode = _mode;
-
-  // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
-
-  println(cmd);                   // send command
-  if (_verbose) {
-    SerialDebug.print( F("\n<- ") );
-  }
-  (*reply) = readline_parseInt(); // parse integer response
-  result = waitForOK();
-
-  // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
-
-  return result;
-}
-
-/******************************************************************************/
-/*!
     @brief  Convert buffer data to Byte Array String format such as 11-22-33-44
     e.g 0x11223344 --> 11-22-33-44
 
@@ -331,261 +285,6 @@ uint8_t Adafruit_BLE::convert2ByteArrayString(char *str, const uint8_t* buffer, 
 
   return (count*3) - 1;
 }
-
-/******************************************************************************/
-/*!
-    @brief  Send a command from a SRAM string, and wait for OK or ERROR
-*/
-/******************************************************************************/
-bool Adafruit_BLE::sendCommandCheckOK(const char cmd[], int32_t para_arr[], uint8_t para_count)
-{
-  bool result;
-  uint8_t current_mode = _mode;
-
-  // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
-
-  // send command and integer parameters separated by comma
-  print(cmd);
-  for(uint8_t i=0; i<para_count; i++)
-  {
-    print(para_arr[i]);
-    if (i != para_count - 1) print(',');
-  }
-  println(); // execute command
-
-  result = waitForOK();
-
-  // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
-
-  return result;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Send a command from a SRAM string, and wait for OK or ERROR
-*/
-/******************************************************************************/
-bool Adafruit_BLE::sendCommandCheckOK(const __FlashStringHelper *cmd, int32_t para_arr[], uint8_t para_count)
-{
-  bool result;
-  uint8_t current_mode = _mode;
-
-  // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
-
-  // send command and integer parameters separated by comma
-  print(cmd);
-  for(uint8_t i=0; i<para_count; i++)
-  {
-    print(para_arr[i]);
-    if (i != para_count - 1) print(',');
-  }
-  println(); // execute command
-
-  result = waitForOK();
-
-  // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
-
-  return result;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Read the whole response and check if it ended up with OK.
-    @return true if response is ended with "OK". Otherwise it could be "ERROR"
-*/
-/******************************************************************************/
-bool Adafruit_BLE::waitForOK(void)
-{
-  if (_verbose) {
-    SerialDebug.print( F("\n<- ") );
-  }
-
-  while ( readline() ) {
-    //SerialDebug.println(buffer);
-    if ( strcmp(buffer, "OK") == 0 ) return true;
-    if ( strcmp(buffer, "ERROR") == 0 ) return false;
-  }
-  return false;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Get a line of response data (see \ref readline) and try to interpret
-            it to an integer number. If the number is prefix with '0x', it will
-            be interpreted as hex number. This function also drop the rest of
-            data to the end of the line.
-*/
-/******************************************************************************/
-int32_t Adafruit_BLE::readline_parseInt(void)
-{
-  uint16_t len = readline();
-  if (len == 0) return 0;
-
-  // also parsed hex number e.g 0xADAF
-  int32_t val = strtol(buffer, NULL, 0);
-
-  return val;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Get a line of response data into provided buffer.
-
-    @param[in] buf
-               Provided buffer
-    @param[in] bufsize
-               buffer size
-*/
-/******************************************************************************/
-uint16_t Adafruit_BLE::readline(char * buf, uint16_t bufsize)
-{
-  uint16_t len = bufsize;
-  uint16_t rd  = 0;
-
-  do
-  {
-    rd = readline();
-
-    uint16_t n = min(len, rd);
-    memcpy(buf, buffer, n);
-
-    buf += n;
-    len -= n;
-  } while ( (len > 0) && (rd == BLE_BUFSIZE) );
-
-//  buf[bufsize - len] = 0; // null terminator
-
-  return bufsize - len;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Get (multiple) lines of response data into internal buffer.
-
-    @param[in] timeout
-               Timeout for each read() operation
-    @param[in] multiline
-               Read multiple lines
-
-    @return    The number of bytes read. Data is available in the member .buffer.
-               Note if the returned number is equal to BLE_BUFSIZE, the internal
-               buffer is full before reaching endline. User should continue to
-               call this function a few more times.
-*/
-/******************************************************************************/
-uint16_t Adafruit_BLE::readline(uint16_t timeout, boolean multiline)
-{
-  uint16_t replyidx = 0;
-
-  while (timeout--) {
-    while(available()) {
-      char c =  read();
-      //SerialDebug.println(c);
-      if (c == '\r') continue;
-
-      if (c == '\n') {
-        if (replyidx == 0)   // the first '\n' is ignored
-          continue;
-        
-        if (!multiline) {
-          timeout = 0;         // the second 0x0A is the end of the line
-          break;
-        }
-      }
-      buffer[replyidx] = c;
-      replyidx++;
-
-      // Buffer is full
-      if (replyidx >= BLE_BUFSIZE) {
-        //if (_verbose) { SerialDebug.println("*overflow*"); }  // for my debuggin' only!
-        timeout = 0;
-        break;
-      }
-    }
-    
-    if (timeout == 0) break;
-    delay(1);
-  }
-  buffer[replyidx] = 0;  // null term
-
-  // Print out if is verbose
-  if (_verbose && replyidx > 0)
-  {
-    SerialDebug.print(buffer);
-    if (replyidx < BLE_BUFSIZE) SerialDebug.println();
-  }
-
-  return replyidx;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Get raw binary data to internal buffer, only stop when encountering
-            either "OK\r\n" or "ERROR\r\n" or timed out. Buffer does not contain
-            OK or ERROR
-
-    @param[in] timeout
-               Timeout for each read() operation
-
-    @return    The number of bytes read excluding OK, ERROR ending.
-*/
-/******************************************************************************/
-uint16_t Adafruit_BLE::readraw(uint16_t timeout)
-{
-  uint16_t replyidx = 0;
-
-  while (timeout--) {
-    while(available()) {
-      char c =  read();
-
-      if (c == '\n')
-      {
-        // done if ends with "OK\r\n"
-        if ( (replyidx >= 3) && !strncmp(this->buffer + replyidx-3, "OK\r", 3) )
-        {
-          replyidx -= 3; // chop OK\r
-          timeout = 0;
-          break;
-        }
-        // done if ends with "ERROR\r\n"
-        else if ((replyidx >= 6) && !strncmp(this->buffer + replyidx-6, "ERROR\r", 6))
-        {
-          replyidx -= 6; // chop ERROR\r
-          timeout = 0;
-          break;
-        }
-      }
-
-      this->buffer[replyidx] = c;
-      replyidx++;
-
-      // Buffer is full
-      if (replyidx >= BLE_BUFSIZE) {
-        //if (_verbose) { SerialDebug.println("*overflow*"); }  // for my debuggin' only!
-        timeout = 0;
-        break;
-      }
-    }
-
-    if (timeout == 0) break;
-    delay(1);
-  }
-  this->buffer[replyidx] = 0;  // null term
-
-  // Print out if is verbose
-//  if (_verbose && replyidx > 0)
-//  {
-//    SerialDebug.print(buffer);
-//    if (replyidx < BLE_BUFSIZE) SerialDebug.println();
-//  }
-
-  return replyidx;
-}
-
 
 /******************************************************************************/
 /*!
