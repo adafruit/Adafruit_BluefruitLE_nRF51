@@ -53,12 +53,13 @@
 #define SerialDebug Serial
 #endif
 
-
-enum ATArgType
+// High byte is type, Low byte is datacount
+// datacount is needed when passing ByteArray argument
+enum
 {
-  AT_ARGTYPE_STRING,
-  AT_ARGTYPE_BYTEARRAY,
-  AT_ARGTYPE_INT32,
+  AT_ARGTYPE_STRING    = 0x0100,
+  AT_ARGTYPE_BYTEARRAY = 0x0200,
+  AT_ARGTYPE_INT32     = 0x0300,
 //  AT_ARGTYPE_UINT32,
 //  AT_ARGTYPE_UINT16,
 //  AT_ARGTYPE_UINT8,
@@ -72,7 +73,7 @@ protected:
   bool     _verbose;
 
   // internal function
-  bool send_arg_get_resp(int32_t* reply, uint8_t argcount, ATArgType argtype[], const void* args[]);
+  bool send_arg_get_resp(int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[]);
 
 public:
   Adafruit_ATParser(void);
@@ -85,8 +86,10 @@ public:
   // Auto print out TX & RX data to normal Serial
   void verbose(bool enable) { _verbose = enable; }
 
-  bool atcommand_full(const char cmd[]               , int32_t* reply, uint8_t argcount, ATArgType argtype[], const void* args[]);
-  bool atcommand_full(const __FlashStringHelper *cmd , int32_t* reply, uint8_t argcount, ATArgType argtype[], const void* args[]);
+  uint8_t byteArray2String(char *str, const uint8_t* buffer, uint8_t count);
+
+  bool atcommand_full(const char cmd[]               , int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[]);
+  bool atcommand_full(const __FlashStringHelper *cmd , int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[]);
 
   //--------------------------------------------------------------------+
   // Without Reply
@@ -95,34 +98,50 @@ public:
   bool atcommand(const __FlashStringHelper *cmd ) { return this->atcommand_full(cmd, NULL, 0, NULL, NULL); }
 
   //------------- One integer argument -------------//
-  bool atcommand(const char cmd[]               , int32_t para1)
+  bool atcommand(const char cmd[]              , int32_t para1)
   {
-    ATArgType type[] = { AT_ARGTYPE_INT32 };
+    uint16_t type[] = { AT_ARGTYPE_INT32 };
     const void* args[] = { (void*) para1 };
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
 
-  bool atcommand(const __FlashStringHelper *cmd , int32_t para1)
+  bool atcommand(const __FlashStringHelper *cmd, int32_t para1)
   {
-    ATArgType type[] = { AT_ARGTYPE_INT32 };
+    uint16_t type[] = { AT_ARGTYPE_INT32 };
     const void* args[] = { (void*) para1 };
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
 
   //------------- Two integer arguments -------------//
-  bool atcommand(const char cmd[]               , int32_t para1, int32_t para2)
+  bool atcommand(const char cmd[]              , int32_t para1, int32_t para2)
   {
-    ATArgType type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
+    uint16_t type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
     const void* args[] = { (void*) para1, (void*) para2 };
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
 
-  bool atcommand(const __FlashStringHelper *cmd , int32_t para1, int32_t para2)
+  bool atcommand(const __FlashStringHelper *cmd, int32_t para1, int32_t para2)
   {
-    ATArgType type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
+    uint16_t type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
     const void* args[] = { (void*) para1, (void*) para2 };
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
+
+  //------------- One ByteArray arguments -------------//
+  bool atcommand(const char cmd[]              , const uint8_t bytearray[], uint16_t count)
+  {
+    uint16_t type[] = { AT_ARGTYPE_BYTEARRAY+count };
+    const void* args[] = { bytearray };
+    return this->atcommand_full(cmd, NULL, 1, type, args);
+  }
+
+  bool atcommand(const __FlashStringHelper *cmd, const uint8_t bytearray[], uint16_t count)
+  {
+    uint16_t type[] = { AT_ARGTYPE_BYTEARRAY+count };
+    const void* args[] = { bytearray };
+    return this->atcommand_full(cmd, NULL, 1, type, args);
+  }
+
 
 
   //------------- With Reply -------------//

@@ -36,6 +36,11 @@
 
 #include "Adafruit_ATParser.h"
 
+static inline char digit2ascii(uint8_t digit)
+{
+  return ( digit + ((digit) < 10 ? '0' : 'A') );
+}
+
 /******************************************************************************/
 /*!
     @brief Constructor
@@ -45,6 +50,28 @@ Adafruit_ATParser::Adafruit_ATParser(void)
 {
   _mode    = BLUEFRUIT_MODE_COMMAND;
   _verbose = false;
+}
+
+/******************************************************************************/
+/*!
+    @brief  Convert buffer data to Byte Array String format such as 11-22-33-44
+    e.g 0x11223344 --> 11-22-33-44
+
+    @return number of character converted including dash '-'
+*/
+/******************************************************************************/
+uint8_t Adafruit_ATParser::byteArray2String(char *str, const uint8_t* buffer, uint8_t count)
+{
+  for(uint8_t i=0; i<count; i++)
+  {
+    uint8_t byte = *buffer++;
+    *str++ = digit2ascii((byte & 0xF0) >> 4);
+    *str++ = digit2ascii(byte & 0x0F);
+
+    if (i != count-1) *str++ = '-';
+  }
+
+  return (count*3) - 1;
 }
 
 /******************************************************************************/
@@ -71,7 +98,7 @@ bool Adafruit_ATParser::waitForOK(void)
     @param
 */
 /******************************************************************************/
-bool Adafruit_ATParser::send_arg_get_resp(int32_t* reply, uint8_t argcount, ATArgType argtype[], const void* args[])
+bool Adafruit_ATParser::send_arg_get_resp(int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[])
 {
   // Command arguments according to its type
   for(uint8_t i=0; i<argcount; i++)
@@ -79,14 +106,25 @@ bool Adafruit_ATParser::send_arg_get_resp(int32_t* reply, uint8_t argcount, ATAr
     // print '=' for WRITE mode
     if (i==0) print('=');
 
-    switch(argtype[i])
+    switch (argtype[i] & 0xFF00)
     {
       case AT_ARGTYPE_STRING:
 
       break;
 
       case AT_ARGTYPE_BYTEARRAY:
+      {
+        uint8_t count        = lowByte(argtype[i]);
+        uint8_t const * data = (uint8_t const*) args[i];
 
+        while(count--)
+        {
+          uint8_t byte = *data++;
+          write( digit2ascii((byte & 0xF0) >> 4) );
+          write( digit2ascii(byte & 0x0F) );
+          if ( count!=0 ) write('-');
+        }
+      }
       break;
 
       case AT_ARGTYPE_INT32:
@@ -115,7 +153,7 @@ bool Adafruit_ATParser::send_arg_get_resp(int32_t* reply, uint8_t argcount, ATAr
     @param
 */
 /******************************************************************************/
-bool Adafruit_ATParser::atcommand_full(const char cmd[], int32_t* reply, uint8_t argcount, ATArgType argtype[], const void* args[])
+bool Adafruit_ATParser::atcommand_full(const char cmd[], int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[])
 {
   bool result;
   uint8_t current_mode = _mode;
@@ -139,7 +177,7 @@ bool Adafruit_ATParser::atcommand_full(const char cmd[], int32_t* reply, uint8_t
     @param
 */
 /******************************************************************************/
-bool Adafruit_ATParser::atcommand_full(const __FlashStringHelper *cmd, int32_t* reply, uint8_t argcount, ATArgType argtype[], const void* args[])
+bool Adafruit_ATParser::atcommand_full(const __FlashStringHelper *cmd, int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[])
 {
   bool result;
   uint8_t current_mode = _mode;

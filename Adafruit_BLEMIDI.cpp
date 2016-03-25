@@ -109,11 +109,7 @@ bool Adafruit_BLEMIDI::stop(bool reset)
 /******************************************************************************/
 bool Adafruit_BLEMIDI::send(const uint8_t bytes[3])
 {
-  char command[] = "AT+BLEMIDITX=00-00-00";
-  uint8_t idx = strlen(command) - 8;
-
-  _ble.convert2ByteArrayString(command+idx, bytes, 3);
-  return _ble.sendCommandCheckOK(command);
+  return _ble.atcommand( F("AT+BLEMIDITX"), bytes, 3);
 }
 
 /******************************************************************************/
@@ -129,16 +125,10 @@ bool Adafruit_BLEMIDI::send(const uint8_t bytes[3])
 bool Adafruit_BLEMIDI::send_n(uint8_t status, const uint8_t bytes[], uint8_t count)
 {
   VERIFY_(count <= 16);
-  char command[64] = "AT+BLEMIDITX=";
 
-  uint8_t idx = strlen(command);
+  uint8_t data[17] = { status };
+  memcpy(data+1, bytes, count);
 
-  idx += _ble.convert2ByteArrayString(command+idx, &status, 1);
-  command[idx++] = '-';
-  _ble.convert2ByteArrayString(command+idx, bytes, count);
-
-  //Serial.println(command);
-
-  return _ble.sendCommandCheckOK(command);
+  return _ble.atcommand( F("AT+BLEMIDITX"), data, count+1);
 }
 

@@ -39,11 +39,6 @@
   #define min(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-static inline char digit2ascii(uint8_t digit)
-{
-  return ( digit + ((digit) < 10 ? '0' : 'A') );
-}
-
 enum {
   EVENT_SYSTEM_CONNECT     = 0,
   EVENT_SYSTEM_DISCONNECT  = 1,
@@ -262,28 +257,6 @@ bool Adafruit_BLE::isVersionAtLeast(const char * versionString)
   if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
 
   return result;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Convert buffer data to Byte Array String format such as 11-22-33-44
-    e.g 0x11223344 --> 11-22-33-44
-
-    @return number of character converted including dash '-'
-*/
-/******************************************************************************/
-uint8_t Adafruit_BLE::convert2ByteArrayString(char *str, const uint8_t* buffer, uint8_t count)
-{
-  for(uint8_t i=0; i<count; i++)
-  {
-    uint8_t byte = *buffer++;
-    *str++ = digit2ascii((byte & 0xF0) >> 4);
-    *str++ = digit2ascii(byte & 0x0F);
-
-    if (i != count-1) *str++ = '-';
-  }
-
-  return (count*3) - 1;
 }
 
 /******************************************************************************/
