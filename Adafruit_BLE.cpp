@@ -181,7 +181,6 @@ bool Adafruit_BLE::isConnected(void)
 {
   int32_t connected = 0;
   atcommandIntReply(F("AT+GAPGETCONN"), &connected);
-
   return connected;
 }
 

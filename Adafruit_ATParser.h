@@ -117,14 +117,14 @@ public:
   {
     uint16_t type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
     const void* args[] = { (void*) para1, (void*) para2 };
-    return this->atcommand_full(cmd, NULL, 1, type, args);
+    return this->atcommand_full(cmd, NULL, 2, type, args);
   }
 
   bool atcommand(const __FlashStringHelper *cmd, int32_t para1, int32_t para2)
   {
     uint16_t type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
     const void* args[] = { (void*) para1, (void*) para2 };
-    return this->atcommand_full(cmd, NULL, 1, type, args);
+    return this->atcommand_full(cmd, NULL, 2, type, args);
   }
 
   //------------- One ByteArray arguments -------------//
@@ -142,20 +142,62 @@ public:
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
 
-
-
-  //------------- With Reply -------------//
   //--------------------------------------------------------------------+
   // With Reply
   //--------------------------------------------------------------------+
   bool atcommandIntReply(const char cmd[], int32_t* reply)               { return this->atcommand_full(cmd, reply, 0, NULL, NULL); }
   bool atcommandIntReply(const __FlashStringHelper *cmd, int32_t* reply) { return this->atcommand_full(cmd, reply, 0, NULL, NULL); }
 
-  bool waitForOK(void);
+  //------------- One integer argument -------------//
+  bool atcommandIntReply(const char cmd[]              , int32_t* reply, int32_t para1)
+  {
+    uint16_t type[] = { AT_ARGTYPE_INT32 };
+    const void* args[] = { (void*) para1 };
+    return this->atcommand_full(cmd, reply, 1, type, args);
+  }
+
+  bool atcommandIntReply(const __FlashStringHelper *cmd, int32_t* reply, int32_t para1)
+  {
+    uint16_t type[] = { AT_ARGTYPE_INT32 };
+    const void* args[] = { (void*) para1 };
+    return this->atcommand_full(cmd, reply, 1, type, args);
+  }
+
+  //------------- Two integer arguments -------------//
+  bool atcommandIntReply(const char cmd[]              , int32_t* reply, int32_t para1, int32_t para2)
+  {
+    uint16_t type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
+    const void* args[] = { (void*) para1, (void*) para2 };
+    return this->atcommand_full(cmd, reply, 2, type, args);
+  }
+
+  bool atcommandIntReply(const __FlashStringHelper *cmd, int32_t* reply, int32_t para1, int32_t para2)
+  {
+    uint16_t type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
+    const void* args[] = { (void*) para1, (void*) para2 };
+    return this->atcommand_full(cmd, reply, 2, type, args);
+  }
+
+  //------------- One ByteArray arguments -------------//
+  bool atcommandIntReply(const char cmd[]              , int32_t* reply, const uint8_t bytearray[], uint16_t count)
+  {
+    uint16_t type[] = { AT_ARGTYPE_BYTEARRAY+count };
+    const void* args[] = { bytearray };
+    return this->atcommand_full(cmd, reply, 1, type, args);
+  }
+
+  bool atcommandIntReply(const __FlashStringHelper *cmd, int32_t* reply, const uint8_t bytearray[], uint16_t count)
+  {
+    uint16_t type[] = { AT_ARGTYPE_BYTEARRAY+count };
+    const void* args[] = { bytearray };
+    return this->atcommand_full(cmd, reply, 1, type, args);
+  }
 
   //--------------------------------------------------------------------+
-  //
+  // RESPONSE PROCESSIGN
   //--------------------------------------------------------------------+
+  bool waitForOK(void);
+
   // Read one line of response into internal buffer
   uint16_t readline(uint16_t timeout, boolean multiline = false);
   uint16_t readline(void)
