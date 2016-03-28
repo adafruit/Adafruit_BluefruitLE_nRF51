@@ -72,7 +72,7 @@ public:
   uint8_t addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype);
 
   bool    setChars(uint8_t charsID, uint8_t const data[], uint8_t size);
-  bool    setChars(uint8_t charsID, char const    str[]);
+  bool    setChars(uint8_t charsID, char const *  str);
 
   bool    setChars(uint8_t charsID, uint8_t  data8 ) { this->setChars(charsID, (uint8_t*) &data8, 1); }
   bool    setChars(uint8_t charsID, int8_t   data8 ) { this->setChars(charsID, (uint8_t*) &data8, 1); }

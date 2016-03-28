@@ -192,7 +192,7 @@ bool Adafruit_BLEGatt::setChars(uint8_t charsID, uint8_t const data[], uint8_t s
     @param
 */
 /******************************************************************************/
-bool Adafruit_BLEGatt::setChars(uint8_t charsID, char const str[])
+bool Adafruit_BLEGatt::setChars(uint8_t charsID, char const* str)
 {
   uint16_t argtype[] = { AT_ARGTYPE_UINT8, AT_ARGTYPE_STRING };
   const void* args[] = { (void*) ((uint32_t) charsID), str };
