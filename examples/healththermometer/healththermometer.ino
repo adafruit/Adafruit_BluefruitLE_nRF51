@@ -151,7 +151,7 @@ void loop(void)
   memcpy(temp_measurement+1, &temp, 4);
 
   // TODO temperature is not correct due to Bluetooth use IEEE-11073 format
-  gatt.setChars(htsMeasureCharId, temp_measurement, 5);
+  gatt.setChar(htsMeasureCharId, temp_measurement, 5);
 
   /* Delay before next measurement update */
   delay(1000);

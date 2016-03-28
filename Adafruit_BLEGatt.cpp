@@ -178,10 +178,10 @@ uint8_t Adafruit_BLEGatt::addCharacteristic(uint8_t uuid128[], uint8_t propertie
     @param
 */
 /******************************************************************************/
-bool Adafruit_BLEGatt::setChars(uint8_t charsID, uint8_t const data[], uint8_t size)
+bool Adafruit_BLEGatt::setChar(uint8_t charID, uint8_t const data[], uint8_t size)
 {
   uint16_t argtype[] = { AT_ARGTYPE_UINT8, AT_ARGTYPE_BYTEARRAY+ ((uint16_t)size) };
-  const void* args[] = { (void*) ((uint32_t) charsID), data };
+  const void* args[] = { (void*) ((uint32_t) charID), data };
 
   return _ble.atcommand_full(F("AT+GATTCHAR"), NULL, 2, argtype, args);
 }
@@ -192,10 +192,10 @@ bool Adafruit_BLEGatt::setChars(uint8_t charsID, uint8_t const data[], uint8_t s
     @param
 */
 /******************************************************************************/
-bool Adafruit_BLEGatt::setChars(uint8_t charsID, char const* str)
+bool Adafruit_BLEGatt::setChar(uint8_t charID, char const* str)
 {
   uint16_t argtype[] = { AT_ARGTYPE_UINT8, AT_ARGTYPE_STRING };
-  const void* args[] = { (void*) ((uint32_t) charsID), str };
+  const void* args[] = { (void*) ((uint32_t) charID), str };
 
   return _ble.atcommand_full(F("AT+GATTCHAR"), NULL, 2, argtype, args);
 }

@@ -71,17 +71,17 @@ public:
   uint8_t addCharacteristic(uint16_t uuid16  , uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype);
   uint8_t addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype);
 
-  bool    setChars(uint8_t charsID, uint8_t const data[], uint8_t size);
-  bool    setChars(uint8_t charsID, char const *  str);
+  bool    setChar(uint8_t charID, uint8_t const data[], uint8_t size);
+  bool    setChar(uint8_t charID, char const *  str);
 
-  bool    setChars(uint8_t charsID, uint8_t  data8 ) { this->setChars(charsID, (uint8_t*) &data8, 1); }
-  bool    setChars(uint8_t charsID, int8_t   data8 ) { this->setChars(charsID, (uint8_t*) &data8, 1); }
+  bool    setChar(uint8_t charID, uint8_t  data8 ) { this->setChar(charID, (uint8_t*) &data8, 1); }
+  bool    setChar(uint8_t charID, int8_t   data8 ) { this->setChar(charID, (uint8_t*) &data8, 1); }
 
-  bool    setChars(uint8_t charsID, uint16_t data16) { this->setChars(charsID, (uint8_t*) &data16, 2); }
-  bool    setChars(uint8_t charsID, int16_t  data16) { this->setChars(charsID, (uint8_t*) &data16, 2); }
+  bool    setChar(uint8_t charID, uint16_t data16) { this->setChar(charID, (uint8_t*) &data16, 2); }
+  bool    setChar(uint8_t charID, int16_t  data16) { this->setChar(charID, (uint8_t*) &data16, 2); }
 
-  bool    setChars(uint8_t charsID, uint32_t data32) { this->setChars(charsID, (uint8_t*) &data32, 4); }
-  bool    setChars(uint8_t charsID, int32_t  data32) { this->setChars(charsID, (uint8_t*) &data32, 4); }
+  bool    setChar(uint8_t charID, uint32_t data32) { this->setChar(charID, (uint8_t*) &data32, 4); }
+  bool    setChar(uint8_t charID, int32_t  data32) { this->setChar(charID, (uint8_t*) &data32, 4); }
 };
 
 #endif /* _ADAFRUIT_BLEGATT_H_ */
