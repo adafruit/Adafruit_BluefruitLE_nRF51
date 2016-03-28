@@ -71,6 +71,15 @@ public:
   uint8_t addCharacteristic(uint16_t uuid16  , uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype);
   uint8_t addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype);
 
+  //------------- Get Characteristic -------------//
+  uint8_t getChar(uint8_t charID, uint8_t* buf, uint8_t bufsize);
+
+  // uint8_t getCharInt8(uint8_t charID);
+  // uint8_t getCharInt16(uint8_t charID);
+  // uint8_t getCharInt32(uint8_t charID);
+  // uint8_t getCharInStr(uint8_t charID);
+
+  //------------- Set Characteristic -------------//
   bool    setChar(uint8_t charID, uint8_t const data[], uint8_t size);
   bool    setChar(uint8_t charID, char const *  str);
 

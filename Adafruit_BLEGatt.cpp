@@ -199,3 +199,35 @@ bool Adafruit_BLEGatt::setChar(uint8_t charID, char const* str)
 
   return _ble.atcommand_full(F("AT+GATTCHAR"), NULL, 2, argtype, args);
 }
+
+/******************************************************************************/
+/*!
+    @brief Set Characteristics value with data buffer
+    @param charID Characteristics ID
+    @param buf buffer to hold data
+    @param bufsize size of buffer
+    @return number of bytes copied to buffer (up to bufsize).
+            0 usually means error.
+*/
+/******************************************************************************/
+uint8_t Adafruit_BLEGatt::getChar(uint8_t charID, uint8_t* buf, uint8_t bufsize)
+{
+  uint8_t current_mode = _ble.getMode();
+
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_COMMAND);
+
+  // use RAW command version
+  _ble.print( F("AT+GATTCHARRAW=") );
+  _ble.println(charID);
+
+  uint16_t len = _ble.readraw(); // readraw swallow OK/ERROR already
+  len = min(len, bufsize);
+
+  memcpy(buf, _ble.buffer, len);
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_DATA);
+
+  return len;
+}
