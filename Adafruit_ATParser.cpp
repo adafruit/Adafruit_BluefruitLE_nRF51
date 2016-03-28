@@ -62,10 +62,12 @@ bool Adafruit_ATParser::waitForOK(void)
 {
   if (_verbose) SerialDebug.print( F("\n<- ") );
 
-  while ( readline() ) {
-    //SerialDebug.println(buffer);
-    if ( strcmp(buffer, "OK") == 0 ) return true;
-    if ( strcmp(buffer, "ERROR") == 0 ) return false;
+  // Use temp buffer to avoid overwrite returned result if any
+  char tempbuf[BLE_BUFSIZE+1];
+
+  while ( readline(tempbuf, BLE_BUFSIZE) ) {
+    if ( strcmp(tempbuf, "OK") == 0 ) return true;
+    if ( strcmp(tempbuf, "ERROR") == 0 ) return false;
   }
   return false;
 }
@@ -210,31 +212,63 @@ int32_t Adafruit_ATParser::readline_parseInt(void)
 /*!
     @brief  Get a line of response data into provided buffer.
 
-    @param[in] buf
-               Provided buffer
-    @param[in] bufsize
-               buffer size
+    @param[in] buf Provided buffer
+    @param[in] bufsize buffer size
+    @param[in] multiline Read multiple line if true, otherwise only read 1 line
+
+    @note '\r' and '\n' are not included in returned buffer.
 */
 /******************************************************************************/
-uint16_t Adafruit_ATParser::readline(char * buf, uint16_t bufsize)
+uint16_t Adafruit_ATParser::readline(char * buf, uint16_t bufsize, boolean multiline)
 {
-  uint16_t len = bufsize;
-  uint16_t rd  = 0;
+  uint16_t replyidx = 0;
+  uint32_t timeout = _timeout;
 
-  do
+  while (timeout--)
   {
-    rd = readline();
+    while(available())
+    {
+      char c = read();
+      //SerialDebug.println(c);
 
-    uint16_t n = min(len, rd);
-    memcpy(buf, buffer, n);
+      if (c == '\r') continue;
 
-    buf += n;
-    len -= n;
-  } while ( (len > 0) && (rd == BLE_BUFSIZE) );
+      if (c == '\n')
+      {
+        // the first '\n' is ignored
+        if (replyidx == 0) continue;
 
-//  buf[bufsize - len] = 0; // null terminator
+        if (!multiline) {
+          timeout = 0;
+          break;
+        }
+      }else
+      {
+        buf[replyidx] = c;
+        replyidx++;
 
-  return bufsize - len;
+        // Buffer is full
+        if (replyidx >= bufsize) {
+          timeout = 0;
+          break;
+        }
+      }
+    }
+
+    // delay if needed
+    if (timeout) delay(1);
+  }
+
+  buf[replyidx] = 0;  // null term
+
+  // Print out if is verbose
+  if (_verbose && replyidx > 0)
+  {
+    SerialDebug.print(buf);
+    if (replyidx < bufsize) SerialDebug.println();
+  }
+
+  return replyidx;
 }
 
 /******************************************************************************/
@@ -307,6 +341,7 @@ uint16_t Adafruit_ATParser::readline(uint16_t timeout, boolean multiline)
                Timeout for each read() operation
 
     @return    The number of bytes read excluding OK, ERROR ending.
+               0 usually means error
 */
 /******************************************************************************/
 uint16_t Adafruit_ATParser::readraw(uint16_t timeout)

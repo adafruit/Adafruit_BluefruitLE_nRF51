@@ -227,19 +227,20 @@ public:
   //--------------------------------------------------------------------+
   bool waitForOK(void);
 
-  // Read one line of response into internal buffer
+  // Read one line of response into internal buffer TODO use below API
   uint16_t readline(uint16_t timeout, boolean multiline = false);
-  uint16_t readline(void)
-  {
-    return readline(_timeout, false);
-  }
 
   // Read one line of response into provided buffer
-  uint16_t readline(char    * buf, uint16_t bufsize);
-  uint16_t readline(uint8_t * buf, uint16_t bufsize)
+  uint16_t readline(char    * buf, uint16_t bufsize, boolean multiline = false);
+  uint16_t readline(uint8_t * buf, uint16_t bufsize, boolean multiline = false)
   {
-    return readline( (char*) buf, bufsize);
+    return readline( (char*) buf, bufsize, multiline );
   }
+  uint16_t readline(void)
+  {
+    return this->readline(this->buffer, BLE_BUFSIZE, false);
+  }
+
 
   // read one line and convert the string to integer number
   int32_t readline_parseInt(void);
