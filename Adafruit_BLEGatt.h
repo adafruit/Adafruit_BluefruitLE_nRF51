@@ -61,6 +61,8 @@ private:
   Adafruit_BLE& _ble;
 
 public:
+  char* buffer; // alias to ble's buffer
+
   Adafruit_BLEGatt(Adafruit_BLE& ble);
 
   bool    clear(void);
@@ -72,25 +74,45 @@ public:
   uint8_t addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype);
 
   //------------- Get Characteristic -------------//
-  uint8_t getChar(uint8_t charID, uint8_t* buf, uint8_t bufsize);
+  uint8_t  getChar(uint8_t charID);
+  uint8_t  getChar(uint8_t charID, uint8_t* buf, uint8_t bufsize);
 
-  // uint8_t getCharInt8(uint8_t charID);
-  // uint8_t getCharInt16(uint8_t charID);
-  // uint8_t getCharInt32(uint8_t charID);
-  // uint8_t getCharInStr(uint8_t charID);
+  uint8_t  getCharInt8(uint8_t charID)
+  {
+    if ( this->getChar(charID) < sizeof(uint8_t) ) return 0;
+    return *((uint8_t*) this->buffer);
+  }
+
+  uint16_t getCharInt16(uint8_t charID)
+  {
+    if ( this->getChar(charID) < sizeof(uint16_t) ) return 0;
+    return *((uint16_t*) this->buffer);
+  }
+
+  uint32_t getCharInt32(uint8_t charID)
+  {
+    if ( this->getChar(charID) < sizeof(uint32_t) ) return 0;
+    return *((uint32_t*) this->buffer);
+  }
+
+  char*    getCharInStr(uint8_t charID)
+  {
+    if ( this->getChar(charID) == 0 ) return NULL;
+    return this->buffer;
+  }
 
   //------------- Set Characteristic -------------//
   bool    setChar(uint8_t charID, uint8_t const data[], uint8_t size);
   bool    setChar(uint8_t charID, char const *  str);
 
-  bool    setChar(uint8_t charID, uint8_t  data8 ) { this->setChar(charID, (uint8_t*) &data8, 1); }
-  bool    setChar(uint8_t charID, int8_t   data8 ) { this->setChar(charID, (uint8_t*) &data8, 1); }
+  bool    setChar(uint8_t charID, uint8_t  data8 ) { return this->setChar(charID, (uint8_t*) &data8, 1); }
+  bool    setChar(uint8_t charID, int8_t   data8 ) { return this->setChar(charID, (uint8_t*) &data8, 1); }
 
-  bool    setChar(uint8_t charID, uint16_t data16) { this->setChar(charID, (uint8_t*) &data16, 2); }
-  bool    setChar(uint8_t charID, int16_t  data16) { this->setChar(charID, (uint8_t*) &data16, 2); }
+  bool    setChar(uint8_t charID, uint16_t data16) { return this->setChar(charID, (uint8_t*) &data16, 2); }
+  bool    setChar(uint8_t charID, int16_t  data16) { return this->setChar(charID, (uint8_t*) &data16, 2); }
 
-  bool    setChar(uint8_t charID, uint32_t data32) { this->setChar(charID, (uint8_t*) &data32, 4); }
-  bool    setChar(uint8_t charID, int32_t  data32) { this->setChar(charID, (uint8_t*) &data32, 4); }
+  bool    setChar(uint8_t charID, uint32_t data32) { return this->setChar(charID, (uint8_t*) &data32, 4); }
+  bool    setChar(uint8_t charID, int32_t  data32) { return this->setChar(charID, (uint8_t*) &data32, 4); }
 };
 
 #endif /* _ADAFRUIT_BLEGATT_H_ */
