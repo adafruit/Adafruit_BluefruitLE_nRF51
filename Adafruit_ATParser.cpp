@@ -38,7 +38,7 @@
 
 static inline char digit2ascii(uint8_t digit)
 {
-  return ( digit + ((digit) < 10 ? '0' : 'A') );
+  return ( digit + ((digit) < 10 ? '0' : ('A'-10)) );
 }
 
 /******************************************************************************/
