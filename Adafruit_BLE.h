@@ -88,6 +88,8 @@ class Adafruit_BLE : public Adafruit_ATParser
     bool isVersionAtLeast(const char * versionString);
     void disconnect(void);
 
+    bool setAdvData(uint8_t advdata[], uint8_t size);
+
     // No parameters
     bool sendCommandCheckOK(const __FlashStringHelper *cmd) { return this->atcommand(cmd); }
     bool sendCommandCheckOK(const char cmd[])               { return this->atcommand(cmd); }

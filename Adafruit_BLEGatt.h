@@ -40,6 +40,21 @@
 #include <Arduino.h>
 #include "Adafruit_BLE.h"
 
+enum GattCharsDataType_t
+{
+  GATT_CHARS_DATATYP_AUTO = 0,
+  GATT_CHARS_DATATYPE_INTEGER,
+  GATT_CHARS_DATATYPE_STRING,
+  GATT_CHARS_DATATYPE_BYTEARRAY,
+};
+
+#define GATT_CHARS_PROPERTIES_BROADCAST       bit(0)
+#define GATT_CHARS_PROPERTIES_READ            bit(1)
+#define GATT_CHARS_PROPERTIES_WRITE_WO_RESP   bit(2)
+#define GATT_CHARS_PROPERTIES_WRITE           bit(3)
+#define GATT_CHARS_PROPERTIES_NOTIFY          bit(4)
+#define GATT_CHARS_PROPERTIES_INDICATE        bit(5)
+
 class Adafruit_BLEGatt
 {
 private:
@@ -53,7 +68,10 @@ public:
   uint8_t addService(uint16_t uuid16);
   uint8_t addService(uint8_t uuid128[]);
 
-  uint8_t addCharacteristic();
+  uint8_t addCharacteristic(uint16_t uuid16  , uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype);
+  uint8_t addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype);
+
+  bool    setChars(uint8_t charsID, uint8_t data[], uint8_t size);
 };
 
 #endif /* _ADAFRUIT_BLEGATT_H_ */

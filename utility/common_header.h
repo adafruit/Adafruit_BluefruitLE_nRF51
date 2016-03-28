@@ -40,6 +40,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define ATTR_PACKED               __attribute__ ((packed))
+
 //#define ASSERT(condition, err)    if ( !(condition) ) return err;
 
 #define VERIFY_(condition)                if ( !(condition) ) return false;

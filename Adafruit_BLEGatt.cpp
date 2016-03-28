@@ -84,3 +84,104 @@ uint8_t Adafruit_BLEGatt::addService(uint8_t uuid128[])
   return (uint8_t) service_id;
 }
 
+/******************************************************************************/
+/*!
+    @brief Add a characteristics with UUID16 to a newly added service
+    @param
+    @return Chars ID (starting from 1). If failed 0 is returned
+*/
+/******************************************************************************/
+uint8_t Adafruit_BLEGatt::addCharacteristic(uint16_t uuid16, uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype)
+{
+  bool isOK;
+  int32_t chars_id;
+  uint8_t current_mode = _ble.getMode();
+
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_COMMAND);
+
+  _ble.print( F("AT+GATTADDCHAR=UUID=") );
+  _ble.print(uuid16);
+
+  _ble.print( F(",PROPERTIES=") );
+  _ble.print(properties);
+
+  _ble.print( F(",MIN_LEN=") );
+  _ble.print(min_len);
+
+  _ble.print( F(",MAX_LEN=") );
+  _ble.print(max_len);
+
+  _ble.print( F(",DATATYPE=") );
+  _ble.print((uint8_t) datatype);
+
+  _ble.println(); // execute command
+
+//  if (_verbose) SerialDebug.print( F("\n<- ") );
+  chars_id = _ble.readline_parseInt();
+
+  isOK = _ble.waitForOK();
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_DATA);
+
+  return isOK ? chars_id : 0;
+}
+
+/******************************************************************************/
+/*!
+    @brief Add a characteristics with UUID128 to a newly added service
+    @param
+    @return Chars ID (starting from 1). If failed 0 is returned
+*/
+/******************************************************************************/
+uint8_t Adafruit_BLEGatt::addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype)
+{
+  bool isOK;
+  int32_t chars_id;
+  uint8_t current_mode = _ble.getMode();
+
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_COMMAND);
+
+  _ble.print( F("AT+GATTADDCHAR=UUID128=") );
+  _ble.printByteArray(uuid128, 16);
+
+  _ble.print( F(",PROPERTIES=") );
+  _ble.print(properties);
+
+  _ble.print( F(",MIN_LEN=") );
+  _ble.print(min_len);
+
+  _ble.print( F(",MAX_LEN=") );
+  _ble.print(max_len);
+
+  _ble.print( F(",DATATYPE=") );
+  _ble.print((uint8_t) datatype);
+
+  _ble.println(); // execute command
+
+//  if (_verbose) SerialDebug.print( F("\n<- ") );
+  chars_id = _ble.readline_parseInt();
+
+  isOK = _ble.waitForOK();
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_DATA);
+
+  return isOK ? chars_id : 0;
+}
+
+/******************************************************************************/
+/*!
+    @brief Set Characteristics value with data buffer
+    @param
+*/
+/******************************************************************************/
+bool Adafruit_BLEGatt::setChars(uint8_t charsID, uint8_t data[], uint8_t size)
+{
+  uint16_t argtype[] = { AT_ARGTYPE_UINT8, AT_ARGTYPE_BYTEARRAY+ ((uint16_t)size) };
+  const void* args[] = { (void*) charsID, data };
+
+  return _ble.atcommand_full(F("AT+GATTCHAR"), NULL, 2, argtype, args);
+}

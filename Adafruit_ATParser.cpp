@@ -54,28 +54,6 @@ Adafruit_ATParser::Adafruit_ATParser(void)
 
 /******************************************************************************/
 /*!
-    @brief  Convert buffer data to Byte Array String format such as 11-22-33-44
-    e.g 0x11223344 --> 11-22-33-44
-
-    @return number of character converted including dash '-'
-*/
-/******************************************************************************/
-uint8_t Adafruit_ATParser::byteArray2String(char *str, const uint8_t* buffer, uint8_t count)
-{
-  for(uint8_t i=0; i<count; i++)
-  {
-    uint8_t byte = *buffer++;
-    *str++ = digit2ascii((byte & 0xF0) >> 4);
-    *str++ = digit2ascii(byte & 0x0F);
-
-    if (i != count-1) *str++ = '-';
-  }
-
-  return (count*3) - 1;
-}
-
-/******************************************************************************/
-/*!
     @brief  Read the whole response and check if it ended up with OK.
     @return true if response is ended with "OK". Otherwise it could be "ERROR"
 */
@@ -109,27 +87,41 @@ bool Adafruit_ATParser::send_arg_get_resp(int32_t* reply, uint8_t argcount, uint
     switch (argtype[i] & 0xFF00)
     {
       case AT_ARGTYPE_STRING:
-
+        this->print( (char const*) args[i] );
       break;
 
       case AT_ARGTYPE_BYTEARRAY:
       {
         uint8_t count        = lowByte(argtype[i]);
-        uint8_t const * data = (uint8_t const*) args[i];
-
-        while(count--)
-        {
-          uint8_t byte = *data++;
-          write( digit2ascii((byte & 0xF0) >> 4) );
-          write( digit2ascii(byte & 0x0F) );
-          if ( count!=0 ) write('-');
-        }
+        this->printByteArray( (uint8_t const*) args[i], count );
       }
+      break;
+
+      case AT_ARGTYPE_UINT32:
+        print( (uint32_t) args[i] );
       break;
 
       case AT_ARGTYPE_INT32:
         print( (int32_t) args[i] );
       break;
+
+      case AT_ARGTYPE_UINT16:
+        print( (uint16_t) args[i] );
+      break;
+
+      case AT_ARGTYPE_INT16:
+        print( (int16_t) args[i] );
+      break;
+
+      case AT_ARGTYPE_UINT8:
+        print( (uint8_t) ((uint32_t)args[i]) );
+      break;
+
+      case AT_ARGTYPE_INT8:
+        print( (int8_t) ((int32_t) args[i]) );
+      break;
+
+      default: break;
     }
 
     if (i != argcount-1) print(',');
@@ -367,4 +359,25 @@ uint16_t Adafruit_ATParser::readraw(uint16_t timeout)
 //  }
 
   return replyidx;
+}
+
+/******************************************************************************/
+/*!
+    @brief Print a buffer to BYTE ARRAY format e.g 11-22-33-44-55
+    @param bytearray buffer to print
+    @param size number of byte
+    @return number of printed characters
+*/
+/******************************************************************************/
+int Adafruit_ATParser::printByteArray(uint8_t const bytearray[], int size)
+{
+  while(size--)
+  {
+    uint8_t byte = *bytearray++;
+    write( digit2ascii((byte & 0xF0) >> 4) );
+    write( digit2ascii(byte & 0x0F) );
+    if ( size!=0 ) write('-');
+  }
+
+  return (size*3) - 1;
 }

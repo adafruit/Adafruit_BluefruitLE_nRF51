@@ -38,13 +38,8 @@
 #ifndef _SDEP_H_
 #define _SDEP_H_
 
-#include <stdint.h>
+#include "common_header.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define ATTR_PACKED               __attribute__ ((packed))
 #define SDEP_MAX_PACKETSIZE       16 // Maximum payload per packet
 
 /******************************************************************************/
@@ -123,9 +118,5 @@ typedef sdepMsgCommand_t sdepMsgResponse_t;
 */
 /******************************************************************************/
 typedef sdepMsgCommand_t sdepMsgAlert_t;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

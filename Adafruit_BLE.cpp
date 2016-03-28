@@ -361,6 +361,17 @@ void Adafruit_BLE::update(uint32_t period_ms)
 
 /******************************************************************************/
 /*!
+    @brief Set custom ADV data packet
+    @param
+*/
+/******************************************************************************/
+bool Adafruit_BLE::setAdvData(uint8_t advdata[], uint8_t size)
+{
+  return this->atcommand(F("AT+GAPSETADVDATA"), advdata, size);
+}
+
+/******************************************************************************/
+/*!
     @brief  Set handle for connect callback
 
     @param[in] fp function pointer, NULL will discard callback

@@ -59,8 +59,8 @@ void error(const __FlashStringHelper*err) {
 
 /* The service information */
 
-int32_t hrmServiceId;
-int32_t hrmMeasureCharId;
+int32_t htsServiceId;
+int32_t htsMeasureCharId;
 
 /**************************************************************************/
 /*!
@@ -110,30 +110,24 @@ void setup(void)
   /* Add the Heart Rate Service definition */
   /* Service ID should be 1 */
   Serial.println(F("Adding the Heath Thermometer Service definition (UUID = 0x1809): "));
-  hrmServiceId = gatt.addService(0x1809);
-  if (hrmServiceId == 0) {
+  htsServiceId = gatt.addService(0x1809);
+  if (htsServiceId == 0) {
     error(F("Could not add HRM service"));
   }
+  
+  /* Add the Temperature Measurement characteristic which is composed of
+   * 1 byte flags + 4 float */
+  /* Chars ID for Measurement should be 1 */
+  Serial.println(F("Adding the Temperature Measurement characteristic (UUID = 0x2A1C): "));
+  htsMeasureCharId = gatt.addCharacteristic(0x2A1C, GATT_CHARS_PROPERTIES_INDICATE, 5, 5, GATT_CHARS_DATATYPE_BYTEARRAY);
+  if (htsMeasureCharId == 0) {
+    error(F("Could not add Temperature characteristic"));
+  }
 
-//  /* Add the Heart Rate Measurement characteristic */
-//  /* Chars ID for Measurement should be 1 */
-//  Serial.println(F("Adding the Heart Rate Measurement characteristic (UUID = 0x2A37): "));
-//  success = ble.sendCommandWithIntReply( F("AT+GATTADDCHAR=UUID=0x2A37, PROPERTIES=0x10, MIN_LEN=2, MAX_LEN=3, VALUE=00-40"), &hrmMeasureCharId);
-//    if (! success) {
-//    error(F("Could not add HRM characteristic"));
-//  }
-//
-//  /* Add the Body Sensor Location characteristic */
-//  /* Chars ID for Body should be 2 */
-//  Serial.println(F("Adding the Body Sensor Location characteristic (UUID = 0x2A38): "));
-//  success = ble.sendCommandWithIntReply( F("AT+GATTADDCHAR=UUID=0x2A38, PROPERTIES=0x02, MIN_LEN=1, VALUE=3"), &hrmLocationCharId);
-//    if (! success) {
-//    error(F("Could not add BSL characteristic"));
-//  }
-//
-//  /* Add the Heart Rate Service to the advertising data (needed for Nordic apps to detect the service) */
-//  Serial.print(F("Adding Heart Rate Service UUID to the advertising payload: "));
-//  ble.sendCommandCheckOK( F("AT+GAPSETADVDATA=02-01-06-05-02-0d-18-0a-18") );
+  /* Add the Heart Rate Service to the advertising data (needed for Nordic apps to detect the service) */
+  Serial.print(F("Adding Heart Rate Service UUID to the advertising payload: "));
+  uint8_t advdata[] { 0x02, 0x01, 0x06, 0x05, 0x02, 0x09, 0x18, 0x0a, 0x18 };
+  ble.setAdvData( advdata, sizeof(advdata) );
 
   /* Reset the device for the new service setting changes to take effect */
   Serial.print(F("Performing a SW reset (service changes require a reset): "));
@@ -145,27 +139,20 @@ void setup(void)
 /** Send randomized heart rate data continuously **/
 void loop(void)
 {
-#if 0
-  int heart_rate = random(50, 100);
+  int32_t temp = random(0, 100);
 
   Serial.print(F("Updating HRM value to "));
-  Serial.print(heart_rate);
-  Serial.println(F(" BPM"));
+  Serial.print(temp);
+  Serial.println(F(" Celcius"));
 
-  /* Command is sent when \n (\r) or println is called */
-  /* AT+GATTCHAR=CharacteristicID,value */
-  ble.print( F("AT+GATTCHAR=") );
-  ble.print( hrmMeasureCharId );
-  ble.print( F(",00-") );
-  ble.println(heart_rate, HEX);
+  // https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.temperature_measurement.xml
+  // Chars value is 1 flag + 4 float value
+  uint8_t temp_measurement [5] = { bit(0) };
+  memcpy(temp_measurement+1, &temp, 4);
 
-  /* Check if command executed OK */
-  if ( !ble.waitForOK() )
-  {
-    Serial.println(F("Failed to get response!"));
-  }
+  // TODO temperature is not correct due to Bluetooth use IEEE-11073 format
+  gatt.setChars(htsMeasureCharId, temp_measurement, 5);
 
   /* Delay before next measurement update */
   delay(1000);
-#endif
 }

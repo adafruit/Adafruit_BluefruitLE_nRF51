@@ -59,11 +59,12 @@ enum
 {
   AT_ARGTYPE_STRING    = 0x0100,
   AT_ARGTYPE_BYTEARRAY = 0x0200,
-  AT_ARGTYPE_INT32     = 0x0300,
-//  AT_ARGTYPE_UINT32,
-//  AT_ARGTYPE_UINT16,
-//  AT_ARGTYPE_UINT8,
-//  AT_ARGTYPE_INT8,
+  AT_ARGTYPE_UINT32    = 0x0300,
+  AT_ARGTYPE_INT32     = 0x0400,
+  AT_ARGTYPE_UINT16    = 0x0500,
+  AT_ARGTYPE_INT16     = 0x0600,
+  AT_ARGTYPE_UINT8     = 0x0700,
+  AT_ARGTYPE_INT8      = 0x0800,
 };
 
 class Adafruit_ATParser : public Stream
@@ -85,8 +86,6 @@ public:
 
   // Auto print out TX & RX data to normal Serial
   void verbose(bool enable) { _verbose = enable; }
-
-  uint8_t byteArray2String(char *str, const uint8_t* buffer, uint8_t count);
 
   bool atcommand_full(const char cmd[]               , int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[]);
   bool atcommand_full(const __FlashStringHelper *cmd , int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[]);
@@ -194,7 +193,7 @@ public:
   }
 
   //--------------------------------------------------------------------+
-  // RESPONSE PROCESSIGN
+  // RESPONSE PROCESSING
   //--------------------------------------------------------------------+
   bool waitForOK(void);
 
@@ -221,6 +220,10 @@ public:
     return readraw(_timeout);
   }
 
+  //--------------------------------------------------------------------+
+  // HELPER
+  //--------------------------------------------------------------------+
+  int printByteArray(uint8_t const bytearray[], int size);
 };
 
 #endif /* _ADAFRUIT_ATPARSER_H_ */
