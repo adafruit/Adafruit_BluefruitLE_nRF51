@@ -80,19 +80,25 @@ public:
   uint8_t  getCharInt8(uint8_t charID)
   {
     if ( this->getChar(charID) < sizeof(uint8_t) ) return 0;
-    return *((uint8_t*) this->buffer);
+    uint8_t result;
+    memcpy(&result, this->buffer, sizeof(result));
+    return result;
   }
 
   uint16_t getCharInt16(uint8_t charID)
   {
     if ( this->getChar(charID) < sizeof(uint16_t) ) return 0;
-    return *((uint16_t*) this->buffer);
+    uint16_t result;
+    memcpy(&result, this->buffer, sizeof(result));
+    return result;
   }
 
   uint32_t getCharInt32(uint8_t charID)
   {
     if ( this->getChar(charID) < sizeof(uint32_t) ) return 0;
-    return *((uint32_t*) this->buffer);
+    uint32_t result;
+    memcpy(&result, this->buffer, sizeof(result));
+    return result;
   }
 
   char*    getCharInStr(uint8_t charID)
