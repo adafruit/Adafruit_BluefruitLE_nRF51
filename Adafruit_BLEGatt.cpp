@@ -86,12 +86,11 @@ uint8_t Adafruit_BLEGatt::addService(uint8_t uuid128[])
 
 /******************************************************************************/
 /*!
-    @brief Add a characteristics with UUID16 to a newly added service
-    @param
+    @brief Internal function to add Characteristic
     @return Chars ID (starting from 1). If failed 0 is returned
 */
 /******************************************************************************/
-uint8_t Adafruit_BLEGatt::addCharacteristic(uint16_t uuid16, uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype)
+uint8_t Adafruit_BLEGatt::addChar_internal(uint8_t uuid[], uint8_t uuid_len, uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype, const char* description, const GattPresentationFormat* presentFormat)
 {
   bool isOK;
   int32_t chars_id;
@@ -100,8 +99,19 @@ uint8_t Adafruit_BLEGatt::addCharacteristic(uint16_t uuid16, uint8_t properties,
   // switch mode if necessary to execute command
   if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_COMMAND);
 
-  _ble.print( F("AT+GATTADDCHAR=UUID=") );
-  _ble.print(uuid16);
+  // Standard UUID or UUID128
+  if ( uuid_len == 2 )
+  {
+    uint16_t uuid16;
+    memcpy(&uuid16, uuid, 2);
+
+    _ble.print( F("AT+GATTADDCHAR=UUID=") );
+    _ble.print(uuid16);
+  }else
+  {
+    _ble.print( F("AT+GATTADDCHAR=UUID128=") );
+    _ble.printByteArray(uuid, 16);
+  }
 
   _ble.print( F(",PROPERTIES=") );
   _ble.print(properties);
@@ -114,6 +124,23 @@ uint8_t Adafruit_BLEGatt::addCharacteristic(uint16_t uuid16, uint8_t properties,
 
   _ble.print( F(",DATATYPE=") );
   _ble.print((uint8_t) datatype);
+
+  if (description)
+  {
+    _ble.print( F(",DESCRIPTION=") );
+    _ble.print(description);
+  }
+
+  if (presentFormat && presentFormat->format)
+  {
+    // presentation format is packed 7 bytes, use tempbuf to avoid mis-aligned memory
+    uint8_t tempbuf[7];
+    memcpy(tempbuf, presentFormat, 5);
+    memcpy(tempbuf+5, &presentFormat->desc, 2);
+
+    _ble.print( F(",PRESENTATION=") );
+    _ble.printByteArray(tempbuf, 7);
+  }
 
   _ble.println(); // execute command
 
@@ -130,46 +157,26 @@ uint8_t Adafruit_BLEGatt::addCharacteristic(uint16_t uuid16, uint8_t properties,
 
 /******************************************************************************/
 /*!
+    @brief Add a characteristics with UUID16 to a newly added service
+    @param
+    @return Chars ID (starting from 1). If failed 0 is returned
+*/
+/******************************************************************************/
+uint8_t Adafruit_BLEGatt::addCharacteristic(uint16_t uuid16, uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype, const char* description, const GattPresentationFormat* presentFormat)
+{
+  return addChar_internal((uint8_t*) &uuid16, 2, properties, min_len, max_len, datatype, description, presentFormat);
+}
+
+/******************************************************************************/
+/*!
     @brief Add a characteristics with UUID128 to a newly added service
     @param
     @return Chars ID (starting from 1). If failed 0 is returned
 */
 /******************************************************************************/
-uint8_t Adafruit_BLEGatt::addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype)
+uint8_t Adafruit_BLEGatt::addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype, const char* description, const GattPresentationFormat* presentFormat)
 {
-  bool isOK;
-  int32_t chars_id;
-  uint8_t current_mode = _ble.getMode();
-
-  // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_COMMAND);
-
-  _ble.print( F("AT+GATTADDCHAR=UUID128=") );
-  _ble.printByteArray(uuid128, 16);
-
-  _ble.print( F(",PROPERTIES=") );
-  _ble.print(properties);
-
-  _ble.print( F(",MIN_LEN=") );
-  _ble.print(min_len);
-
-  _ble.print( F(",MAX_LEN=") );
-  _ble.print(max_len);
-
-  _ble.print( F(",DATATYPE=") );
-  _ble.print((uint8_t) datatype);
-
-  _ble.println(); // execute command
-
-//  if (_verbose) SerialDebug.print( F("\n<- ") );
-  chars_id = _ble.readline_parseInt();
-
-  isOK = _ble.waitForOK();
-
-  // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_DATA);
-
-  return isOK ? chars_id : 0;
+  return addChar_internal(uuid128, 16, properties, min_len, max_len, datatype, description, presentFormat);
 }
 
 /******************************************************************************/

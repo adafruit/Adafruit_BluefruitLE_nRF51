@@ -55,10 +55,21 @@ enum GattCharsDataType_t
 #define GATT_CHARS_PROPERTIES_NOTIFY          bit(4)
 #define GATT_CHARS_PROPERTIES_INDICATE        bit(5)
 
+struct GattPresentationFormat
+{
+  uint8_t  format;
+  int8_t   exponent;
+  uint16_t unit;
+  uint8_t  name_space;
+  uint16_t desc;
+};
+
 class Adafruit_BLEGatt
 {
 private:
   Adafruit_BLE& _ble;
+
+  uint8_t addChar_internal(uint8_t uuid[], uint8_t uuid_len, uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype, const char* description, const GattPresentationFormat* presentFormat);
 
 public:
   char* buffer; // alias to ble's buffer
@@ -70,8 +81,8 @@ public:
   uint8_t addService(uint16_t uuid16);
   uint8_t addService(uint8_t uuid128[]);
 
-  uint8_t addCharacteristic(uint16_t uuid16  , uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype);
-  uint8_t addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype);
+  uint8_t addCharacteristic(uint16_t uuid16  , uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype, const char* description = NULL, const GattPresentationFormat* presentFormat = NULL);
+  uint8_t addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype, const char* description = NULL, const GattPresentationFormat* presentFormat = NULL);
 
   //------------- Get Characteristic -------------//
   uint8_t  getChar(uint8_t charID);

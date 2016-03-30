@@ -40,13 +40,37 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+//--------------------------------------------------------------------+
+// COMPILER
+//--------------------------------------------------------------------+
+#define STRING_(x)                  #x                   // stringify without expand
+#define XSTRING_(x)                 STRING_(x)           // expand then stringify
+#define STRING_CONCAT_(a, b)        a##b                 // concat without expand
+#define XSTRING_CONCAT_(a, b)       STRING_CONCAT_(a, b) // expand then concat
+
 #define ATTR_PACKED               __attribute__ ((packed))
 
+//--------------------------------------------------------------------+
+// ASSERT & VERIFY
+//--------------------------------------------------------------------+
 //#define ASSERT(condition, err)    if ( !(condition) ) return err;
+
+//------------- Compile-time Assert -------------//
+#if defined __COUNTER__ && __COUNTER__ != __COUNTER__
+  #define _ASSERT_COUNTER __COUNTER__
+#else
+  #define _ASSERT_COUNTER __LINE__
+#endif
+
+#define ASSERT_STATIC_(const_expr) enum { XSTRING_CONCAT_(static_assert_, _ASSERT_COUNTER) = 1/(!!(const_expr)) }
+
 
 #define VERIFY_(condition)                if ( !(condition) ) return false;
 #define VERIFY_RETURN_(condition, error)  if ( !(condition) ) return error;
 
+//--------------------------------------------------------------------+
+// INLINE FUNCTION
+//--------------------------------------------------------------------+
 static inline bool is_within(uint32_t lower, uint32_t value, uint32_t upper)
 {
   return (lower <= value) && (value <= upper);
