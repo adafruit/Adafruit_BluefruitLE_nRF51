@@ -228,17 +228,25 @@ public:
   bool waitForOK(void);
 
   // Read one line of response into internal buffer TODO use below API
-  uint16_t readline(uint16_t timeout, boolean multiline = false);
 
   // Read one line of response into provided buffer
-  uint16_t readline(char    * buf, uint16_t bufsize, boolean multiline = false);
-  uint16_t readline(uint8_t * buf, uint16_t bufsize, boolean multiline = false)
+  uint16_t readline(char    * buf, uint16_t bufsize, uint16_t timeout, boolean multiline = false);
+  uint16_t readline(uint8_t * buf, uint16_t bufsize, uint16_t timeout, boolean multiline = false)
   {
-    return readline( (char*) buf, bufsize, multiline );
+    return readline( (char*) buf, bufsize, timeout, multiline );
   }
+
+  uint16_t readline(char    * buf, uint16_t bufsize) { return readline(buf, bufsize, _timeout, false); }
+  uint16_t readline(uint8_t * buf, uint16_t bufsize) { return readline(buf, bufsize, _timeout, false); }
+
+  uint16_t readline(uint16_t timeout, boolean multiline = false)
+  {
+    return readline(this->buffer, BLE_BUFSIZE, timeout, multiline);
+  }
+
   uint16_t readline(void)
   {
-    return this->readline(this->buffer, BLE_BUFSIZE, false);
+    return this->readline(this->buffer, BLE_BUFSIZE, _timeout, false);
   }
 
 

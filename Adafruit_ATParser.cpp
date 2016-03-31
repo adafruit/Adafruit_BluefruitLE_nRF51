@@ -214,27 +214,24 @@ int32_t Adafruit_ATParser::readline_parseInt(void)
 
     @param[in] buf Provided buffer
     @param[in] bufsize buffer size
+    @param[in] timeout timeout in milliseconds
     @param[in] multiline Read multiple line if true, otherwise only read 1 line
 
     @note '\r' and '\n' are not included in returned buffer.
 */
 /******************************************************************************/
-uint16_t Adafruit_ATParser::readline(char * buf, uint16_t bufsize, boolean multiline)
+uint16_t Adafruit_ATParser::readline(char * buf, uint16_t bufsize, uint16_t timeout, boolean multiline)
 {
   uint16_t replyidx = 0;
-  uint32_t timeout = _timeout;
 
-  while (timeout--)
-  {
-    while(available())
-    {
+  while (timeout--) {
+    while(available()) {
       char c = read();
       //SerialDebug.println(c);
 
       if (c == '\r') continue;
 
-      if (c == '\n')
-      {
+      if (c == '\n') {
         // the first '\n' is ignored
         if (replyidx == 0) continue;
 
@@ -242,16 +239,15 @@ uint16_t Adafruit_ATParser::readline(char * buf, uint16_t bufsize, boolean multi
           timeout = 0;
           break;
         }
-      }else
-      {
-        buf[replyidx] = c;
-        replyidx++;
+      }
+      buf[replyidx] = c;
+      replyidx++;
 
-        // Buffer is full
-        if (replyidx >= bufsize) {
-          timeout = 0;
-          break;
-        }
+      // Buffer is full
+      if (replyidx >= bufsize) {
+        //if (_verbose) { SerialDebug.println("*overflow*"); }  // for my debuggin' only!
+        timeout = 0;
+        break;
       }
     }
 
@@ -266,66 +262,6 @@ uint16_t Adafruit_ATParser::readline(char * buf, uint16_t bufsize, boolean multi
   {
     SerialDebug.print(buf);
     if (replyidx < bufsize) SerialDebug.println();
-  }
-
-  return replyidx;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Get (multiple) lines of response data into internal buffer.
-
-    @param[in] timeout
-               Timeout for each read() operation
-    @param[in] multiline
-               Read multiple lines
-
-    @return    The number of bytes read. Data is available in the member .buffer.
-               Note if the returned number is equal to BLE_BUFSIZE, the internal
-               buffer is full before reaching endline. User should continue to
-               call this function a few more times.
-*/
-/******************************************************************************/
-uint16_t Adafruit_ATParser::readline(uint16_t timeout, boolean multiline)
-{
-  uint16_t replyidx = 0;
-
-  while (timeout--) {
-    while(available()) {
-      char c =  read();
-      //SerialDebug.println(c);
-      if (c == '\r') continue;
-
-      if (c == '\n') {
-        if (replyidx == 0)   // the first '\n' is ignored
-          continue;
-
-        if (!multiline) {
-          timeout = 0;         // the second 0x0A is the end of the line
-          break;
-        }
-      }
-      buffer[replyidx] = c;
-      replyidx++;
-
-      // Buffer is full
-      if (replyidx >= BLE_BUFSIZE) {
-        //if (_verbose) { SerialDebug.println("*overflow*"); }  // for my debuggin' only!
-        timeout = 0;
-        break;
-      }
-    }
-
-    if (timeout == 0) break;
-    delay(1);
-  }
-  buffer[replyidx] = 0;  // null term
-
-  // Print out if is verbose
-  if (_verbose && replyidx > 0)
-  {
-    SerialDebug.print(buffer);
-    if (replyidx < BLE_BUFSIZE) SerialDebug.println();
   }
 
   return replyidx;
