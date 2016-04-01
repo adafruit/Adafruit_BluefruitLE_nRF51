@@ -372,6 +372,112 @@ bool Adafruit_BLE::setAdvData(uint8_t advdata[], uint8_t size)
 
 /******************************************************************************/
 /*!
+    @brief Save user information to NVM section, current size limit is 256 bytes
+    @param data buffer holding data
+    @param size number of bytes
+    @param offset relative offset in the NVM section
+*/
+/******************************************************************************/
+bool Adafruit_BLE::writeNVM(uint16_t offset, uint8_t const data[], uint16_t size)
+{
+  uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_BYTEARRAY + size };
+  uint32_t args[] = { offset, BLE_DATATYPE_BYTEARRAY, (uint32_t) data };
+
+  return this->atcommand_full(F("AT+NVMWRITE"), NULL, 3, type, args);
+}
+
+/******************************************************************************/
+/*!
+    @brief Save String to NVM section, current size limit is 256 bytes
+    @param data buffer holding data
+    @param size number of bytes
+    @param offset relative offset in the NVM section
+*/
+/******************************************************************************/
+bool Adafruit_BLE::writeNVM(uint16_t offset, char const* str)
+{
+  uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_STRING };
+  uint32_t args[] = { offset, BLE_DATATYPE_STRING, (uint32_t) str };
+
+  return this->atcommand_full(F("AT+NVMWRITE"), NULL, 3, type, args);
+}
+
+/******************************************************************************/
+/*!
+    @brief Save an 32-bit number to NVM
+    @param number Number to be saved
+    @param offset relative offset in the NVM section
+*/
+/******************************************************************************/
+bool Adafruit_BLE::writeNVM(uint16_t offset, int32_t number)
+{
+  uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_INT32 };
+  uint32_t args[] = { offset, BLE_DATATYPE_INTEGER, (uint32_t) number };
+
+  return this->atcommand_full(F("AT+NVMWRITE"), NULL, 3, type, args);
+}
+
+/******************************************************************************/
+/*!
+    @brief Read an number of bytes from NVM at offset to buffer
+    @param
+*/
+/******************************************************************************/
+bool Adafruit_BLE::readNVM(uint16_t offset, uint8_t data[], uint16_t size)
+{
+  uint8_t current_mode = _mode;
+
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+
+  // use RAW command version
+  print( F("AT+NVMREADRAW=") );
+  print(offset);
+
+  print(',');
+  println(size);
+
+  uint16_t len = readraw(); // readraw swallow OK/ERROR already
+
+  // skip if NULL is entered
+  if (data) memcpy(data, this->buffer, min(size, BLE_BUFSIZE));
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+}
+
+/******************************************************************************/
+/*!
+    @brief Read a string from NVM at offset to buffer
+    @param
+*/
+/******************************************************************************/
+bool Adafruit_BLE::readNVM(uint16_t offset, char* str, uint16_t size)
+{
+  uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8 };
+  uint32_t args[] = { offset, size, BLE_DATATYPE_STRING};
+
+  bool isOK =  this->atcommand_full(F("AT+NVMREAD"), NULL, 3, type, args);
+
+  // skip if NULL is entered
+  if ( isOK && str ) strncpy(str, this->buffer, min(size, BLE_BUFSIZE));
+
+  return isOK;
+}
+
+/******************************************************************************/
+/*!
+    @brief Read an 32-bit number from NVM
+    @param
+*/
+/******************************************************************************/
+bool Adafruit_BLE::readNVM(uint16_t offset, int32_t* number)
+{
+  return this->readNVM(offset, (uint8_t*)number, 4);
+}
+
+/******************************************************************************/
+/*!
     @brief  Set handle for connect callback
 
     @param[in] fp function pointer, NULL will discard callback

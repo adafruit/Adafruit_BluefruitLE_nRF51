@@ -119,7 +119,7 @@ void setup(void)
    * 1 byte flags + 4 float */
   /* Chars ID for Measurement should be 1 */
   Serial.println(F("Adding the Temperature Measurement characteristic (UUID = 0x2A1C): "));
-  htsMeasureCharId = gatt.addCharacteristic(0x2A1C, GATT_CHARS_PROPERTIES_INDICATE, 5, 5, GATT_CHARS_DATATYPE_BYTEARRAY);
+  htsMeasureCharId = gatt.addCharacteristic(0x2A1C, GATT_CHARS_PROPERTIES_INDICATE, 5, 5, BLE_DATATYPE_BYTEARRAY);
   if (htsMeasureCharId == 0) {
     error(F("Could not add Temperature characteristic"));
   }
@@ -141,7 +141,7 @@ void loop(void)
 {
   int32_t temp = random(0, 100);
 
-  Serial.print(F("Updating HRM value to "));
+  Serial.print(F("Updating Temperature value to "));
   Serial.print(temp);
   Serial.println(F(" Celcius"));
 

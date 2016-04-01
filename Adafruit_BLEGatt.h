@@ -40,14 +40,6 @@
 #include <Arduino.h>
 #include "Adafruit_BLE.h"
 
-enum GattCharsDataType_t
-{
-  GATT_CHARS_DATATYP_AUTO = 0,
-  GATT_CHARS_DATATYPE_INTEGER,
-  GATT_CHARS_DATATYPE_STRING,
-  GATT_CHARS_DATATYPE_BYTEARRAY,
-};
-
 #define GATT_CHARS_PROPERTIES_BROADCAST       bit(0)
 #define GATT_CHARS_PROPERTIES_READ            bit(1)
 #define GATT_CHARS_PROPERTIES_WRITE_WO_RESP   bit(2)
@@ -69,7 +61,7 @@ class Adafruit_BLEGatt
 private:
   Adafruit_BLE& _ble;
 
-  uint8_t addChar_internal(uint8_t uuid[], uint8_t uuid_len, uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype, const char* description, const GattPresentationFormat* presentFormat);
+  uint8_t addChar_internal(uint8_t uuid[], uint8_t uuid_len, uint8_t properties, uint8_t min_len, uint8_t max_len, BLEDataType_t datatype, const char* description, const GattPresentationFormat* presentFormat);
 
 public:
   char* buffer; // alias to ble's buffer
@@ -81,8 +73,8 @@ public:
   uint8_t addService(uint16_t uuid16);
   uint8_t addService(uint8_t uuid128[]);
 
-  uint8_t addCharacteristic(uint16_t uuid16  , uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype, const char* description = NULL, const GattPresentationFormat* presentFormat = NULL);
-  uint8_t addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, GattCharsDataType_t datatype, const char* description = NULL, const GattPresentationFormat* presentFormat = NULL);
+  uint8_t addCharacteristic(uint16_t uuid16  , uint8_t properties, uint8_t min_len, uint8_t max_len, BLEDataType_t datatype, const char* description = NULL, const GattPresentationFormat* presentFormat = NULL);
+  uint8_t addCharacteristic(uint8_t uuid128[], uint8_t properties, uint8_t min_len, uint8_t max_len, BLEDataType_t datatype, const char* description = NULL, const GattPresentationFormat* presentFormat = NULL);
 
   //------------- Get Characteristic -------------//
   uint8_t  getChar(uint8_t charID);

@@ -46,6 +46,15 @@
 
 #define BLE_DEFAULT_TIMEOUT      250
 
+enum BLEDataType_t
+{
+  BLE_DATATYPE_AUTO = 0,
+  BLE_DATATYPE_STRING,
+  BLE_DATATYPE_BYTEARRAY,
+  BLE_DATATYPE_INTEGER,
+};
+
+
 class Adafruit_BLE : public Adafruit_ATParser
 {
   protected:
@@ -89,6 +98,15 @@ class Adafruit_BLE : public Adafruit_ATParser
     void disconnect(void);
 
     bool setAdvData(uint8_t advdata[], uint8_t size);
+
+    bool writeNVM(uint16_t offset, uint8_t const  data[], uint16_t size);
+    bool writeNVM(uint16_t offset, char    const* str);
+    bool writeNVM(uint16_t offset, int32_t number);
+
+    bool readNVM(uint16_t offset, uint8_t data[], uint16_t size);
+    bool readNVM(uint16_t offset, char  * str   , uint16_t size);
+    bool readNVM(uint16_t offset, int32_t* number);
+
 
     // No parameters
     bool sendCommandCheckOK(const __FlashStringHelper *cmd) { return this->atcommand(cmd); }

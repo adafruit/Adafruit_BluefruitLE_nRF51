@@ -59,12 +59,12 @@ enum
 {
   AT_ARGTYPE_STRING    = 0x0100,
   AT_ARGTYPE_BYTEARRAY = 0x0200,
-  AT_ARGTYPE_UINT32    = 0x0300,
-  AT_ARGTYPE_INT32     = 0x0400,
-  AT_ARGTYPE_UINT16    = 0x0500,
-  AT_ARGTYPE_INT16     = 0x0600,
-  AT_ARGTYPE_UINT8     = 0x0700,
-  AT_ARGTYPE_INT8      = 0x0800,
+  AT_ARGTYPE_INT32     = 0x0300,
+  AT_ARGTYPE_UINT32    = 0x0400,
+  AT_ARGTYPE_INT16     = 0x0500,
+  AT_ARGTYPE_UINT16    = 0x0600,
+  AT_ARGTYPE_INT8      = 0x0700,
+  AT_ARGTYPE_UINT8     = 0x0800,
 };
 
 class Adafruit_ATParser : public Stream
@@ -74,7 +74,7 @@ protected:
   bool     _verbose;
 
   // internal function
-  bool send_arg_get_resp(int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[]);
+  bool send_arg_get_resp(int32_t* reply, uint8_t argcount, uint16_t argtype[], uint32_t args[]);
 
 public:
   Adafruit_ATParser(void);
@@ -87,8 +87,8 @@ public:
   // Auto print out TX & RX data to normal Serial
   void verbose(bool enable) { _verbose = enable; }
 
-  bool atcommand_full(const char cmd[]               , int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[]);
-  bool atcommand_full(const __FlashStringHelper *cmd , int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[]);
+  bool atcommand_full(const char cmd[]               , int32_t* reply, uint8_t argcount, uint16_t argtype[], uint32_t args[]);
+  bool atcommand_full(const __FlashStringHelper *cmd , int32_t* reply, uint8_t argcount, uint16_t argtype[], uint32_t args[]);
 
   //--------------------------------------------------------------------+
   // Without Reply
@@ -100,14 +100,14 @@ public:
   bool atcommand(const char cmd[]              , int32_t para1)
   {
     uint16_t type[] = { AT_ARGTYPE_INT32 };
-    const void* args[] = { (void*) para1 };
+    uint32_t args[] = { (uint32_t) para1 };
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
 
   bool atcommand(const __FlashStringHelper *cmd, int32_t para1)
   {
     uint16_t type[] = { AT_ARGTYPE_INT32 };
-    const void* args[] = { (void*) para1 };
+    uint32_t args[] = { (uint32_t) para1 };
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
 
@@ -115,14 +115,14 @@ public:
   bool atcommand(const char cmd[]              , int32_t para1, int32_t para2)
   {
     uint16_t type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
-    const void* args[] = { (void*) para1, (void*) para2 };
+    uint32_t args[] = { (uint32_t) para1, (uint32_t) para2 };
     return this->atcommand_full(cmd, NULL, 2, type, args);
   }
 
   bool atcommand(const __FlashStringHelper *cmd, int32_t para1, int32_t para2)
   {
     uint16_t type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
-    const void* args[] = { (void*) para1, (void*) para2 };
+    uint32_t args[] = { (uint32_t) para1, (uint32_t) para2 };
     return this->atcommand_full(cmd, NULL, 2, type, args);
   }
 
@@ -130,14 +130,14 @@ public:
   bool atcommand(const char cmd[]              , const uint8_t bytearray[], uint16_t count)
   {
     uint16_t type[] = { AT_ARGTYPE_BYTEARRAY+count };
-    const void* args[] = { bytearray };
+    uint32_t args[] = { (uint32_t) bytearray };
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
 
   bool atcommand(const __FlashStringHelper *cmd, const uint8_t bytearray[], uint16_t count)
   {
     uint16_t type[] = { AT_ARGTYPE_BYTEARRAY+count };
-    const void* args[] = { bytearray };
+    uint32_t args[] = {(uint32_t) bytearray };
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
 
@@ -145,14 +145,14 @@ public:
   bool atcommand(const char cmd[]              , const char* str)
   {
     uint16_t type[] = { AT_ARGTYPE_STRING };
-    const void* args[] = { str };
+    uint32_t args[] = { (uint32_t) str };
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
 
   bool atcommand(const __FlashStringHelper *cmd, const char* str)
   {
     uint16_t type[] = { AT_ARGTYPE_STRING };
-    const void* args[] = { str };
+    uint32_t args[] = { (uint32_t) str };
     return this->atcommand_full(cmd, NULL, 1, type, args);
   }
 
@@ -166,14 +166,14 @@ public:
   bool atcommandIntReply(const char cmd[]              , int32_t* reply, int32_t para1)
   {
     uint16_t type[] = { AT_ARGTYPE_INT32 };
-    const void* args[] = { (void*) para1 };
+    uint32_t args[] = { (uint32_t) para1 };
     return this->atcommand_full(cmd, reply, 1, type, args);
   }
 
   bool atcommandIntReply(const __FlashStringHelper *cmd, int32_t* reply, int32_t para1)
   {
     uint16_t type[] = { AT_ARGTYPE_INT32 };
-    const void* args[] = { (void*) para1 };
+    uint32_t args[] = { (uint32_t) para1 };
     return this->atcommand_full(cmd, reply, 1, type, args);
   }
 
@@ -181,14 +181,14 @@ public:
   bool atcommandIntReply(const char cmd[]              , int32_t* reply, int32_t para1, int32_t para2)
   {
     uint16_t type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
-    const void* args[] = { (void*) para1, (void*) para2 };
+    uint32_t args[] = { (uint32_t) para1, (uint32_t) para2 };
     return this->atcommand_full(cmd, reply, 2, type, args);
   }
 
   bool atcommandIntReply(const __FlashStringHelper *cmd, int32_t* reply, int32_t para1, int32_t para2)
   {
     uint16_t type[] = { AT_ARGTYPE_INT32, AT_ARGTYPE_INT32 };
-    const void* args[] = { (void*) para1, (void*) para2 };
+    uint32_t args[] = { (uint32_t) para1, (uint32_t) para2 };
     return this->atcommand_full(cmd, reply, 2, type, args);
   }
 
@@ -196,14 +196,14 @@ public:
   bool atcommandIntReply(const char cmd[]              , int32_t* reply, const uint8_t bytearray[], uint16_t count)
   {
     uint16_t type[] = { AT_ARGTYPE_BYTEARRAY+count };
-    const void* args[] = { bytearray };
+    uint32_t args[] = { (uint32_t) bytearray };
     return this->atcommand_full(cmd, reply, 1, type, args);
   }
 
   bool atcommandIntReply(const __FlashStringHelper *cmd, int32_t* reply, const uint8_t bytearray[], uint16_t count)
   {
     uint16_t type[] = { AT_ARGTYPE_BYTEARRAY+count };
-    const void* args[] = { bytearray };
+    uint32_t args[] = { (uint32_t) bytearray };
     return this->atcommand_full(cmd, reply, 1, type, args);
   }
 
@@ -211,14 +211,14 @@ public:
   bool atcommandIntReply(const char cmd[]              , int32_t* reply, const char* str)
   {
     uint16_t type[] = { AT_ARGTYPE_STRING };
-    const void* args[] = { str };
+    uint32_t args[] = { (uint32_t) str };
     return this->atcommand_full(cmd, reply, 1, type, args);
   }
 
   bool atcommandIntReply(const __FlashStringHelper *cmd, int32_t* reply, const char* str)
   {
     uint16_t type[] = { AT_ARGTYPE_STRING };
-    const void* args[] = { str };
+    uint32_t args[] = { (uint32_t) str };
     return this->atcommand_full(cmd, reply, 1, type, args);
   }
 

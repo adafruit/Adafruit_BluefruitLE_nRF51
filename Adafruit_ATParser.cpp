@@ -68,6 +68,9 @@ bool Adafruit_ATParser::waitForOK(void)
   while ( readline(tempbuf, BLE_BUFSIZE) ) {
     if ( strcmp(tempbuf, "OK") == 0 ) return true;
     if ( strcmp(tempbuf, "ERROR") == 0 ) return false;
+
+    // Copy to internal buffer if not OK or ERROR
+    strcpy(this->buffer, tempbuf);
   }
   return false;
 }
@@ -78,7 +81,7 @@ bool Adafruit_ATParser::waitForOK(void)
     @param
 */
 /******************************************************************************/
-bool Adafruit_ATParser::send_arg_get_resp(int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[])
+bool Adafruit_ATParser::send_arg_get_resp(int32_t* reply, uint8_t argcount, uint16_t argtype[], uint32_t args[])
 {
   // Command arguments according to its type
   for(uint8_t i=0; i<argcount; i++)
@@ -147,7 +150,7 @@ bool Adafruit_ATParser::send_arg_get_resp(int32_t* reply, uint8_t argcount, uint
     @param
 */
 /******************************************************************************/
-bool Adafruit_ATParser::atcommand_full(const char cmd[], int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[])
+bool Adafruit_ATParser::atcommand_full(const char cmd[], int32_t* reply, uint8_t argcount, uint16_t argtype[], uint32_t args[])
 {
   bool result;
   uint8_t current_mode = _mode;
@@ -171,7 +174,7 @@ bool Adafruit_ATParser::atcommand_full(const char cmd[], int32_t* reply, uint8_t
     @param
 */
 /******************************************************************************/
-bool Adafruit_ATParser::atcommand_full(const __FlashStringHelper *cmd, int32_t* reply, uint8_t argcount, uint16_t argtype[], const void* args[])
+bool Adafruit_ATParser::atcommand_full(const __FlashStringHelper *cmd, int32_t* reply, uint8_t argcount, uint16_t argtype[], uint32_t args[])
 {
   bool result;
   uint8_t current_mode = _mode;
