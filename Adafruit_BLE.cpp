@@ -34,6 +34,7 @@
 */
 /**************************************************************************/
 #include "Adafruit_BLE.h"
+#include "Adafruit_BLEMIDI.h"
 
 #ifndef min
   #define min(a,b) ((a) < (b) ? (a) : (b))
@@ -320,14 +321,7 @@ void Adafruit_BLE::update(uint32_t period_ms)
         // copy to internal buffer for other usage !
         memcpy(tempbuf, this->buffer, len);
 
-        // only support one full event for now
-        if ( len == 5)
-        {
-          this->_ble_midi_rx_callback( *((uint16_t*) tempbuf), tempbuf[2], tempbuf[3], tempbuf[4]);
-        }else
-        {
-          // TODO support multiple event (running events) parsing
-        }
+        Adafruit_BLEMIDI::processRxCallback(tempbuf, len, this->_ble_midi_rx_callback);
       }
     }
 
@@ -522,7 +516,7 @@ void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) 
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setBleMidiRxCallback( bleMIDIRxCallback_t fp )
+void Adafruit_BLE::setBleMidiRxCallback( midiRxCallback_t fp )
 {
   this->_ble_midi_rx_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, -1);

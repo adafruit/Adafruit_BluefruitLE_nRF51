@@ -132,3 +132,33 @@ bool Adafruit_BLEMIDI::send_n(uint8_t status, const uint8_t bytes[], uint8_t cou
   return _ble.atcommand( F("AT+BLEMIDITX"), data, count+1);
 }
 
+/******************************************************************************/
+/*!
+    @brief
+    @param
+*/
+/******************************************************************************/
+void Adafruit_BLEMIDI::processRxCallback(uint8_t data[], uint16_t len, Adafruit_BLE::midiRxCallback_t callback_func)
+{
+  midi_header_t header;
+  header.byte = *data++;
+
+  len--;
+  while (len)
+  {
+    midi_timestamp_t timestamp;
+    timestamp.byte = *data++;
+
+    len--;
+
+    uint16_t tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
+
+    // TODO currently only parse full packet
+    if ( len < 3 ) break;
+
+    callback_func( tstamp, data[0], data[1], data[2]);
+
+    len  -= 3;
+    data += 3;
+  }
+}

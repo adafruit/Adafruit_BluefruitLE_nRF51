@@ -40,13 +40,42 @@
 #include <Arduino.h>
 #include "Adafruit_BLE.h"
 
+typedef struct ATTR_PACKED
+{
+  union {
+    struct {
+      uint8_t timestamp_hi : 6;
+      uint8_t reserved     : 1;
+      uint8_t start_bit    : 1;
+    };
+
+    uint8_t byte;
+  };
+} midi_header_t;
+
+ASSERT_STATIC_ ( sizeof(midi_header_t) == 1 );
+
+typedef struct ATTR_PACKED
+{
+  union {
+    struct {
+      uint8_t timestamp_low : 7;
+      uint8_t start_bit : 1;
+    };
+
+    uint8_t byte;
+  };
+} midi_timestamp_t;
+
+ASSERT_STATIC_ ( sizeof(midi_timestamp_t) == 1 );
+
 class Adafruit_BLEMIDI
 {
 private:
   Adafruit_BLE& _ble;
 
 public:
-  typedef Adafruit_BLE::bleMIDIRxCallback_t midiRxCallback_t;
+  typedef Adafruit_BLE::midiRxCallback_t midiRxCallback_t;
   Adafruit_BLEMIDI(Adafruit_BLE& ble);
 
   bool begin(bool reset = true);
@@ -69,6 +98,8 @@ public:
   bool send_n(uint8_t status, const uint8_t bytes[], uint8_t count);
 
   void setRxCallback(midiRxCallback_t fp);
+
+  static void processRxCallback(uint8_t data[], uint16_t len, Adafruit_BLE::midiRxCallback_t callback_func);
 };
 
 #endif /* _ADAFRUIT_BLEMIDI_H_ */
