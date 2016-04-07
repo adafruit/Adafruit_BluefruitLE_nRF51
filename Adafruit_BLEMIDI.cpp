@@ -140,25 +140,47 @@ bool Adafruit_BLEMIDI::send_n(uint8_t status, const uint8_t bytes[], uint8_t cou
 /******************************************************************************/
 void Adafruit_BLEMIDI::processRxCallback(uint8_t data[], uint16_t len, Adafruit_BLE::midiRxCallback_t callback_func)
 {
-  midi_header_t header;
-  header.byte = *data++;
+  if ( len < 3 ) return;
 
+  // First 3 bytes is always : Header + Timestamp + Status
+  midi_header_t header;
+  uint16_t tstamp;
+  uint8_t status;
+
+  header.byte = *data++;
   len--;
+
   while (len)
   {
-    midi_timestamp_t timestamp;
-    timestamp.byte = *data++;
+    /* event : 0x00 - 0x7F
+       status: 0x80 - 0xEF
+       sysex : 0xF0 - 0xFF
+     */
 
-    len--;
+    if ( bitRead(data[0], 7) )
+    {
+      // Start of new full event
+      midi_timestamp_t timestamp;
+      timestamp.byte = *data++;
 
-    uint16_t tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
+      tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
+      status = *data++;
 
-    // TODO currently only parse full packet
-    if ( len < 3 ) break;
+      // Status must have 7th-bit set, must have something wrong
+      if ( !bitRead(status, 7) ) return;
 
-    callback_func( tstamp, data[0], data[1], data[2]);
+      callback_func( tstamp, status, data[0], data[1]);
 
-    len  -= 3;
-    data += 3;
+      len  -= 4;
+      data += 2;
+    }
+    else
+    {
+      // Running event
+      callback_func( tstamp, status, data[0], data[1]);
+
+      len  -= 2;
+      data += 2;
+    }
   }
 }
