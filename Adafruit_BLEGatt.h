@@ -104,7 +104,7 @@ public:
     return result;
   }
 
-  char*    getCharInStr(uint8_t charID)
+  char*    getCharStr(uint8_t charID)
   {
     if ( this->getChar(charID) == 0 ) return NULL;
     return this->buffer;
