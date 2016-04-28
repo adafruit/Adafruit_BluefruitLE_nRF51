@@ -4,7 +4,7 @@
 
 ### Features
 
-- Added **Adafruit_ATParser** helper class to facilitate sending & receiving AT commands
+- Added **Adafruit_ATParser** helper class to facilitate sending and receiving AT commands:
 	- `.atcommand()` : Send a command without reply (several variants defined for various input parameters)
 	- `.atcommandIntReply()` : Send a command with integer reply (several variants defined for various input parameters)
 	- `.atcommand_full()` : General purpose command execution with a pointer to the reply buffer
