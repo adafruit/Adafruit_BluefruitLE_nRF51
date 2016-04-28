@@ -2,9 +2,13 @@ This library is for all nRF51 based Adafruit Bluefruit LE modules that use SPI o
 
 Current nRF51 based Bluefruit LE products include:
 
-* [Adafruit Bluefruit LE UART Friend](https://www.adafruit.com/product/2479)
-* [Adafruit Bluefruit LE SPI Friend](https://www.adafruit.com/products/2633)
-* [Adafruit Bluefruit LE Micro](https://www.adafruit.com/product/2661)
+* [Bluefruit LE Friend](https://www.adafruit.com/product/2267)
+* [Bluefruit LE UART Friend](https://www.adafruit.com/product/2479)
+* [Bluefruit LE SPI Friend](https://www.adafruit.com/product/2633)
+* [Bluefruit LE Shield](https://www.adafruit.com/products/2746)
+* [Bluefruit LE Micro](https://www.adafruit.com/product/2661)
+* [Feather 32u4 Bluefruit LE](https://www.adafruit.com/product/2829)
+* [Feather M0 Bluefruit LE](https://www.adafruit.com/products/2995)
 
 # AT Commands
 
