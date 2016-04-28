@@ -4,27 +4,35 @@
 
 ### Features
 
-- Add Adafruit_ATParser class helper to facilitate sending & receiving at commands
-	- .atcommand() : without reply (several variants for input parameters)
-	- .atcommandIntReply() with integer reply (several variants for input parameters)
-	- .atcommand_full() : for general command execution
-	- .printByteArray() : to print Byte Array format AA-BB-CC from a buffer. Useful for executing AT command.
-	- .waitForOK() : use separate temporary buffer to avoid overwrite the response contents.
-- Callback support to Adafruit_BLE class
-	- Supported Events are Connect, Disconnect, Uart RX, MIDI Rx, GattChar Rx, those are set uing .setBleUartRxCallback(), .setBleMidiRxCallback(), .setBleGattRxCallback()
-	- .update(ms) : must be placed in loop(), ms is the interval in milliseconds to poll for new event
-	- Check the examples/callbacks sketch for more details
-- Add Adafruit_BLEGatt class to facilitate GATT server adding service, characteristics as well as read/write, callback for characteristics
-	- Add User Description & Presentation format support for characteristics.
-	- Add BLEDataType_t for characteristics
-	- Check the example/healththermometer for how to use Adafruit_BLEGatt class
-- Add BLE MIDI service support with Adafruit_BLEMIDI  class
-	-  Check the examples/midi for more details  
-- Add BLE Battery service support with Adafruit_BLEBattery class
-	- Check the example/battery for more details
-- Add BLE Eddystone class to facilitate using Eddystone beacon
-	- Check the example/eddystone for more details
-- Add User NVM data support up to 256 bytes with .writeNVM() & .readNVM() to Adafruit_BLE class. User can use this small portion to store application specific data.
-	- Check the example/nvmdata for more details
-- Adafruit_BLE class
-	- add setAdvData() helper to advertise custom data
+- Added **Adafruit_ATParser** helper class to facilitate sending & receiving AT commands
+	- `.atcommand()` : Send a command without reply (several variants defined for various input parameters)
+	- `.atcommandIntReply()` : Send a command with integer reply (several variants defined for various input parameters)
+	- `.atcommand_full()` : General purpose command execution with a pointer to the reply buffer
+	- `.printByteArray()` : Outputs a byte array in the `AA-BB-CC` format from a buffer. Useful for executing AT commands.
+	- `.waitForOK()` : Uses a separate temporary buffer to avoid overwriting response content.
+- Callback support in **Adafruit_BLE** class
+	- Supported Events are:
+		- Connect: Set using `setConnectCallback()`
+		- Disconnect: Set using `setDisconnectCallback()`
+		- BLE UART RX: Set using `.setBleUartRxCallback()`
+		- MIDI RX: Set using `.setBleMidiRxCallback()`
+		- GATT Characteristic RX: Set using `.setBleGattRxCallback()`
+	- `.update(ms)` must be placed in the loop() function to fire the callbacks, where `ms` is the interval in milliseconds to poll for new events
+	- See 'examples/callbacks' for more details
+- Added **Adafruit_BLEGatt** helper class to make workign with custom GATT services and characteristics easier.
+	- Adding GATT services and characteristics
+	- Read/write to existing characteristics
+	- Callback for characteristic updates
+	- Added **User Description** and **Presentation Format** support for GATT characteristics.
+	- Add `BLEDataType_t` for GATT characteristics
+	- See 'example/healththermometer' for an example of using the Adafruit_BLEGatt class
+- Added BLE MIDI service support with the **Adafruit_BLEMIDI** class
+	-  See 'examples/midi' for details
+- Added BLE Battery service support via the **Adafruit_BLEBattery** class
+	- See 'example/battery' for more details
+- Added BLE Eddystone helper class to facilitate using Eddystone beacon
+	- See 'example/eddystone' for more details
+- Add a 256 byte user NVM data section that can be accessed via `.writeNVM()` and `.readNVM()` in **Adafruit_BLE**. User can use this small chunk of NVM memory to store application specific data.
+	- See 'example/nvmdata' for more details
+- Additional **Adafruit_BLE** class changes:
+	- Added a `setAdvData()` helper to advertise custom data payloads
