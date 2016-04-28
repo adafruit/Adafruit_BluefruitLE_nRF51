@@ -11,7 +11,7 @@
 	- .printByteArray() : to print Byte Array format AA-BB-CC from a buffer. Useful for executing AT command.
 	- .waitForOK() : use separate temporary buffer to avoid overwrite the response contents.
 - Callback support to Adafruit_BLE class
-	- Supported Events are Uart RX, MIDI Rx, GattChar Rx, those are set uing .setBleUartRxCallback(), .setBleMidiRxCallback(), .setBleGattRxCallback()
+	- Supported Events are Connect, Disconnect, Uart RX, MIDI Rx, GattChar Rx, those are set uing .setBleUartRxCallback(), .setBleMidiRxCallback(), .setBleGattRxCallback()
 	- .update(ms) : must be placed in loop(), ms is the interval in milliseconds to poll for new event
 	- Check the examples/callbacks sketch for more details
 - Add Adafruit_BLEGatt class to facilitate GATT server adding service, characteristics as well as read/write, callback for characteristics
