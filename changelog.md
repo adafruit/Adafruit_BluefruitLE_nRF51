@@ -19,12 +19,12 @@
 		- **GATT Characteristic RX**: Set using `.setBleGattRxCallback()`
 	- `.update(ms)` must be placed in the loop() function to fire the callbacks, where `ms` is the interval in milliseconds to poll for new events
 	- See 'examples/callbacks' for more details
-- Added **Adafruit_BLEGatt** helper class to make workign with custom GATT services and characteristics easier.
-	- Adding GATT services and characteristics
-	- Read/write to existing characteristics
-	- Callback for characteristic updates
-	- Added **User Description** and **Presentation Format** support for GATT characteristics.
-	- Add `BLEDataType_t` for GATT characteristics
+- Added **Adafruit_BLEGatt** helper class to make working with custom GATT services and characteristics easier:
+	- Helpers to add custom GATT services and characteristics
+	- Helpers to read/write previously defined characteristics
+	- Callback support for characteristic updates
+	- Added **User Description** and **Presentation Format** support for GATT characteristics
+	- Add `BLEDataType_t` typedef for GATT characteristics
 	- See 'example/healththermometer' for an example of using the Adafruit_BLEGatt class
 - Added BLE MIDI service support with the **Adafruit_BLEMIDI** class
 	-  See 'examples/midi' for details
