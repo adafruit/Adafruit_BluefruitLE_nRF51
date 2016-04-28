@@ -51,6 +51,10 @@ enum {
   //  11 reserved
 };
 
+enum {
+  NVM_USERDATA_SIZE = 256
+};
+
 /******************************************************************************/
 /*!
     @brief  Constructor
@@ -374,6 +378,8 @@ bool Adafruit_BLE::setAdvData(uint8_t advdata[], uint8_t size)
 /******************************************************************************/
 bool Adafruit_BLE::writeNVM(uint16_t offset, uint8_t const data[], uint16_t size)
 {
+  VERIFY_(offset + size <= NVM_USERDATA_SIZE );
+
   uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_BYTEARRAY + size };
   uint32_t args[] = { offset, BLE_DATATYPE_BYTEARRAY, (uint32_t) data };
 
@@ -390,6 +396,8 @@ bool Adafruit_BLE::writeNVM(uint16_t offset, uint8_t const data[], uint16_t size
 /******************************************************************************/
 bool Adafruit_BLE::writeNVM(uint16_t offset, char const* str)
 {
+  VERIFY_(offset + strlen(str) <= NVM_USERDATA_SIZE );
+
   uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_STRING };
   uint32_t args[] = { offset, BLE_DATATYPE_STRING, (uint32_t) str };
 
@@ -405,6 +413,8 @@ bool Adafruit_BLE::writeNVM(uint16_t offset, char const* str)
 /******************************************************************************/
 bool Adafruit_BLE::writeNVM(uint16_t offset, int32_t number)
 {
+  VERIFY_(offset + 4 <= NVM_USERDATA_SIZE );
+
   uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_INT32 };
   uint32_t args[] = { offset, BLE_DATATYPE_INTEGER, (uint32_t) number };
 
@@ -419,6 +429,8 @@ bool Adafruit_BLE::writeNVM(uint16_t offset, int32_t number)
 /******************************************************************************/
 bool Adafruit_BLE::readNVM(uint16_t offset, uint8_t data[], uint16_t size)
 {
+  VERIFY_(offset < NVM_USERDATA_SIZE);
+
   uint8_t current_mode = _mode;
 
   // switch mode if necessary to execute command
@@ -448,6 +460,8 @@ bool Adafruit_BLE::readNVM(uint16_t offset, uint8_t data[], uint16_t size)
 /******************************************************************************/
 bool Adafruit_BLE::readNVM(uint16_t offset, char* str, uint16_t size)
 {
+  VERIFY_(offset < NVM_USERDATA_SIZE);
+
   uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8 };
   uint32_t args[] = { offset, size, BLE_DATATYPE_STRING};
 
