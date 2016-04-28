@@ -12,11 +12,11 @@
 	- `.waitForOK()` : Uses a separate temporary buffer to avoid overwriting response content.
 - Callback support in **Adafruit_BLE** class
 	- Supported Events are:
-		- Connect: Set using `setConnectCallback()`
-		- Disconnect: Set using `setDisconnectCallback()`
-		- BLE UART RX: Set using `.setBleUartRxCallback()`
-		- MIDI RX: Set using `.setBleMidiRxCallback()`
-		- GATT Characteristic RX: Set using `.setBleGattRxCallback()`
+		- **Connect**: Set using `setConnectCallback()`
+		- **Disconnect**: Set using `setDisconnectCallback()`
+		- **BLE UART RX**: Set using `.setBleUartRxCallback()`
+		- **MIDI RX**: Set using `.setBleMidiRxCallback()`
+		- **GATT Characteristic RX**: Set using `.setBleGattRxCallback()`
 	- `.update(ms)` must be placed in the loop() function to fire the callbacks, where `ms` is the interval in milliseconds to poll for new events
 	- See 'examples/callbacks' for more details
 - Added **Adafruit_BLEGatt** helper class to make workign with custom GATT services and characteristics easier.
