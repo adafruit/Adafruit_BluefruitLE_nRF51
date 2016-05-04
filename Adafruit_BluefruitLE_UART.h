@@ -50,7 +50,7 @@ class Adafruit_BluefruitLE_UART : public Adafruit_BLE
 {
   private:
     // Hardware Pins
-    int8_t  _mode_pin, _rts_pin, _cts_pin;
+    int8_t  _mode_pin, _cts_pin, _rts_pin;
     Stream *mySerial;
 #if SOFTWARE_SERIAL_AVAILABLE
     SoftwareSerial *ss;

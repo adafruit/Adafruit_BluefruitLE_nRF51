@@ -41,7 +41,7 @@
 */
 /******************************************************************************/
 Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
-  _cts_pin(cts_pin), _rts_pin(rts_pin), _mode_pin(mode_pin)
+  _mode_pin(mode_pin), _cts_pin(cts_pin), _rts_pin(rts_pin)
 {
   _physical_transport = BLUEFRUIT_TRANSPORT_HWUART;
 
@@ -61,7 +61,7 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_
 */
 /******************************************************************************/
 Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
-  _cts_pin(cts_pin), _rts_pin(rts_pin), _mode_pin(mode_pin)
+  _mode_pin(mode_pin), _cts_pin(cts_pin), _rts_pin(rts_pin)
 {
   _physical_transport = BLUEFRUIT_TRANSPORT_SWUART;
 
