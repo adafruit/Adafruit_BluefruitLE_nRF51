@@ -14,7 +14,7 @@
 
 /*
     Please note the long strings of data sent mean the *RTS* pin is
-    required with UART to slow down data sent to the Bluefruit LE!
+    required with UART to slow down data sent to the Bluefruit LE!  
 */
 
 #include <Arduino.h>
@@ -29,6 +29,8 @@
 #include "Adafruit_BLEGatt.h"
 
 #include "BluefruitConfig.h"
+
+#include "IEEE11073float.h"
 
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
@@ -139,16 +141,17 @@ void setup(void)
 /** Send randomized heart rate data continuously **/
 void loop(void)
 {
-  int32_t temp = random(0, 100);
+  double temp = random(0, 100) / 10.0;
 
   Serial.print(F("Updating Temperature value to "));
   Serial.print(temp);
-  Serial.println(F(" Celcius"));
+  Serial.println(F(" Fahrenheit"));
 
   // https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.temperature_measurement.xml
-  // Chars value is 1 flag + 4 float value
+  // Chars value is 1 flag + 4 float value. Tempearature is in Fahrenheit unit
   uint8_t temp_measurement [5] = { bit(0) };
-  memcpy(temp_measurement+1, &temp, 4);
+  
+  float2IEEE11073(temp, temp_measurement+1);
 
   // TODO temperature is not correct due to Bluetooth use IEEE-11073 format
   gatt.setChar(htsMeasureCharId, temp_measurement, 5);
