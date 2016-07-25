@@ -283,6 +283,7 @@ void Adafruit_BLE::update(uint32_t period_ms)
 
     println( F("AT+EVENTSTATUS") );
     readline();
+    waitForOK();
 
     // parse event status system_event, gatts_event
     uint8_t tempbuf[BLE_BUFSIZE+1];

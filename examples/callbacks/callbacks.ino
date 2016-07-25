@@ -24,6 +24,19 @@
 
 #include "BluefruitConfig.h"
 
+/* This example demonstrates how to use Bluefruit callback API :
+ * - setConnectCallback(), setDisconnectCallback(), setBleUartRxCallback(),
+ * setBleGattRxCallback() are used to install callback function for specific
+ * event. 
+ * - Furthermore, update() must be called inside loop() for callback to
+ * be executed.
+ * 
+ * The sketch will add an custom service with 2 writable characteristics,
+ * and install callback to execute when there is an update from central device
+ * - one hold string
+ * - one hold a 4-byte integer
+  */
+
 /*=========================================================================
     APPLICATION SETTINGS
 
@@ -56,6 +69,7 @@
     #define FACTORYRESET_ENABLE        1
     #define MINIMUM_FIRMWARE_VERSION   "0.7.0"
 /*=========================================================================*/
+
 
 
 // Create the bluefruit object, either software serial...uncomment these lines
@@ -161,7 +175,7 @@ void setup(void)
   
   ble.sendCommandCheckOK( F("AT+GATTADDSERVICE=uuid=0x1234") );
   ble.sendCommandWithIntReply( F("AT+GATTADDCHAR=UUID=0x2345,PROPERTIES=0x08,MIN_LEN=1,MAX_LEN=6,DATATYPE=string,VALUE=abc"), &charid_string);
-  ble.sendCommandWithIntReply( F("AT+GATTADDCHAR=UUID=0x3456,PROPERTIES=0x08,MIN_LEN=4,MAX_LEN=4,DATATYPE=DEC,VALUE=0"), &charid_dec);
+  ble.sendCommandWithIntReply( F("AT+GATTADDCHAR=UUID=0x3456,PROPERTIES=0x08,MIN_LEN=4,MAX_LEN=4,DATATYPE=INTEGER,VALUE=0"), &charid_dec);
 
   ble.reset();
 
@@ -195,22 +209,3 @@ void loop(void)
   ble.update(200);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Checks for user input (via the Serial Monitor)
-*/
-/**************************************************************************/
-void getUserInput(char buffer[], uint8_t maxSize)
-{
-  memset(buffer, 0, maxSize);
-  while( Serial.peek() < 0 ) {}
-  delay(2);
-
-  uint8_t count=0;
-
-  do
-  {
-    count += Serial.readBytes(buffer+count, maxSize);
-    delay(2);
-  } while( (count < maxSize) && !(Serial.peek() < 0) );
-}
