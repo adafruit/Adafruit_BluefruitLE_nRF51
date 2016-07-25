@@ -32,7 +32,8 @@ uint8_t packetbuffer[READ_BUFSIZE+1];
 /**************************************************************************/
 float parsefloat(uint8_t *buffer) 
 {
-  float f = ((float *)buffer)[0];
+  float f;
+  memcpy(&f, buffer, 4);
   return f;
 }
 
