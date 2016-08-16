@@ -78,7 +78,7 @@ void setup(void)
   boolean success;
 
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit Heath Thermometer Example"));
+  Serial.println(F("Adafruit Bluefruit Health Thermometer Example"));
   Serial.println(F("--------------------------------------------"));
 
   randomSeed(micros());
@@ -111,10 +111,10 @@ void setup(void)
 
   /* Add the Heart Rate Service definition */
   /* Service ID should be 1 */
-  Serial.println(F("Adding the Heath Thermometer Service definition (UUID = 0x1809): "));
+  Serial.println(F("Adding the Health Thermometer Service definition (UUID = 0x1809): "));
   htsServiceId = gatt.addService(0x1809);
   if (htsServiceId == 0) {
-    error(F("Could not add HRM service"));
+    error(F("Could not add Thermometer service"));
   }
   
   /* Add the Temperature Measurement characteristic which is composed of
@@ -126,8 +126,8 @@ void setup(void)
     error(F("Could not add Temperature characteristic"));
   }
 
-  /* Add the Heart Rate Service to the advertising data (needed for Nordic apps to detect the service) */
-  Serial.print(F("Adding Heart Rate Service UUID to the advertising payload: "));
+  /* Add the Health Thermometer Service to the advertising data (needed for Nordic apps to detect the service) */
+  Serial.print(F("Adding Health Thermometer Service UUID to the advertising payload: "));
   uint8_t advdata[] { 0x02, 0x01, 0x06, 0x05, 0x02, 0x09, 0x18, 0x0a, 0x18 };
   ble.setAdvData( advdata, sizeof(advdata) );
 
