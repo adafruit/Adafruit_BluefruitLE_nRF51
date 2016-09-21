@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include <SPI.h>
-#if not defined (_VARIANT_ARDUINO_DUE_X_)
-#include <SoftwareSerial.h>
-#endif
+
+// You may or may not need to include this depending on your platform
+// Include this for the 32u4, exclude it for the M0 for example
+//#include <SoftwareSerial.h>
 
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
@@ -11,11 +12,21 @@
 
 #include "BluefruitConfig.h"
 
-#define LOAD_TEST_MS 10
-
 #define FACTORYRESET_ENABLE         1
 #define MINIMUM_FIRMWARE_VERSION    "0.7.0"
 
+// This app was tested on iOS with the following apps:
+//
+// https://itunes.apple.com/us/app/midimittr/id925495245?mt=8
+// https://itunes.apple.com/us/app/igrand-piano-free-for-ipad/id562914032?mt=8
+//
+// To test:
+// - Run this sketch and open the Serial Monitor
+// - Open the iGrand Piano Free app
+// - Open the midimittr app on your phone and under Clients select "Adafruit Bluefruit LE"
+// - When you see the 'Connected' label switch to the Routing panel
+// - Set the Destination to 'iGrand Piano'
+// - Switch to the iGrand Piano Free app and you should see notes playing one by one
 
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
@@ -39,6 +50,7 @@ Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_
 Adafruit_BLEMIDI midi(ble);
 
 bool isConnected = false;
+int current_note = 60;
 
 // A small helper
 void error(const __FlashStringHelper*err) {
@@ -50,16 +62,10 @@ void error(const __FlashStringHelper*err) {
 void connected(void)
 {
   isConnected = true;
-  
+
   Serial.println(F(" CONNECTED!"));
-  
-  Serial.print(F("LOAD TESTING MAJOR C CHORD @ "));
-  Serial.print(LOAD_TEST_MS);
-  Serial.println(F(" MS."));
-  Serial.println();
   delay(1000);
 
-  Serial.println(F("HOLD ONTO YOUR BUTTS."));
 }
 
 void disconnected(void)
@@ -77,9 +83,9 @@ void BleMidiRX(uint16_t timestamp, uint8_t status, uint8_t byte1, uint8_t byte2)
   Serial.print(status, HEX); Serial.print(" ");
   Serial.print(byte1 , HEX); Serial.print(" ");
   Serial.print(byte2 , HEX); Serial.print(" ");
-  
+
   Serial.println();
-}  
+}
 
 void setup(void)
 {
@@ -114,20 +120,20 @@ void setup(void)
   Serial.println("Requesting Bluefruit info:");
   /* Print Bluefruit information */
   ble.info();
-  
+
   /* Set BLE callbacks */
   ble.setConnectCallback(connected);
   ble.setDisconnectCallback(disconnected);
 
   // Set MIDI RX callback
   midi.setRxCallback(BleMidiRX);
-  
+
   Serial.println(F("Enable MIDI: "));
   if ( ! midi.begin(true) )
   {
     error(F("Could not enable MIDI"));
   }
-    
+
   ble.verbose(false);
   Serial.print(F("Waiting for a connection..."));
 }
@@ -136,19 +142,27 @@ void loop(void)
 {
   // interval for each scanning ~ 500ms (non blocking)
   ble.update(500);
-  
-  if ( isConnected )
-  {
-    uint8_t multiple_event[] = { 0x30, 0x64, 0x34, 0x64, 0x37, 0x64 };
-    
-    // Note ON
-    //midi.send(0x90, 0x30, 0x64);
-    midi.send_n(0x90, multiple_event, 6);
-    delay(LOAD_TEST_MS);
 
-    // Note OFF
-    //midi.send(0x80, 0x30, 0x64);
-    midi.send_n(0x80, multiple_event, 6);
-    delay(LOAD_TEST_MS);
-  }
+  // bail if not connected
+  if (! isConnected)
+    return;
+
+  Serial.print("Sending pitch ");
+  Serial.println(current_note, HEX);
+
+  // send note on
+  midi.send(0x90, current_note, 0x64);
+  delay(500);
+
+  // send note off
+  midi.send(0x80, current_note, 0x64);
+  delay(500);
+
+  // increment note pitch
+  current_note++;
+
+  // only do one octave
+  if(current_note > 72)
+    current_note = 60;
+
 }
