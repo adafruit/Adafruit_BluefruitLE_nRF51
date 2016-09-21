@@ -74,6 +74,11 @@ Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_
 //                             BLUEFRUIT_SPI_MOSI, BLUEFRUIT_SPI_CS,
 //                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
+// String to send in the throughput test
+#define TEST_STRING     "01234567899876543210"
+
+// Number of total data sent ( 1024 times the test string)
+#define TOTAL_BYTES     (1024 * strlen(TEST_STRING))
 
 // A small helper
 void error(const __FlashStringHelper*err) {
@@ -121,8 +126,12 @@ void setup(void)
   /* Print Bluefruit information */
   ble.info();
 
+  /* Switch to DATA mode to have a better throughput */
+  Serial.println("Switch to DATA mode to have a better throughput ...");
+
   /* Wait for a connection before starting the test */
   Serial.println("Waiting for a BLE connection to continue ...");
+  ble.setMode(BLUEFRUIT_MODE_DATA);
 
   ble.verbose(false);  // debug info is a little annoying after this point!
 
@@ -146,7 +155,7 @@ void setup(void)
 void loop(void)
 {
   uint32_t start, stop, sent;
-  uint32_t remaining = 1024 * (uint32_t)100;
+  uint32_t remaining = TOTAL_BYTES;
   start = stop = sent = 0;
 
   if (ble.isConnected())
@@ -163,25 +172,24 @@ void loop(void)
     start = millis();
     while (remaining > 0)
     {
-      ble.print("AT+BLEUARTTX=");
-      //ble.println("=^..^= =^..^= =^..^=");   // Cats
-      //ble.println("~(__^>        <^__)~"); // Rats
-      ble.println("01234567899876543210"); // Yawn
-      if (! ble.waitForOK() )
+//      ble.print("AT+BLEUARTTX=");
+//      ble.println(TEST_STRING);
+//      if (! ble.waitForOK() )
+//      {
+//        Serial.println(F("Failed to send?"));
+//      }
+
+      ble.writeBLEUart(TEST_STRING);
+      
+      sent      += strlen(TEST_STRING);
+      remaining -= strlen(TEST_STRING);
+
+      // Only print every 1KB sent
+      if ( (sent % 2000) == 0 )
       {
-        Serial.println(F("Failed to send?"));
+        Serial.print("Sent: "); Serial.print(sent);
+        Serial.print(" Remaining: "); Serial.println(remaining);
       }
-      sent +=20;
-      if (remaining < 20)
-      {
-        remaining = 0;
-      }
-      else
-      {
-        remaining-=20;
-      }
-      Serial.print("Sent: "); Serial.print(sent);
-      Serial.print(" Remaining: "); Serial.println(remaining);
 
       /* Optional: Test for lost connection every packet */
       /* Note that this will slow things down a bit! */
@@ -199,7 +207,11 @@ void loop(void)
     Serial.print(sent);
     Serial.print(" bytes in ");
     Serial.print(stop/1000.0F, 2);
-    Serial.println(" seconds.\r\n");
+    Serial.println(" seconds.");
+    
+    Serial.println("Speed ");
+    Serial.print( (sent/1000.0F) / (stop/1000.0F), 2);
+    Serial.println(" KB/s.\r\n");
   }
 }
 
