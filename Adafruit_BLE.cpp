@@ -485,6 +485,48 @@ bool Adafruit_BLE::readNVM(uint16_t offset, int32_t* number)
   return this->readNVM(offset, (uint8_t*)number, 4);
 }
 
+/**
+ *
+ * @param buffer
+ * @param size
+ * @return
+ */
+int Adafruit_BLE::writeBLEUart(uint8_t const * buffer, int size)
+{
+  uint8_t current_mode = _mode;
+
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_COMMAND ) setMode(BLUEFRUIT_MODE_DATA);
+
+  size_t n = write(buffer, size);
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_COMMAND ) setMode(BLUEFRUIT_MODE_COMMAND);
+
+  return n;
+}
+
+/**
+ *
+ * @param buffer
+ * @param size
+ * @return
+ */
+int  Adafruit_BLE::readBLEUart(uint8_t* buffer, int size)
+{
+  uint8_t current_mode = _mode;
+
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_COMMAND ) setMode(BLUEFRUIT_MODE_DATA);
+
+  size_t n = readBytes(buffer, size);
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_COMMAND ) setMode(BLUEFRUIT_MODE_COMMAND);
+
+  return n;
+}
+
 /******************************************************************************/
 /*!
     @brief  Set handle for connect callback

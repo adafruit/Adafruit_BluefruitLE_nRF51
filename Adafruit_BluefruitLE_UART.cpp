@@ -190,6 +190,8 @@ bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
     }
   }
 
+  _mode = new_mode;
+
   return isOK;
 }
 

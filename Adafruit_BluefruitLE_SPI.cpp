@@ -588,7 +588,6 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
   {
     // Look for the header
     // note that we should always get the right header at this point, and not doing so will really mess up things.
-    // This whole loop isn't needed with my fix above..
     while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR && !tt.expired() )
     {
       p_header->msg_type = spixfer(0xff);

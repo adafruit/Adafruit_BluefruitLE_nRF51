@@ -107,6 +107,12 @@ class Adafruit_BLE : public Adafruit_ATParser
     bool readNVM(uint16_t offset, char  * str   , uint16_t size);
     bool readNVM(uint16_t offset, int32_t* number);
 
+    // helper with bleuart
+    int writeBLEUart(uint8_t const * buffer, int size);
+    int writeBLEUart(char const * str) { return writeBLEUart( (uint8_t const*) str, strlen(str)); }
+
+    int readBLEUart(uint8_t* buffer, int size);
+
 
     // No parameters
     bool sendCommandCheckOK(const __FlashStringHelper *cmd) { return this->atcommand(cmd); }
