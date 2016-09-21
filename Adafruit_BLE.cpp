@@ -487,6 +487,32 @@ bool Adafruit_BLE::readNVM(uint16_t offset, int32_t* number)
 
 /******************************************************************************/
 /*!
+    @brief Check the remaining space in the Rx Fifo buffer
+    @param
+*/
+/******************************************************************************/
+uint16_t Adafruit_BLE::remainingFifoRxBuffer()
+{
+  int32_t remainingBuffer = 0;
+  atcommandIntReply(F("AT+BLEUARTFIFO=RX"), &remainingBuffer);
+  return remainingBuffer;
+}
+
+/******************************************************************************/
+/*!
+	@brief Check the remaining space in the Tx Fifo buffer
+    @param
+*/
+/******************************************************************************/
+uint16_t Adafruit_BLE::remainingFifoTxBuffer()
+{
+  int32_t remainingBuffer = 0;
+  atcommandIntReply(F("AT+BLEUARTFIFO=TX"), &remainingBuffer);
+  return remainingBuffer;
+}
+
+/******************************************************************************/
+/*!
     @brief  Set handle for connect callback
 
     @param[in] fp function pointer, NULL will discard callback
