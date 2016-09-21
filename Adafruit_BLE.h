@@ -107,6 +107,8 @@ class Adafruit_BLE : public Adafruit_ATParser
     bool readNVM(uint16_t offset, char  * str   , uint16_t size);
     bool readNVM(uint16_t offset, int32_t* number);
 
+	uint16_t remainingFifoRxBuffer();
+	uint16_t remainingFifoTxBuffer();
 
     // No parameters
     bool sendCommandCheckOK(const __FlashStringHelper *cmd) { return this->atcommand(cmd); }
