@@ -34,6 +34,8 @@ setAdvData	KEYWORD2
 writeNVM	KEYWORD2
 readNVM	KEYWORD2
 update	KEYWORD2
+writeBLEUart	KEYWORD2
+readBLEUart	KEYWORD2
 setDisconnectCallback	KEYWORD2
 setConnectCallback	KEYWORD2
 setBleUartRxCallback	KEYWORD2
