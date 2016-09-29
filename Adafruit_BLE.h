@@ -146,4 +146,25 @@ class Adafruit_BLE : public Adafruit_ATParser
     void (*_ble_gatt_rx_callback) (int32_t chars_id, uint8_t data[], uint16_t len);
 };
 
+//--------------------------------------------------------------------+
+// DEBUG HELPER
+//--------------------------------------------------------------------+
+#ifndef DBG_ENABLE
+#define DBG_ENABLE      0
+#endif
+
+#if DBG_ENABLE
+  #define DBG_LOCATION()  Serial.printf("%s: %d: \r\n", __PRETTY_FUNCTION__, __LINE__)
+  #define DBG_INT(x)      do { Serial.print(#x " = "); Serial.println(x); } while(0)
+  #define DBG_HEX(x)      do { Serial.print(#x " = "); Serial.println(x, HEX); } while(0)
+  #define DBG_STR(x)      Serial.printf(#x " = %s\r\n", (char*)(x) )
+  #define DBG_BUFFER(buf, n) \
+    do {\
+      uint8_t* p8 = (uint8_t*) (buf);\
+      Serial.print(#buf ": ");\
+      for(uint32_t i=0; i<(n); i++) Serial.printf("%02x ", p8[i]);\
+      Serial.print("\r\n");\
+    }while(0)
+#endif
+
 #endif /* _Adafruit_BLE_H_ */
