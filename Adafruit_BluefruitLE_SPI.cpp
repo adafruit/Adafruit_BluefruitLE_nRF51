@@ -116,7 +116,7 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin
             'irqPin' is not a HW interrupt pin false will be returned.
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_SPI::begin(boolean v)
+bool Adafruit_BluefruitLE_SPI::begin(boolean v, boolean blocking)
 {
   _verbose = v;
 
@@ -155,8 +155,13 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v)
     isOK= true;
   }
 
+  _reset_started_timestamp = millis();
+
   // Bluefruit takes 1 second to reboot
-  delay(1000);
+  if (blocking)
+  {
+    delay(1000);
+  }
 
   return isOK;
 }

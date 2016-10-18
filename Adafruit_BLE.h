@@ -67,10 +67,10 @@ class Adafruit_BLE : public Adafruit_ATParser
       BLUEFRUIT_TRANSPORT_SWSPI,
     };
 
-
 //    uint8_t  _mode;
 //    uint16_t _timeout;
     uint8_t  _physical_transport;
+    uint32_t _reset_started_timestamp;
 
   public:
     typedef void (*midiRxCallback_t) (uint16_t timestamp, uint8_t status, uint8_t byte1, uint8_t byte2);
@@ -78,18 +78,11 @@ class Adafruit_BLE : public Adafruit_ATParser
     // Constructor
     Adafruit_BLE(void);
 
-    // Physical transportation checking
-    bool isTransportHwUart (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_HWUART; }
-    bool isTransportSwUart (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_SWUART; }
-    bool isTransportUart   (void) { return isTransportHwUart() || isTransportSwUart();        }
-
-    bool isTransportHwSpi  (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_HWSPI;  }
-    bool isTransportSwSpi  (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_SWSPI;  }
-    bool isTransportSpi    (void) { return isTransportHwSpi() || isTransportSwSpi();          }
-
     // Functions implemented in this base class
-    bool reset(void);
-    bool factoryReset(void);
+    bool reset(boolean blocking = true);
+    bool factoryReset(boolean blocking = true);
+    bool resetCompleted(void);
+
     void info(void);
     bool echo(bool enable);
 
@@ -120,6 +113,15 @@ class Adafruit_BLE : public Adafruit_ATParser
 
     bool sendCommandWithIntReply(const __FlashStringHelper *cmd, int32_t *reply) { return this->atcommandIntReply(cmd, reply); }
     bool sendCommandWithIntReply(const char cmd[]              , int32_t *reply) { return this->atcommandIntReply(cmd, reply); }
+
+    // Physical transportation checking
+    bool isTransportHwUart (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_HWUART; }
+    bool isTransportSwUart (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_SWUART; }
+    bool isTransportUart   (void) { return isTransportHwUart() || isTransportSwUart();        }
+
+    bool isTransportHwSpi  (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_HWSPI;  }
+    bool isTransportSwSpi  (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_SWSPI;  }
+    bool isTransportSpi    (void) { return isTransportHwSpi() || isTransportSwSpi();          }
 
     /////////////////////
     // callback functions

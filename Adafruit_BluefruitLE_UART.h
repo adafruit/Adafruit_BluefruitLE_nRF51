@@ -77,7 +77,7 @@ class Adafruit_BluefruitLE_UART : public Adafruit_BLE
     virtual ~Adafruit_BluefruitLE_UART();
 
     // HW initialisation
-    bool begin(boolean debug = false);
+    bool begin(boolean debug = false, boolean blocking = true);
     void end(void);
 
     bool setMode(uint8_t new_mode);

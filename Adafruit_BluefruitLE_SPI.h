@@ -89,7 +89,7 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin, int8_t mosiPin, int8_t csPin, int8_t irqPin, int8_t rstPin);
 
     // HW initialisation
-    bool begin(boolean v);
+    bool begin(boolean v = false, boolean blocking = true);
     void end(void);
 
     bool setMode(uint8_t new_mode);
