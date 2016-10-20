@@ -234,9 +234,8 @@ void loop(void)
 {
   if (irq_event_available)
   {
-    // inteval = 0 will always get executed
     // Registered callbacks for the event will be fired accordingly
-    ble.update(0);
+    ble.handleDfuIrq();
   }
 }
 

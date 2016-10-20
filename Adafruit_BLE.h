@@ -127,6 +127,10 @@ class Adafruit_BLE : public Adafruit_ATParser
     // callback functions
     /////////////////////
     void update(uint32_t period_ms = 200);
+    void handleDfuIrq(void)
+    {
+      this->update(0);
+    }
 
     void setDisconnectCallback( void (*fp) (void) );
     void setConnectCallback   ( void (*fp) (void) );
