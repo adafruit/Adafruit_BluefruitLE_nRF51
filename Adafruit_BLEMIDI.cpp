@@ -144,8 +144,8 @@ void Adafruit_BLEMIDI::processRxCallback(uint8_t data[], uint16_t len, Adafruit_
 
   // First 3 bytes is always : Header + Timestamp + Status
   midi_header_t header;
-  uint16_t tstamp;
-  uint8_t status;
+  uint16_t tstamp = 0;
+  uint8_t status = 0;
 
   header.byte = *data++;
   len--;
