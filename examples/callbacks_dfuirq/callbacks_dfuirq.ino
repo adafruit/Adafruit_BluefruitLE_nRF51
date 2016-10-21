@@ -98,7 +98,7 @@ int32_t charid_string;
 int32_t charid_number;
 
 // Wire DFU pin to interruptable pin
-int irq_pin = 3;
+int irq_pin = 1;
 
 // use boolean variable to signal loop() to call ble.update()
 // You could call ble.update() is ISR but it will increase ISR lattency
@@ -167,7 +167,7 @@ void setup(void)
   Serial.println(F("-------------------------------------"));
 
   pinMode(irq_pin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(3), DfuIrqHandle, FALLING);
+  attachInterrupt(digitalPinToInterrupt(irq_pin), DfuIrqHandle, FALLING);
 
   /* Initialise the module */
   Serial.print(F("Initialising the Bluefruit LE module: "));

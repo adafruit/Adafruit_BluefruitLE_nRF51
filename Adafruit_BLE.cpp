@@ -405,7 +405,7 @@ bool Adafruit_BLE::writeNVM(uint16_t offset, uint8_t const data[], uint16_t size
 {
   VERIFY_(offset + size <= NVM_USERDATA_SIZE );
 
-  uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_BYTEARRAY + size };
+  uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, (uint16_t) (AT_ARGTYPE_BYTEARRAY + size) };
   uint32_t args[] = { offset, BLE_DATATYPE_BYTEARRAY, (uint32_t) data };
 
   return this->atcommand_full(F("AT+NVMWRITE"), NULL, 3, type, args);

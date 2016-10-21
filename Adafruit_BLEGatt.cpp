@@ -187,7 +187,7 @@ uint8_t Adafruit_BLEGatt::addCharacteristic(uint8_t uuid128[], uint8_t propertie
 /******************************************************************************/
 bool Adafruit_BLEGatt::setChar(uint8_t charID, uint8_t const data[], uint8_t size)
 {
-  uint16_t argtype[] = { AT_ARGTYPE_UINT8, AT_ARGTYPE_BYTEARRAY+ ((uint16_t)size) };
+  uint16_t argtype[] = { AT_ARGTYPE_UINT8, (uint16_t) (AT_ARGTYPE_BYTEARRAY+ size) };
   uint32_t args[] = { charID, (uint32_t) data };
 
   return _ble.atcommand_full(F("AT+GATTCHAR"), NULL, 2, argtype, args);
