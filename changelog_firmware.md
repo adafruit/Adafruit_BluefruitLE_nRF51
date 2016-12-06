@@ -4,19 +4,19 @@
 
 ### Features
 
-- Add `AT+BLEUARTTXF` (F for force) to immediately send data as it is in an BLE Packet
-- Adjust bleuart sending interval based on min connection interval
-- Add `AT+DFUIRQ` to enable using DFU Pin for IRQ purpose when there is new events from nrf51
-- Enable CS pull up for Bluefruit SPI
-- Add `AT+MODESWITCHEN` to enable/disable +++ mode switch from local (serial/spi) or bleuart. Default local = enabled, ble = disable. Command can only be executed via local interface.
-- Implement '\+' escape to immediate send '+' without trigger +++ waiting
-- Add `AT+BLEHIDGAMEPADEN` to separately enable HID Gamepad, since iOS/OSX conflict with gamepad device that cause the HID keyboard not working properly.
+- Added `AT+BLEUARTTXF` (F for force) to immediately send data as it is in a BLE Packet
+- Adjust bleuart send interval based on min connection interval
+- Added `AT+DFUIRQ` to enable using DFU Pin for IRQ purpose when there is new events from nrf51
+- Enabled CS pull up for Bluefruit SPI
+- Added `AT+MODESWITCHEN` to enable/disable +++ mode switches from local (serial/spi) or bleuart. Default local = enabled, ble = disable. Command can only be executed via local interface.
+- Implement '\+' escape to immediately send '+' without triggering a +++ delay waiting for chars
+- Added `AT+BLEHIDGAMEPADEN` to separately enable HID Gamepad, since iOS/OSX conflict with gamepad devices, causing the HID keyboard to no longer work properly.
 
 ### Bug fixes
 
-- fix factory reset after a long time no reset in app_error_handler()
-- fix Strings truncated at 64 chars in UART
-- fix HID keyboard does not work with iOS 9 & 10
+- Fixed factory reset bug with long running time intervals and no reset in app_error_handler()
+- Fix an issue where strings were truncated at 64 chars in UART
+- Fixed HID keyboard under iOS 9 & 10 (gamepad disabled)
 
 ## 0.7.0
 
