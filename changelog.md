@@ -1,5 +1,10 @@
 # Arduino Changelog
 
+## 1.10
+
+- Add non-blokcing option for .reset(blocking) & .factoryReset(blocking). The reset progress can be polled by .resetCompleted()
+- Add callback using dfu as irq pin example, .handleDfuIrq() is expected to be call in loop()
+
 ## 1.9
 
 ### Features
