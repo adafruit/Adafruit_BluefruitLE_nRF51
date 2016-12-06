@@ -2,8 +2,8 @@
 
 ## 1.10
 
-- Add non-blokcing option for .reset(blocking) & .factoryReset(blocking). The reset progress can be polled by .resetCompleted()
-- Add callback using dfu as irq pin example, .handleDfuIrq() is expected to be call in loop()
+- Added non-blocking option for .reset(blocking) & .factoryReset(blocking). The reset progress can be polled via .resetCompleted()
+- Added callback example using DFU as IRQ pin. .handleDfuIrq() is expected to be called in the loop() function.
 
 ## 1.9
 
