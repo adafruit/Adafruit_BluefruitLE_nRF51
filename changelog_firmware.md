@@ -1,5 +1,23 @@
 # Firmware Changelog
 
+## 0.7.1
+
+### Features
+
+- Add `AT+BLEUARTTXF` (F for force) to immediately send data as it is in an BLE Packet
+- Adjust bleuart sending interval based on min connection interval
+- Add `AT+DFUIRQ` to enable using DFU Pin for IRQ purpose when there is new events from nrf51
+- Enable CS pull up for Bluefruit SPI
+- Add `AT+MODESWITCHEN` to enable/disable +++ mode switch from local (serial/spi) or bleuart. Default local = enabled, ble = disable. Command can only be executed via local interface.
+- Implement '\+' escape to immediate send '+' without trigger +++ waiting
+- Add `AT+BLEHIDGAMEPADEN` to separately enable HID Gamepad, since iOS/OSX conflict with gamepad device that cause the HID keyboard not working properly.
+
+### Bug fixes
+
+- fix factory reset after a long time no reset in app_error_handler()
+- fix Strings truncated at 64 chars in UART
+- fix HID keyboard does not work with iOS 9 & 10
+
 ## 0.7.0
 
 ### Features
