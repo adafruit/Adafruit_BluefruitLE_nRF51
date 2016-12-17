@@ -1,6 +1,6 @@
 # Firmware Changelog
 
-## 0.7.6
+## 0.7.7
 
 ### Features
 
