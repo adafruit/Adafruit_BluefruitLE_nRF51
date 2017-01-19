@@ -81,9 +81,6 @@ Adafruit_BLE::Adafruit_BLE(void)
 /******************************************************************************/
 void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_id)
 {
-  bool v = _verbose;
-  _verbose = true;
-
   uint8_t current_mode = _mode;
 
   // switch mode if necessary to execute command
@@ -104,8 +101,6 @@ void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_
 
   // switch back if necessary
   if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
-
-  _verbose = v;
 }
 
 /******************************************************************************/
