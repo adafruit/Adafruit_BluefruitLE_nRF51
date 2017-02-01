@@ -12,11 +12,11 @@ Current nRF51 based Bluefruit LE products include:
 
 # AT Commands
 
-The Bluefruit LE modules this library talks to use AT-style commands and responses.
+This library talks to Bluefruit LE modules using AT-style commands and responses.
 
 If you are using a UART board, the commands are sent directly as text using a SW serial transport.
 
-If your are using an SPI board, the AT commands are wrapped in a thin **[SDEP](SDEP.md)** (Simple Data Exchange Protocol) wrapper to transmit and received text data over the binary SPI transport.  Details of this SPI transport layer are detailed in [SDEP.md](SDEP.md) in this same folder.
+If you are using a SPI board, the AT commands are wrapped in a thin **[SDEP](SDEP.md)** (Simple Data Exchange Protocol) wrapper to transmit and received text data over the binary SPI transport.  Details of this SPI transport layer are detailed in [SDEP.md](SDEP.md) in this same folder.
 
 # Hardware Setup
 
