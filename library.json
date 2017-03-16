@@ -1,0 +1,13 @@
+{
+  "name": "Adafruit_BluefruitLE_nRF51",
+  "keywords": "ble, nrf51",
+  "description": "This library is for all nRF51 based Adafruit Bluefruit LE modules that use SPI or UART.",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/adafruit/Adafruit_BluefruitLE_nRF51.git"
+  },
+  "version": "1.8.0",
+  "frameworks": "arduino",
+  "platforms": "*"
+}
