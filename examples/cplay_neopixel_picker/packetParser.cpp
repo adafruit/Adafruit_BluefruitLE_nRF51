@@ -111,6 +111,10 @@ uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout)
 
   if (!replyidx)  // no data or timeout 
     return 0;
+
+  // Some of the bytes at the beginning of the packet may have been dropped by the UART service.
+  // Checking that the packet data that we read starts with '!' makes it less likely
+  // that we missed the beginning of the packet.
   if (packetbuffer[0] != '!')  // doesn't start with '!' packet beginning
     return 0;
   
