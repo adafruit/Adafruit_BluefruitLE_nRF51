@@ -80,7 +80,7 @@ uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout)
   memset(packetbuffer, 0, READ_BUFSIZE);
 
   while (timeout--) {
-    if (replyidx >= 20) break;
+    if (replyidx >= READ_BUFSIZE) break;
     if ((packetbuffer[1] == 'A') && (replyidx == PACKET_ACC_LEN))
       break;
     if ((packetbuffer[1] == 'G') && (replyidx == PACKET_GYRO_LEN))
