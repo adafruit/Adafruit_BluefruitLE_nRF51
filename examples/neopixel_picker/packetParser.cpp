@@ -98,9 +98,6 @@ uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout)
 
     while (ble->available()) {
       char c =  ble->read();
-      if (c == '!') {
-        replyidx = 0;
-      }
       packetbuffer[replyidx] = c;
       replyidx++;
       timeout = origtimeout;
