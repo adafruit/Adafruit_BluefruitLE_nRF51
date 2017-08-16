@@ -170,20 +170,6 @@ void setup(void)
   {
     pinMode(buttonPins[i], INPUT_PULLUP);
   }
-  /*
-  attachInterrupt(LEFT_PIN, left_ISR, RISING);
-  attachInterrupt(LEFT_PIN, left_ISR, FALLING);
-  attachInterrupt(RIGHT_PIN, right_ISR, RISING);
-  attachInterrupt(RIGHT_PIN, right_ISR, FALLING);
-  attachInterrupt(UP_PIN, up_ISR, RISING);
-  attachInterrupt(UP_PIN, up_ISR, FALLING);
-  attachInterrupt(DOWN_PIN, down_ISR, RISING);
-  attachInterrupt(DOWN_PIN, down_ISR, FALLING);
-  attachInterrupt(BUTTON1_PIN, button1_ISR, RISING);
-  attachInterrupt(BUTTON1_PIN, button1_ISR, FALLING);
-  attachInterrupt(BUTTON2_PIN, button2_ISR, RISING);
-  attachInterrupt(BUTTON2_PIN, button2_ISR, FALLING);
-  */
   
   attachInterrupt(LEFT_PIN, left_ISR, CHANGE);
   attachInterrupt(RIGHT_PIN, right_ISR, CHANGE);
