@@ -14,37 +14,37 @@
 
 #include <Arduino.h>
 #include <SPI.h>
-#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
-  #include <SoftwareSerial.h>
-#endif
-
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 
 #include "BluefruitConfig.h"
 
+#if SOFTWARE_SERIAL_AVAILABLE
+  #include <SoftwareSerial.h>
+#endif
+
 /*=========================================================================
     APPLICATION SETTINGS
 
-    FACTORYRESET_ENABLE     Perform a factory reset when running this sketch
-   
-                            Enabling this will put your Bluefruit LE module
+? ? FACTORYRESET_ENABLE? ?  Perform a factory reset when running this sketch
+? ?
+? ?                         Enabling this will put your Bluefruit LE module
                             in a 'known good' state and clear any config
                             data set in previous sketches or projects, so
-                            running this at least once is a good idea.
-   
-                            When deploying your project, however, you will
+? ?                         running this at least once is a good idea.
+? ?
+? ?                         When deploying your project, however, you will
                             want to disable factory reset by setting this
-                            value to 0.  If you are making changes to your
-                            Bluefruit LE device via AT commands, and those
+                            value to 0.? If you are making changes to your
+? ?                         Bluefruit LE device via AT commands, and those
                             changes aren't persisting across resets, this
-                            is the reason why.  Factory reset will erase
+                            is the reason why.? Factory reset will erase
                             the non-volatile memory where config data is
                             stored, setting it back to factory default
                             values.
-       
-                            Some sketches that require you to bond to a
+? ? ? ?
+? ?                         Some sketches that require you to bond to a
                             central device (HID mouse, keyboard, etc.)
                             won't work at all with this feature enabled
                             since the factory reset will clear all of the
