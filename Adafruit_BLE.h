@@ -143,12 +143,14 @@ class Adafruit_BLE : public Adafruit_ATParser
     // ----------------------------------------------------------------------------
     
     // Updated callback methods to handle a callback context.
-    void setDisconnectCallback( void (*fp) (void* context) );
-    void setConnectCallback   ( void (*fp) (void* context) );
-    void setBleUartRxCallback ( void (*fp) (void* context, char data[], uint16_t len) );
-    void setBleGattRxCallback ( int32_t chars_idx, void (*fp) (void*, int32_t, uint8_t[], uint16_t) );
-    void setBleMidiRxCallback ( midiRxCallbackContext_t fp );
-    void setCallbackContext   ( void* context );
+    void setDisconnectCallback   ( void (*fp) (void* context) );
+    void setConnectCallback      ( void (*fp) (void* context) );
+    void setBleUartRxCallback    ( void (*fp) (void* context, char data[], uint16_t len) );
+    void setBleGattRxCallback    ( void (*fp) (void*, int32_t, uint8_t[], uint16_t) );
+    void enableBleGattCallback   ( int32_t chars_idx );
+    void disableBleGattCallback  ( int32_t chars_idx );
+    void setBleMidiRxCallback    ( midiRxCallbackContext_t fp );
+    void setCallbackContext      ( void* context );
     
   protected:
     // helper
