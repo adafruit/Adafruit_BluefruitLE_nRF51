@@ -356,7 +356,8 @@ void Adafruit_BLE::update(uint32_t period_ms)
           this->_ble_uart_rx_callback( (char*) tempbuf, len );
     }
     
-    if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
+    if ( ( this->_ble_midi_rx_callback ||  this->_ble_midi_rx_callback_context ) && 
+           bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
     {
 //      _verbose = true;
       while(1)
@@ -372,8 +373,11 @@ void Adafruit_BLE::update(uint32_t period_ms)
 
         // copy to internal buffer for other usage !
         memcpy(tempbuf, this->buffer, len);
-
-        Adafruit_BLEMIDI::processRxCallback(tempbuf, len, this->_ble_midi_rx_callback);
+        
+        if( this->_ble_midi_rx_callback_context )
+            Adafruit_BLEMIDI::processRxCallback(tempbuf, len, this->_ble_midi_rx_callback_context, this->_callback_context);
+        else
+            Adafruit_BLEMIDI::processRxCallback(tempbuf, len, this->_ble_midi_rx_callback);
       }
     }
 
@@ -680,11 +684,26 @@ void Adafruit_BLE::setBleUartRxCallback( void (*fp) (void* context, char data[],
     @brief  Set handle for BLE MIDI Rx callback
 
     @param[in] fp function pointer, NULL will discard callback
+    
+    @deprecated
 */
 /******************************************************************************/
 void Adafruit_BLE::setBleMidiRxCallback( midiRxCallback_t fp )
 {
   this->_ble_midi_rx_callback = fp;
+  install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, -1);
+}
+
+/******************************************************************************/
+/*!
+    @brief  Set handle for BLE MIDI Rx callback with a context.
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setBleMidiRxCallback( midiRxCallbackContext_t fp )
+{
+  this->_ble_midi_rx_callback_context = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, -1);
 }
 
@@ -716,7 +735,7 @@ void Adafruit_BLE::setBleGattRxCallback(int32_t chars_idx,  void (*fp) (void*, i
 {
   if ( chars_idx == 0) return;
 
-  this->_ble_gatt_rx_callback = fp;
+  this->_ble_gatt_rx_callback_context = fp;
   install_callback(fp != NULL, -1, chars_idx-1);
 }
 
