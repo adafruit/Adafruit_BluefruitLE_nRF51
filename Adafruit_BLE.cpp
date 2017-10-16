@@ -324,6 +324,9 @@ void Adafruit_BLE::update(uint32_t period_ms)
     // Double checking for NULL, minor decrease in performance but will have 
     // to stay until non-context based Methods are removed.
     //--------------------------------------------------------------------+
+    //--------------------------------------------------------------------+
+    // Connect Event
+    //--------------------------------------------------------------------+
     if ( ( this->_connect_callback_context || this->_connect_callback ) && 
          ( bitRead( system_event, EVENT_SYSTEM_CONNECT ) ) ) 
     {
@@ -332,7 +335,10 @@ void Adafruit_BLE::update(uint32_t period_ms)
         else
             this->_connect_callback();
     }
-      
+    
+    //--------------------------------------------------------------------+
+    // Disconnect Event
+    //--------------------------------------------------------------------+
     if ( ( this->_disconnect_callback_context || this->_disconnect_callback ) && 
          ( bitRead( system_event, EVENT_SYSTEM_DISCONNECT) ) ) 
     {
@@ -342,6 +348,9 @@ void Adafruit_BLE::update(uint32_t period_ms)
             this->_disconnect_callback();
     }
     
+    //--------------------------------------------------------------------+
+    // UART Event
+    //--------------------------------------------------------------------+
     if ( ( this->_ble_uart_rx_callback_context || this->_ble_uart_rx_callback ) && 
               ( bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX) ) )
     {
@@ -356,6 +365,9 @@ void Adafruit_BLE::update(uint32_t period_ms)
           this->_ble_uart_rx_callback( (char*) tempbuf, len );
     }
     
+    //--------------------------------------------------------------------+
+    // MIDI Event
+    //--------------------------------------------------------------------+
     if ( ( this->_ble_midi_rx_callback ||  this->_ble_midi_rx_callback_context ) && 
            bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
     {
