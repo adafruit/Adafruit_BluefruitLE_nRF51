@@ -98,8 +98,11 @@ public:
   bool send_n(uint8_t status, const uint8_t bytes[], uint8_t count);
 
   void setRxCallback(midiRxCallback_t fp);
-
+  
+  // Deprecated.
   static void processRxCallback(uint8_t data[], uint16_t len, Adafruit_BLE::midiRxCallback_t callback_func);
+    
+  static void processRxCallback(uint8_t data[], uint16_t len, Adafruit_BLE::midiRxCallbackContext_t callback_func, void* context);
 };
 
 #endif /* _ADAFRUIT_BLEMIDI_H_ */
