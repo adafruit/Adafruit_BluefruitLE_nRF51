@@ -319,10 +319,6 @@ void Adafruit_BLE::update(uint32_t period_ms)
 
     //--------------------------------------------------------------------+
     // System Event
-    //
-    // Converted this system_event section to use "else if" blocks instead of
-    // if. That way checks wont be made as only one system event can happen 
-    // per update cycle.
     //--------------------------------------------------------------------+
     if ( bitRead( system_event, EVENT_SYSTEM_CONNECT ) ) 
     {
@@ -331,7 +327,8 @@ void Adafruit_BLE::update(uint32_t period_ms)
         else if( this->_connect_callback )
             this->_connect_callback();
     }
-    else if ( bitRead( system_event, EVENT_SYSTEM_DISCONNECT ) ) 
+      
+    if ( bitRead( system_event, EVENT_SYSTEM_DISCONNECT ) ) 
     {
         if( this->_disconnect_callback_context )
             this->_disconnect_callback_context(this->_callback_context);
@@ -339,9 +336,8 @@ void Adafruit_BLE::update(uint32_t period_ms)
             this->_disconnect_callback();
     }
     // Double checking for NULL, minor decrease in performance but will have to stay until non-context based
-    // Methods are removed. Converting to "else if" blocks should increase performance so hopefully makes up
-    // for the performance loss in the double check.
-    else if ( ( this->_ble_uart_rx_callback_context || this->_ble_uart_rx_callback ) && 
+    // Methods are removed.
+    if ( ( this->_ble_uart_rx_callback_context || this->_ble_uart_rx_callback ) && 
               ( bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX) ) )
     {
       // _verbose = true;
@@ -355,7 +351,8 @@ void Adafruit_BLE::update(uint32_t period_ms)
       else if ( this->_ble_uart_rx_callback )
           this->_ble_uart_rx_callback( (char*) tempbuf, len );
     }
-    else if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
+    
+    if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
     {
 //      _verbose = true;
       while(1)
