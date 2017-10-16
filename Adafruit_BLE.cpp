@@ -71,6 +71,11 @@ Adafruit_BLE::Adafruit_BLE(void)
   _ble_uart_rx_callback = NULL;
   _ble_midi_rx_callback = NULL;
   _ble_gatt_rx_callback = NULL;
+  
+  _disconnect_callback_context  = NULL;
+  _connect_callback_context     = NULL;
+  _ble_uart_rx_callback_context = NULL;
+  _callback_context             = NULL;
 }
 
 /******************************************************************************/
@@ -550,6 +555,17 @@ int  Adafruit_BLE::readBLEUart(uint8_t* buffer, int size)
 
 /******************************************************************************/
 /*!
+    @brief  Set the context for all context aware callbacks.
+
+    @param[in] context pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setCallbackContext(void* context) {
+    this->_callback_context = context;
+}
+
+/******************************************************************************/
+/*!
     @brief  Set handle for connect callback
 
     @param[in] fp function pointer, NULL will discard callback
@@ -558,6 +574,19 @@ int  Adafruit_BLE::readBLEUart(uint8_t* buffer, int size)
 void Adafruit_BLE::setConnectCallback( void (*fp) (void) )
 {
   this->_connect_callback = fp;
+  install_callback(fp != NULL, EVENT_SYSTEM_CONNECT, -1);
+}
+
+/******************************************************************************/
+/*!
+    @brief  Set handle for connect callback with a context.
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setConnectCallback( void (*fp) (void* context) )
+{
+  this->_connect_callback_context = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_CONNECT, -1);
 }
 
@@ -576,6 +605,19 @@ void Adafruit_BLE::setDisconnectCallback( void (*fp) (void) )
 
 /******************************************************************************/
 /*!
+    @brief  Set handle for disconnection callback with a context
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setDisconnectCallback( void (*fp) (void* context) )
+{
+  this->_disconnect_callback_context = fp;
+  install_callback(fp != NULL, EVENT_SYSTEM_DISCONNECT, -1);
+}
+
+/******************************************************************************/
+/*!
     @brief  Set handle for BLE Uart Rx callback
 
     @param[in] fp function pointer, NULL will discard callback
@@ -584,6 +626,19 @@ void Adafruit_BLE::setDisconnectCallback( void (*fp) (void) )
 void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) )
 {
   this->_ble_uart_rx_callback = fp;
+  install_callback(fp != NULL, EVENT_SYSTEM_BLE_UART_RX, -1);
+}
+
+/******************************************************************************/
+/*!
+    @brief  Set handle for BLE Uart Rx callback
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setBleUartRxCallback( void (*fp) (void* context, char data[], uint16_t len) )
+{
+  this->_ble_uart_rx_callback_context = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_BLE_UART_RX, -1);
 }
 
