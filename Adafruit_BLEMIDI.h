@@ -85,7 +85,7 @@ private:
   Adafruit_BLE& _ble;
     
 protected:
-  static midi_rx_payload _processRxCallback(uint8_t data[], uint16_t len);
+  static uint8_t _processRxCallback(uint8_t data[], uint16_t len, midi_rx_payload *payload);
 
 public:
   typedef Adafruit_BLE::midiRxCallback_t midiRxCallback_t;
