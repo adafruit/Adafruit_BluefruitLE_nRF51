@@ -319,21 +319,43 @@ void Adafruit_BLE::update(uint32_t period_ms)
 
     //--------------------------------------------------------------------+
     // System Event
+    //
+    // Converted this system_event section to use "else if" blocks instead of
+    // if. That way checks wont be made as only one system event can happen 
+    // per update cycle.
     //--------------------------------------------------------------------+
-    if ( this->_connect_callback    && bitRead(system_event, EVENT_SYSTEM_CONNECT   ) ) this->_connect_callback();
-    if ( this->_disconnect_callback && bitRead(system_event, EVENT_SYSTEM_DISCONNECT) ) this->_disconnect_callback();
-
-    if ( this->_ble_uart_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX) )
+    if ( bitRead( system_event, EVENT_SYSTEM_CONNECT ) ) 
+    {
+        if( this->_connect_callback_context )
+            this->_connect_callback_context(this->_callback_context);
+        else if( this->_connect_callback )
+            this->_connect_callback();
+    }
+    else if ( bitRead( system_event, EVENT_SYSTEM_DISCONNECT ) ) 
+    {
+        if( this->_disconnect_callback_context )
+            this->_disconnect_callback_context(this->_callback_context);
+        else if( this->_disconnect_callback )
+            this->_disconnect_callback();
+    }
+    // Double checking for NULL, minor decrease in performance but will have to stay until non-context based
+    // Methods are removed. Converting to "else if" blocks should increase performance so hopefully makes up
+    // for the performance loss in the double check.
+    else if ( ( this->_ble_uart_rx_callback_context || this->_ble_uart_rx_callback ) && 
+              ( bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX) ) )
     {
       // _verbose = true;
       println( F("AT+BLEUARTRX") );
       uint16_t len = readline(tempbuf, BLE_BUFSIZE);
       waitForOK();
-
-      this->_ble_uart_rx_callback( (char*) tempbuf, len);
+      
+        // This is the double check I was talking about, see above comment.
+      if( this->_ble_uart_rx_callback_context )
+          this->_ble_uart_rx_callback_context( this->_callback_context, (char*) tempbuf, len );
+      else if ( this->_ble_uart_rx_callback )
+          this->_ble_uart_rx_callback( (char*) tempbuf, len );
     }
-
-    if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
+    else if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
     {
 //      _verbose = true;
       while(1)
