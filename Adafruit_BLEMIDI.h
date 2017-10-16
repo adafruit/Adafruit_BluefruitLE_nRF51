@@ -83,6 +83,9 @@ class Adafruit_BLEMIDI
 {
 private:
   Adafruit_BLE& _ble;
+    
+protected:
+  static midi_rx_payload _processRxCallback(uint8_t data[], uint16_t len);
 
 public:
   typedef Adafruit_BLE::midiRxCallback_t midiRxCallback_t;
