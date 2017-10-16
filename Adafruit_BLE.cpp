@@ -592,6 +592,8 @@ void Adafruit_BLE::setCallbackContext(void* context) {
     @brief  Set handle for connect callback
 
     @param[in] fp function pointer, NULL will discard callback
+    
+    @deprecated
 */
 /******************************************************************************/
 void Adafruit_BLE::setConnectCallback( void (*fp) (void) )
@@ -618,6 +620,8 @@ void Adafruit_BLE::setConnectCallback( void (*fp) (void* context) )
     @brief  Set handle for disconnection callback
 
     @param[in] fp function pointer, NULL will discard callback
+    
+    @deprecated
 */
 /******************************************************************************/
 void Adafruit_BLE::setDisconnectCallback( void (*fp) (void) )
@@ -644,6 +648,8 @@ void Adafruit_BLE::setDisconnectCallback( void (*fp) (void* context) )
     @brief  Set handle for BLE Uart Rx callback
 
     @param[in] fp function pointer, NULL will discard callback
+    
+    @deprecated
 */
 /******************************************************************************/
 void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) )
