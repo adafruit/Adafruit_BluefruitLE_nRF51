@@ -132,10 +132,10 @@ bool Adafruit_BLEMIDI::send_n(uint8_t status, const uint8_t bytes[], uint8_t cou
   return _ble.atcommand( F("AT+BLEMIDITX"), data, count+1);
 }
 
-static void Adafruit_BLEMIDI::_processRxCallback(uint8_t data[], uint16_t len, 
-                                                 Adafruit_BLE::midiRxCallback_t callback_func, 
-                                                 Adafruit_BLE::midiRxCallbackContext_t callbackcontext_func, 
-                                                 void* context) 
+void Adafruit_BLEMIDI::_processRxCallback(uint8_t data[], uint16_t len,
+                                          Adafruit_BLE::midiRxCallback_t callback_func,
+                                          Adafruit_BLE::midiRxCallbackContext_t callbackcontext_func,
+                                          void* context)
 {
   if ( len < 3 ) return;
 
