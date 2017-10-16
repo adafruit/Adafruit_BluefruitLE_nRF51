@@ -138,7 +138,13 @@ class Adafruit_BLE : public Adafruit_ATParser
     void setBleUartRxCallback( void (*fp) (char data[], uint16_t len) );
     void setBleMidiRxCallback( midiRxCallback_t fp );
     void setBleGattRxCallback( int32_t chars_idx, void (*fp) (int32_t, uint8_t[], uint16_t) );
-
+    
+    // Updated callback methods to handle a callback context.
+    void setDisconnectCallback( void (*fp) (void* context) );
+    void setConnectCallback   ( void (*fp) (void* context) );
+    void setBleUartRxCallback ( void (*fp) (void* context, char data[], uint16_t len) );
+    void setCallbackContext   ( void* context );
+    
   protected:
     // helper
     void install_callback(bool enable, int8_t system_id, int8_t gatts_id);
@@ -147,6 +153,13 @@ class Adafruit_BLE : public Adafruit_ATParser
     void (*_connect_callback) (void);
 
     void (*_ble_uart_rx_callback) (char data[], uint16_t len);
+    
+    // Updated callback methods to handle a callback context.
+    void (*_disconnect_callback_context)  (void* context);
+    void (*_connect_callback_context)     (void* context);
+    void (*_ble_uart_rx_callback_context) (void* context, char data[], uint16_t len);
+    void *_callback_context;
+    
     midiRxCallback_t _ble_midi_rx_callback;
 
     void (*_ble_gatt_rx_callback) (int32_t chars_id, uint8_t data[], uint16_t len);
