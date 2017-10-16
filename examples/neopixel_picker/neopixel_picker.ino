@@ -15,17 +15,16 @@
 #include <string.h>
 #include <Arduino.h>
 #include <SPI.h>
-#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
-  #include <SoftwareSerial.h>
-#endif
-
+#include <Adafruit_NeoPixel.h>
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
+#if SOFTWARE_SERIAL_AVAILABLE
+  #include <SoftwareSerial.h>
+#endif
 
 #include "BluefruitConfig.h"
 
-#include <Adafruit_NeoPixel.h>
 
 /*=========================================================================
     APPLICATION SETTINGS

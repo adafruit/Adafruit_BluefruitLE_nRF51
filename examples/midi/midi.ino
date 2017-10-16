@@ -1,14 +1,12 @@
 #include <Arduino.h>
 #include <SPI.h>
-
-// You may or may not need to include this depending on your platform
-// Include this for the 32u4, exclude it for the M0 for example
-//#include <SoftwareSerial.h>
-
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 #include "Adafruit_BLEMIDI.h"
+#if SOFTWARE_SERIAL_AVAILABLE
+  #include <SoftwareSerial.h>
+#endif
 
 #include "BluefruitConfig.h"
 

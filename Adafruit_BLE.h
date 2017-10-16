@@ -73,8 +73,9 @@ class Adafruit_BLE : public Adafruit_ATParser
     uint32_t _reset_started_timestamp;
 
   public:
-    typedef void (*midiRxCallback_t) (uint16_t timestamp, uint8_t status, uint8_t byte1, uint8_t byte2);
-
+    typedef void (*midiRxCallback_t)        (uint16_t timestamp, uint8_t status, uint8_t byte1, uint8_t byte2);
+    typedef void (*midiRxCallbackContext_t) (void *context, uint16_t timestamp, uint8_t status, uint8_t byte1, uint8_t byte2);
+    
     // Constructor
     Adafruit_BLE(void);
 
@@ -132,24 +133,47 @@ class Adafruit_BLE : public Adafruit_ATParser
       this->update(0);
     }
 
+    // ---------------------------------------------------------------------------
+    // Deprecate these and remove in future releases.
     void setDisconnectCallback( void (*fp) (void) );
     void setConnectCallback   ( void (*fp) (void) );
-
     void setBleUartRxCallback( void (*fp) (char data[], uint16_t len) );
     void setBleMidiRxCallback( midiRxCallback_t fp );
     void setBleGattRxCallback( int32_t chars_idx, void (*fp) (int32_t, uint8_t[], uint16_t) );
-
+    // ----------------------------------------------------------------------------
+    
+    // Updated callback methods to handle a callback context.
+    void setDisconnectCallback   ( void (*fp) (void* context) );
+    void setConnectCallback      ( void (*fp) (void* context) );
+    void setBleUartRxCallback    ( void (*fp) (void* context, char data[], uint16_t len) );
+    void setBleGattRxCallback    ( void (*fp) (void*, int32_t, uint8_t[], uint16_t) );
+    void enableBleGattCallback   ( int32_t chars_idx );
+    void disableBleGattCallback  ( int32_t chars_idx );
+    void setBleMidiRxCallback    ( midiRxCallbackContext_t fp );
+    void setCallbackContext      ( void* context );
+    
   protected:
     // helper
     void install_callback(bool enable, int8_t system_id, int8_t gatts_id);
 
+    // ---------------------------------------------------------------------------
+    // Deprecate these and remove in future releases.
     void (*_disconnect_callback) (void);
     void (*_connect_callback) (void);
-
     void (*_ble_uart_rx_callback) (char data[], uint16_t len);
-    midiRxCallback_t _ble_midi_rx_callback;
-
     void (*_ble_gatt_rx_callback) (int32_t chars_id, uint8_t data[], uint16_t len);
+    // ----------------------------------------------------------------------------
+    
+    midiRxCallback_t _ble_midi_rx_callback;
+    
+    // Updated callback methods to handle a callback context.
+    void (*_disconnect_callback_context)  (void* context);
+    void (*_connect_callback_context)     (void* context);
+    void (*_ble_uart_rx_callback_context) (void* context, char data[], uint16_t len);
+    void (*_ble_gatt_rx_callback_context) (void* context, int32_t chars_id, uint8_t data[], uint16_t len);
+    void *_callback_context;
+    
+    midiRxCallbackContext_t _ble_midi_rx_callback_context;
 };
 
 //--------------------------------------------------------------------+

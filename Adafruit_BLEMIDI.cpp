@@ -132,13 +132,10 @@ bool Adafruit_BLEMIDI::send_n(uint8_t status, const uint8_t bytes[], uint8_t cou
   return _ble.atcommand( F("AT+BLEMIDITX"), data, count+1);
 }
 
-/******************************************************************************/
-/*!
-    @brief
-    @param
-*/
-/******************************************************************************/
-void Adafruit_BLEMIDI::processRxCallback(uint8_t data[], uint16_t len, Adafruit_BLE::midiRxCallback_t callback_func)
+void Adafruit_BLEMIDI::_processRxCallback(uint8_t data[], uint16_t len,
+                                          Adafruit_BLE::midiRxCallback_t callback_func,
+                                          Adafruit_BLE::midiRxCallbackContext_t callbackcontext_func,
+                                          void* context)
 {
   if ( len < 3 ) return;
 
@@ -165,22 +162,53 @@ void Adafruit_BLEMIDI::processRxCallback(uint8_t data[], uint16_t len, Adafruit_
 
       tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
       status = *data++;
-
+      
+      // Updated to use callback context.
       // Status must have 7th-bit set, must have something wrong
       if ( !bitRead(status, 7) ) return;
 
-      callback_func( tstamp, status, data[0], data[1]);
-
+      if ( callbackcontext_func )
+        callbackcontext_func( context, tstamp, status, data[0], data[1] );
+      else
+        callback_func( tstamp, status, data[0], data[1] );
+        
       len  -= 4;
       data += 2;
     }
     else
     {
+      // Updated to use callback context.
       // Running event
-      callback_func( tstamp, status, data[0], data[1]);
+      if ( callbackcontext_func )
+        callbackcontext_func( context, tstamp, status, data[0], data[1] );
+      else
+        callback_func( tstamp, status, data[0], data[1] );
 
       len  -= 2;
       data += 2;
     }
   }
+}
+
+/******************************************************************************/
+/*!
+    @brief Support for callback context.
+*/
+/******************************************************************************/
+void Adafruit_BLEMIDI::processRxCallback(uint8_t data[], uint16_t len, Adafruit_BLE::midiRxCallbackContext_t callback_func, 
+                                         void* context)
+{
+  Adafruit_BLEMIDI::_processRxCallback(data, len, NULL, callback_func, context);
+}
+
+/******************************************************************************/
+/*!
+    @brief
+    @param
+    @deprecated
+*/
+/******************************************************************************/
+void Adafruit_BLEMIDI::processRxCallback(uint8_t data[], uint16_t len, Adafruit_BLE::midiRxCallback_t callback_func)
+{
+  Adafruit_BLEMIDI::_processRxCallback(data, len, callback_func, NULL, NULL);
 }

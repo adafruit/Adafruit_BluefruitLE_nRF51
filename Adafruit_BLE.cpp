@@ -71,6 +71,12 @@ Adafruit_BLE::Adafruit_BLE(void)
   _ble_uart_rx_callback = NULL;
   _ble_midi_rx_callback = NULL;
   _ble_gatt_rx_callback = NULL;
+  
+  _disconnect_callback_context  = NULL;
+  _connect_callback_context     = NULL;
+  _ble_uart_rx_callback_context = NULL;
+  _ble_gatt_rx_callback_context = NULL;
+  _callback_context             = NULL;
 }
 
 /******************************************************************************/
@@ -81,9 +87,6 @@ Adafruit_BLE::Adafruit_BLE(void)
 /******************************************************************************/
 void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_id)
 {
-  bool v = _verbose;
-  _verbose = true;
-
   uint8_t current_mode = _mode;
 
   // switch mode if necessary to execute command
@@ -104,8 +107,6 @@ void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_
 
   // switch back if necessary
   if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
-
-  _verbose = v;
 }
 
 /******************************************************************************/
@@ -319,21 +320,56 @@ void Adafruit_BLE::update(uint32_t period_ms)
 
     //--------------------------------------------------------------------+
     // System Event
+    //
+    // Double checking for NULL, minor decrease in performance but will have 
+    // to stay until non-context based Methods are removed.
     //--------------------------------------------------------------------+
-    if ( this->_connect_callback    && bitRead(system_event, EVENT_SYSTEM_CONNECT   ) ) this->_connect_callback();
-    if ( this->_disconnect_callback && bitRead(system_event, EVENT_SYSTEM_DISCONNECT) ) this->_disconnect_callback();
-
-    if ( this->_ble_uart_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX) )
+    //--------------------------------------------------------------------+
+    // Connect Event
+    //--------------------------------------------------------------------+
+    if ( ( this->_connect_callback_context || this->_connect_callback ) && 
+         ( bitRead( system_event, EVENT_SYSTEM_CONNECT ) ) ) 
+    {
+        if( this->_connect_callback_context )
+            this->_connect_callback_context(this->_callback_context);
+        else
+            this->_connect_callback();
+    }
+    
+    //--------------------------------------------------------------------+
+    // Disconnect Event
+    //--------------------------------------------------------------------+
+    if ( ( this->_disconnect_callback_context || this->_disconnect_callback ) && 
+         ( bitRead( system_event, EVENT_SYSTEM_DISCONNECT) ) ) 
+    {
+        if( this->_disconnect_callback_context )
+            this->_disconnect_callback_context(this->_callback_context);
+        else
+            this->_disconnect_callback();
+    }
+    
+    //--------------------------------------------------------------------+
+    // UART Event
+    //--------------------------------------------------------------------+
+    if ( ( this->_ble_uart_rx_callback_context || this->_ble_uart_rx_callback ) && 
+              ( bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX) ) )
     {
       // _verbose = true;
       println( F("AT+BLEUARTRX") );
       uint16_t len = readline(tempbuf, BLE_BUFSIZE);
       waitForOK();
-
-      this->_ble_uart_rx_callback( (char*) tempbuf, len);
+      
+      if( this->_ble_uart_rx_callback_context )
+          this->_ble_uart_rx_callback_context( this->_callback_context, (char*) tempbuf, len );
+      else
+          this->_ble_uart_rx_callback( (char*) tempbuf, len );
     }
-
-    if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
+    
+    //--------------------------------------------------------------------+
+    // MIDI Event
+    //--------------------------------------------------------------------+
+    if ( ( this->_ble_midi_rx_callback ||  this->_ble_midi_rx_callback_context ) && 
+           bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
     {
 //      _verbose = true;
       while(1)
@@ -349,15 +385,19 @@ void Adafruit_BLE::update(uint32_t period_ms)
 
         // copy to internal buffer for other usage !
         memcpy(tempbuf, this->buffer, len);
-
-        Adafruit_BLEMIDI::processRxCallback(tempbuf, len, this->_ble_midi_rx_callback);
+        
+        if( this->_ble_midi_rx_callback_context )
+            Adafruit_BLEMIDI::processRxCallback(tempbuf, len, this->_ble_midi_rx_callback_context, this->_callback_context);
+        else
+            Adafruit_BLEMIDI::processRxCallback(tempbuf, len, this->_ble_midi_rx_callback);
       }
     }
 
     //--------------------------------------------------------------------+
     // Gatt Event
     //--------------------------------------------------------------------+
-    if ( this->_ble_gatt_rx_callback && gatts_event )
+    if ( ( this->_ble_gatt_rx_callback || this->_ble_gatt_rx_callback_context ) && 
+           gatts_event )
     {
 //      _verbose = true;
       for(uint8_t charid=1; charid < 30; charid++)
@@ -369,8 +409,11 @@ void Adafruit_BLE::update(uint32_t period_ms)
 
           uint16_t len = readraw(); // readraw swallow OK/ERROR already
           memcpy(tempbuf, this->buffer, len);
-
-          this->_ble_gatt_rx_callback(charid, tempbuf, len);
+          
+          if( this->_ble_gatt_rx_callback_context )
+              this->_ble_gatt_rx_callback_context(this->_callback_context, charid, tempbuf, len);
+          else
+              this->_ble_gatt_rx_callback(charid, tempbuf, len);
         }
       }
     }
@@ -555,9 +598,22 @@ int  Adafruit_BLE::readBLEUart(uint8_t* buffer, int size)
 
 /******************************************************************************/
 /*!
+    @brief  Set the context for all context aware callbacks.
+
+    @param[in] context pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setCallbackContext(void* context) {
+    this->_callback_context = context;
+}
+
+/******************************************************************************/
+/*!
     @brief  Set handle for connect callback
 
     @param[in] fp function pointer, NULL will discard callback
+    
+    @deprecated
 */
 /******************************************************************************/
 void Adafruit_BLE::setConnectCallback( void (*fp) (void) )
@@ -568,9 +624,24 @@ void Adafruit_BLE::setConnectCallback( void (*fp) (void) )
 
 /******************************************************************************/
 /*!
+    @brief  Set handle for connect callback with a context.
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setConnectCallback( void (*fp) (void* context) )
+{
+  this->_connect_callback_context = fp;
+  install_callback(fp != NULL, EVENT_SYSTEM_CONNECT, -1);
+}
+
+/******************************************************************************/
+/*!
     @brief  Set handle for disconnection callback
 
     @param[in] fp function pointer, NULL will discard callback
+    
+    @deprecated
 */
 /******************************************************************************/
 void Adafruit_BLE::setDisconnectCallback( void (*fp) (void) )
@@ -581,9 +652,24 @@ void Adafruit_BLE::setDisconnectCallback( void (*fp) (void) )
 
 /******************************************************************************/
 /*!
+    @brief  Set handle for disconnection callback with a context
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setDisconnectCallback( void (*fp) (void* context) )
+{
+  this->_disconnect_callback_context = fp;
+  install_callback(fp != NULL, EVENT_SYSTEM_DISCONNECT, -1);
+}
+
+/******************************************************************************/
+/*!
     @brief  Set handle for BLE Uart Rx callback
 
     @param[in] fp function pointer, NULL will discard callback
+    
+    @deprecated
 */
 /******************************************************************************/
 void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) )
@@ -594,9 +680,24 @@ void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) 
 
 /******************************************************************************/
 /*!
+    @brief  Set handle for BLE Uart Rx callback
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setBleUartRxCallback( void (*fp) (void* context, char data[], uint16_t len) )
+{
+  this->_ble_uart_rx_callback_context = fp;
+  install_callback(fp != NULL, EVENT_SYSTEM_BLE_UART_RX, -1);
+}
+
+/******************************************************************************/
+/*!
     @brief  Set handle for BLE MIDI Rx callback
 
     @param[in] fp function pointer, NULL will discard callback
+    
+    @deprecated
 */
 /******************************************************************************/
 void Adafruit_BLE::setBleMidiRxCallback( midiRxCallback_t fp )
@@ -607,9 +708,24 @@ void Adafruit_BLE::setBleMidiRxCallback( midiRxCallback_t fp )
 
 /******************************************************************************/
 /*!
+    @brief  Set handle for BLE MIDI Rx callback with a context.
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setBleMidiRxCallback( midiRxCallbackContext_t fp )
+{
+  this->_ble_midi_rx_callback_context = fp;
+  install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, -1);
+}
+
+/******************************************************************************/
+/*!
     @brief  Set handle for BLE Gatt Rx callback
 
     @param[in] fp function pointer, NULL will discard callback
+    
+    @deprecated
 */
 /******************************************************************************/
 void Adafruit_BLE::setBleGattRxCallback(int32_t chars_idx,  void (*fp) (int32_t, uint8_t[], uint16_t) )
@@ -620,3 +736,42 @@ void Adafruit_BLE::setBleGattRxCallback(int32_t chars_idx,  void (*fp) (int32_t,
   install_callback(fp != NULL, -1, chars_idx-1);
 }
 
+/******************************************************************************/
+/*!
+    @brief  Set handle for BLE Gatt Rx callback
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setBleGattRxCallback(void (*fp) (void*, int32_t, uint8_t[], uint16_t) )
+{
+  this->_ble_gatt_rx_callback_context = fp;
+}
+
+/******************************************************************************/
+/*!
+    @brief  Enables a GATT an attribute for callback.
+    
+    @param[in] The attribute to receive callbacks for.
+*/
+/******************************************************************************/
+void Adafruit_BLE::enableBleGattCallback(int32_t chars_idx)
+{
+  if ( chars_idx == 0 ) return;
+
+  install_callback(true, -1, chars_idx-1);
+}
+
+/******************************************************************************/
+/*!
+    @brief  Enables a GATT an attribute for callback.
+    
+    @param[in] The attribute to receive callbacks for.
+*/
+/******************************************************************************/
+void Adafruit_BLE::disableBleGattCallback(int32_t chars_idx)
+{
+  if ( chars_idx == 0 ) return;
+
+  install_callback(false, -1, chars_idx-1);
+}

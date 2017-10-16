@@ -30,6 +30,10 @@
 #include "Adafruit_BluefruitLE_UART.h"
 #include "BluefruitConfig.h"
 
+#if SOFTWARE_SERIAL_AVAILABLE
+  #include <SoftwareSerial.h>
+#endif
+
 #include <Adafruit_CircuitPlayground.h>
 
 // Configuration (you don't need to change these, but can!):

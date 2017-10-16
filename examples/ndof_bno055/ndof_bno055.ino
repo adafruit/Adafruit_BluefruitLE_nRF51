@@ -14,11 +14,6 @@
 
 #include <Arduino.h>
 #include <SPI.h>
-
-#if not defined (_VARIANT_ARDUINO_DUE_X_)
-  #include <SoftwareSerial.h>
-#endif
-
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
@@ -27,6 +22,10 @@
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
+#if SOFTWARE_SERIAL_AVAILABLE
+  #include <SoftwareSerial.h>
+#endif
+
 #include "BluefruitConfig.h"
 
 // Create the bluefruit object, either software serial...uncomment these lines
