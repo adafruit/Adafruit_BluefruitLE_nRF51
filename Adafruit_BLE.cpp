@@ -75,6 +75,7 @@ Adafruit_BLE::Adafruit_BLE(void)
   _disconnect_callback_context  = NULL;
   _connect_callback_context     = NULL;
   _ble_uart_rx_callback_context = NULL;
+  _ble_gatt_rx_callback_context = NULL;
   _callback_context             = NULL;
 }
 
@@ -328,7 +329,7 @@ void Adafruit_BLE::update(uint32_t period_ms)
     {
         if( this->_connect_callback_context )
             this->_connect_callback_context(this->_callback_context);
-        else if( this->_connect_callback )
+        else
             this->_connect_callback();
     }
       
@@ -337,7 +338,7 @@ void Adafruit_BLE::update(uint32_t period_ms)
     {
         if( this->_disconnect_callback_context )
             this->_disconnect_callback_context(this->_callback_context);
-        else if( this->_disconnect_callback )
+        else
             this->_disconnect_callback();
     }
     
@@ -349,10 +350,9 @@ void Adafruit_BLE::update(uint32_t period_ms)
       uint16_t len = readline(tempbuf, BLE_BUFSIZE);
       waitForOK();
       
-        // This is the double check I was talking about, see above comment.
       if( this->_ble_uart_rx_callback_context )
           this->_ble_uart_rx_callback_context( this->_callback_context, (char*) tempbuf, len );
-      else if ( this->_ble_uart_rx_callback )
+      else
           this->_ble_uart_rx_callback( (char*) tempbuf, len );
     }
     
@@ -380,7 +380,8 @@ void Adafruit_BLE::update(uint32_t period_ms)
     //--------------------------------------------------------------------+
     // Gatt Event
     //--------------------------------------------------------------------+
-    if ( this->_ble_gatt_rx_callback && gatts_event )
+    if ( ( this->_ble_gatt_rx_callback || this->_ble_gatt_rx_callback_context ) && 
+           gatts_event )
     {
 //      _verbose = true;
       for(uint8_t charid=1; charid < 30; charid++)
@@ -392,8 +393,11 @@ void Adafruit_BLE::update(uint32_t period_ms)
 
           uint16_t len = readraw(); // readraw swallow OK/ERROR already
           memcpy(tempbuf, this->buffer, len);
-
-          this->_ble_gatt_rx_callback(charid, tempbuf, len);
+          
+          if( this->_ble_gatt_rx_callback_context )
+              this->_ble_gatt_rx_callback_context(this->_callback_context, charid, tempbuf, len);
+          else
+              this->_ble_gatt_rx_callback(charid, tempbuf, len);
         }
       }
     }
@@ -689,9 +693,26 @@ void Adafruit_BLE::setBleMidiRxCallback( midiRxCallback_t fp )
     @brief  Set handle for BLE Gatt Rx callback
 
     @param[in] fp function pointer, NULL will discard callback
+    
+    @deprecated
 */
 /******************************************************************************/
 void Adafruit_BLE::setBleGattRxCallback(int32_t chars_idx,  void (*fp) (int32_t, uint8_t[], uint16_t) )
+{
+  if ( chars_idx == 0) return;
+
+  this->_ble_gatt_rx_callback = fp;
+  install_callback(fp != NULL, -1, chars_idx-1);
+}
+
+/******************************************************************************/
+/*!
+    @brief  Set handle for BLE Gatt Rx callback
+
+    @param[in] fp function pointer, NULL will discard callback
+*/
+/******************************************************************************/
+void Adafruit_BLE::setBleGattRxCallback(int32_t chars_idx,  void (*fp) (void*, int32_t, uint8_t[], uint16_t) )
 {
   if ( chars_idx == 0) return;
 
