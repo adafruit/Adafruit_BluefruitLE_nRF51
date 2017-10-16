@@ -743,11 +743,35 @@ void Adafruit_BLE::setBleGattRxCallback(int32_t chars_idx,  void (*fp) (int32_t,
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setBleGattRxCallback(int32_t chars_idx,  void (*fp) (void*, int32_t, uint8_t[], uint16_t) )
+void Adafruit_BLE::setBleGattRxCallback(void (*fp) (void*, int32_t, uint8_t[], uint16_t) )
 {
-  if ( chars_idx == 0) return;
-
   this->_ble_gatt_rx_callback_context = fp;
-  install_callback(fp != NULL, -1, chars_idx-1);
 }
 
+/******************************************************************************/
+/*!
+    @brief  Enables a GATT an attribute for callback.
+    
+    @param[in] The attribute to receive callbacks for.
+*/
+/******************************************************************************/
+void Adafruit_BLE::enableBleGattCallback(int32_t chars_idx)
+{
+  if ( chars_idx == 0 ) return;
+
+  install_callback(true, -1, chars_idx-1);
+}
+
+/******************************************************************************/
+/*!
+    @brief  Enables a GATT an attribute for callback.
+    
+    @param[in] The attribute to receive callbacks for.
+*/
+/******************************************************************************/
+void Adafruit_BLE::disableBleGattCallback(int32_t chars_idx)
+{
+  if ( chars_idx == 0 ) return;
+
+  install_callback(false, -1, chars_idx-1);
+}
