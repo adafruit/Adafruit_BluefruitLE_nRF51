@@ -69,6 +69,16 @@ typedef struct ATTR_PACKED
 
 ASSERT_STATIC_ ( sizeof(midi_timestamp_t) == 1 );
 
+/**
+ * @brief Structure to facillitate callback context.
+ */
+typedef struct {
+    uint16_t tstamp : 0;
+    uint8_t  status : 0;
+    uint8_t  byte1  : 0;
+    uint8_t  byte2  : 0;
+} midi_rx_payload;
+
 class Adafruit_BLEMIDI
 {
 private:
