@@ -463,7 +463,10 @@ bool Adafruit_BLE::readNVM(uint16_t offset, uint8_t data[], uint16_t size)
   print(',');
   println(size);
 
-  readraw(); // readraw swallow OK/ERROR already
+  uint16_t len = readraw(); // readraw swallow OK/ERROR already
+
+  // Check for an error reading
+  if ( len != size ) return false;
 
   // skip if NULL is entered
   if (data) memcpy(data, this->buffer, min(size, BLE_BUFSIZE));
