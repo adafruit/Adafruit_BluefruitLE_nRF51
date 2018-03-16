@@ -69,6 +69,8 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, 
   m_miso_pin = m_mosi_pin = m_sck_pin = -1;
 
   m_tx_count = 0;
+
+  m_mode_switch_command_enabled = true;
 }
 
 /******************************************************************************/
@@ -104,6 +106,8 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin
   m_rst_pin  = rstPin;
 
   m_tx_count = 0;
+
+  m_mode_switch_command_enabled = true;
 }
 
 
@@ -219,6 +223,17 @@ bool Adafruit_BluefruitLE_SPI::setMode(uint8_t new_mode)
 
 /******************************************************************************/
 /*!
+    @brief Enable/disable recognition of "+++" switch mode command.
+           Usage of setMode is not affected.
+*/
+/******************************************************************************/
+void Adafruit_BluefruitLE_SPI::enableModeSwitchCommand(bool enabled)
+{
+  m_mode_switch_command_enabled = enabled;
+}
+
+/******************************************************************************/
+/*!
     @brief Send initialize pattern to Bluefruit LE to force a reset. This pattern
     follow the SDEP command syntax with command_id = SDEP_CMDTYPE_INITIALIZE.
     The command has NO response, and is expected to complete within 1 second
@@ -313,7 +328,7 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
     if (m_tx_count > 0)
     {
       // +++ command to switch mode
-      if ( memcmp(m_tx_buffer, "+++", 3) == 0)
+      if (m_mode_switch_command_enabled && memcmp(m_tx_buffer, "+++", 3) == 0)
       {
         simulateSwitchMode();
       }else
@@ -351,7 +366,8 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
 {
   if ( _mode == BLUEFRUIT_MODE_DATA )
   {
-    if ((size >= 3) &&
+    if (m_mode_switch_command_enabled &&
+        (size >= 3) &&
         !memcmp(buf, "+++", 3) &&
         !(size > 3 && buf[3] != '\r' && buf[3] != '\n') )
     {

@@ -71,6 +71,8 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     uint8_t         m_rx_buffer[BLE_BUFSIZE];
     Adafruit_FIFO   m_rx_fifo;
 
+    bool            m_mode_switch_command_enabled;
+
     // Low level transportation I/O functions
     bool    sendInitializePattern(void);
     bool    sendPacket(uint16_t command, const uint8_t* buffer, uint8_t count, uint8_t more_data);
@@ -93,6 +95,7 @@ class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
     void end(void);
 
     bool setMode(uint8_t new_mode);
+    void enableModeSwitchCommand(bool enabled);
 
     // Class Print virtual function Interface
     virtual size_t write(uint8_t c);
