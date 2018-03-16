@@ -210,6 +210,10 @@ bool Adafruit_BluefruitLE_SPI::setMode(uint8_t new_mode)
   // --> does not switch using +++ command
   _mode = new_mode;
 
+  // If we're entering DATA mode, flush any old response, so that it isn't
+  // interpreted as incoming UART data
+  if (_mode == BLUEFRUIT_MODE_DATA) flush();
+
   return true;
 }
 
@@ -235,8 +239,10 @@ bool Adafruit_BluefruitLE_SPI::sendInitializePattern(void)
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, uint8_t count, uint8_t more_data)
 {
-  // flush old response before sending the new command
-  if (more_data == 0) flush();
+  // flush old response before sending the new command, but only if we're *not*
+  // in DATA mode, as the RX FIFO may containg incoming UART data that hasn't
+  // been read yet
+  if (more_data == 0 && _mode != BLUEFRUIT_MODE_DATA) flush();
 
   sdepMsgCommand_t msgCmd;
 
