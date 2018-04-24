@@ -69,6 +69,8 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, 
   m_miso_pin = m_mosi_pin = m_sck_pin = -1;
 
   m_tx_count = 0;
+
+  m_mode_switch_command_enabled = true;
 }
 
 /******************************************************************************/
@@ -104,6 +106,8 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin
   m_rst_pin  = rstPin;
 
   m_tx_count = 0;
+
+  m_mode_switch_command_enabled = true;
 }
 
 
@@ -210,7 +214,22 @@ bool Adafruit_BluefruitLE_SPI::setMode(uint8_t new_mode)
   // --> does not switch using +++ command
   _mode = new_mode;
 
+  // If we're entering DATA mode, flush any old response, so that it isn't
+  // interpreted as incoming UART data
+  if (_mode == BLUEFRUIT_MODE_DATA) flush();
+
   return true;
+}
+
+/******************************************************************************/
+/*!
+    @brief Enable/disable recognition of "+++" switch mode command.
+           Usage of setMode is not affected.
+*/
+/******************************************************************************/
+void Adafruit_BluefruitLE_SPI::enableModeSwitchCommand(bool enabled)
+{
+  m_mode_switch_command_enabled = enabled;
 }
 
 /******************************************************************************/
@@ -235,8 +254,10 @@ bool Adafruit_BluefruitLE_SPI::sendInitializePattern(void)
 /******************************************************************************/
 bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, uint8_t count, uint8_t more_data)
 {
-  // flush old response before sending the new command
-  if (more_data == 0) flush();
+  // flush old response before sending the new command, but only if we're *not*
+  // in DATA mode, as the RX FIFO may containg incoming UART data that hasn't
+  // been read yet
+  if (more_data == 0 && _mode != BLUEFRUIT_MODE_DATA) flush();
 
   sdepMsgCommand_t msgCmd;
 
@@ -307,7 +328,7 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
     if (m_tx_count > 0)
     {
       // +++ command to switch mode
-      if ( memcmp(m_tx_buffer, "+++", 3) == 0)
+      if (m_mode_switch_command_enabled && memcmp(m_tx_buffer, "+++", 3) == 0)
       {
         simulateSwitchMode();
       }else
@@ -345,7 +366,8 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
 {
   if ( _mode == BLUEFRUIT_MODE_DATA )
   {
-    if ((size >= 3) &&
+    if (m_mode_switch_command_enabled &&
+        (size >= 3) &&
         !memcmp(buf, "+++", 3) &&
         !(size > 3 && buf[3] != '\r' && buf[3] != '\n') )
     {
