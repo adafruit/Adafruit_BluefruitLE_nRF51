@@ -1,5 +1,9 @@
 # Firmware Changelog
 
+## 0.8.0
+
+- improve stability of nvm
+
 ## 0.7.7
 
 ### Features
