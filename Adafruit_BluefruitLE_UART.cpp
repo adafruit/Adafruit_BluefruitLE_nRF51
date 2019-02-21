@@ -44,6 +44,7 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_
   _mode_pin(mode_pin), _cts_pin(cts_pin), _rts_pin(rts_pin)
 {
   _physical_transport = BLUEFRUIT_TRANSPORT_HWUART;
+  _intercharwritedelay = 0;
 
 #if SOFTWARE_SERIAL_AVAILABLE
   ss = 0;
@@ -64,6 +65,7 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_
   _mode_pin(mode_pin), _cts_pin(cts_pin), _rts_pin(rts_pin)
 {
   _physical_transport = BLUEFRUIT_TRANSPORT_SWUART;
+  _intercharwritedelay = 0;
 
   hs = 0;
   ss = &port;
@@ -94,7 +96,6 @@ Adafruit_BluefruitLE_UART::~Adafruit_BluefruitLE_UART()
 bool Adafruit_BluefruitLE_UART::begin(boolean debug, boolean blocking)
 {
   _verbose = debug;
-  _intercharwritedelay = 0;
 
   // If hardware mode pin is enabled, set it to CMD first
   if ( _mode_pin >= 0)
