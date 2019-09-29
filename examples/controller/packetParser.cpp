@@ -81,7 +81,7 @@ uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout)
   memset(packetbuffer, 0, READ_BUFSIZE);
 
   while (timeout--) {
-    if (replyidx >= 20) break;
+    if (replyidx >= READ_BUFSIZE) break;
     if ((packetbuffer[1] == 'A') && (replyidx == PACKET_ACC_LEN))
       break;
     if ((packetbuffer[1] == 'G') && (replyidx == PACKET_GYRO_LEN))
@@ -99,9 +99,6 @@ uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout)
 
     while (ble->available()) {
       char c =  ble->read();
-      if (c == '!') {
-        replyidx = 0;
-      }
       packetbuffer[replyidx] = c;
       replyidx++;
       timeout = origtimeout;
@@ -115,6 +112,10 @@ uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout)
 
   if (!replyidx)  // no data or timeout 
     return 0;
+  
+  // Some of the bytes at the beginning of the packet may have been dropped by the UART service.
+  // Checking that the packet data that we read starts with '!' makes it less likely
+  // that we missed the beginning of the packet.
   if (packetbuffer[0] != '!')  // doesn't start with '!' packet beginning
     return 0;
   
