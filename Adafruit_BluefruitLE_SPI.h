@@ -29,86 +29,90 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 #ifndef _ADAFRUIT_BLE_SPI_H_
 #define _ADAFRUIT_BLE_SPI_H_
 
+#include "utility/Adafruit_FIFO.h"
 #include <Adafruit_BLE.h>
 #include <SPI.h>
-#include "utility/Adafruit_FIFO.h"
 
-#define SPI_CS_ENABLE()           digitalWrite(m_cs_pin, LOW)
-#define SPI_CS_DISABLE()          digitalWrite(m_cs_pin, HIGH)
+#define SPI_CS_ENABLE() digitalWrite(m_cs_pin, LOW)
+#define SPI_CS_DISABLE() digitalWrite(m_cs_pin, HIGH)
 
-#define SPI_IGNORED_BYTE          0xFEu /**< SPI default character. Character clocked out in case of an ignored transaction. */
-#define SPI_OVERREAD_BYTE         0xFFu /**< SPI over-read character. Character clocked out after an over-read of the transmit buffer. */
-#define SPI_DEFAULT_DELAY_US      50
+#define SPI_IGNORED_BYTE                                                       \
+  0xFEu /**< SPI default character. Character clocked out in case of an        \
+           ignored transaction. */
+#define SPI_OVERREAD_BYTE                                                      \
+  0xFFu /**< SPI over-read character. Character clocked out after an over-read \
+           of the transmit buffer. */
+#define SPI_DEFAULT_DELAY_US 50
 
-#define memclr(buffer, size)  memset(buffer, 0, size)
+#define memclr(buffer, size) memset(buffer, 0, size)
 
+class Adafruit_BluefruitLE_SPI : public Adafruit_BLE {
+private:
+  // Hardware Pin
+  int8_t m_cs_pin;
+  int8_t m_irq_pin;
+  int8_t m_rst_pin;
 
-class Adafruit_BluefruitLE_SPI : public Adafruit_BLE
-{
-  private:
-    // Hardware Pin
-    int8_t          m_cs_pin;
-    int8_t          m_irq_pin;
-    int8_t          m_rst_pin;
+  // software SPI pins
+  int8_t m_sck_pin;
+  int8_t m_mosi_pin;
+  int8_t m_miso_pin;
 
-    // software SPI pins
-    int8_t          m_sck_pin;
-    int8_t          m_mosi_pin;
-    int8_t          m_miso_pin;
+  // TX
+  uint8_t m_tx_buffer[SDEP_MAX_PACKETSIZE];
+  uint8_t m_tx_count;
 
-    // TX
-    uint8_t         m_tx_buffer[SDEP_MAX_PACKETSIZE];
-    uint8_t         m_tx_count;
+  // RX
+  uint8_t m_rx_buffer[BLE_BUFSIZE];
+  Adafruit_FIFO m_rx_fifo;
 
-    // RX
-    uint8_t         m_rx_buffer[BLE_BUFSIZE];
-    Adafruit_FIFO   m_rx_fifo;
+  bool m_mode_switch_command_enabled;
 
-    bool            m_mode_switch_command_enabled;
+  // Low level transportation I/O functions
+  bool sendInitializePattern(void);
+  bool sendPacket(uint16_t command, const uint8_t *buffer, uint8_t count,
+                  uint8_t more_data);
+  bool getPacket(sdepMsgResponse_t *p_response);
 
-    // Low level transportation I/O functions
-    bool    sendInitializePattern(void);
-    bool    sendPacket(uint16_t command, const uint8_t* buffer, uint8_t count, uint8_t more_data);
-    bool    getPacket(sdepMsgResponse_t* p_response);
+  bool getResponse(void);
+  void simulateSwitchMode(void);
+  //    bool    handleSwitchCmdInDataMode(uint8_t ch);
 
-    bool    getResponse(void);
-    void    simulateSwitchMode(void);
-//    bool    handleSwitchCmdInDataMode(uint8_t ch);
+  uint8_t spixfer(uint8_t x);
+  void spixfer(void *x, size_t len);
 
-    uint8_t spixfer(uint8_t x);
-    void spixfer(void *x, size_t len);
+public:
+  // Constructor
+  Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, int8_t rstPin = -1);
+  Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin, int8_t mosiPin,
+                           int8_t csPin, int8_t irqPin, int8_t rstPin);
 
-  public:
-    // Constructor
-    Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, int8_t rstPin = -1);
-    Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin, int8_t mosiPin, int8_t csPin, int8_t irqPin, int8_t rstPin);
+  // HW initialisation
+  bool begin(boolean v = false, boolean blocking = true);
+  void end(void);
 
-    // HW initialisation
-    bool begin(boolean v = false, boolean blocking = true);
-    void end(void);
+  bool setMode(uint8_t new_mode);
+  void enableModeSwitchCommand(bool enabled);
 
-    bool setMode(uint8_t new_mode);
-    void enableModeSwitchCommand(bool enabled);
+  // Class Print virtual function Interface
+  virtual size_t write(uint8_t c);
+  virtual size_t write(const uint8_t *buffer, size_t size);
 
-    // Class Print virtual function Interface
-    virtual size_t write(uint8_t c);
-    virtual size_t write(const uint8_t *buffer, size_t size);
+  // pull in write(str) and write(buf, size) from Print
+  using Print::write;
 
-    // pull in write(str) and write(buf, size) from Print
-    using Print::write;
-
-    // Class Stream interface
-    virtual int  available(void);
-    virtual int  read(void);
-    virtual void flush(void);
-    virtual int  peek(void);
+  // Class Stream interface
+  virtual int available(void);
+  virtual int read(void);
+  virtual void flush(void);
+  virtual int peek(void);
 };
 
 #endif

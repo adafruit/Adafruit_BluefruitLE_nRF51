@@ -1,3 +1,5 @@
+# Adafruit BluefruitLE nRF51 Library [![Build Status](https://github.com/adafruit/Adafruit_BluefruitLE_nRF51/workflows/Arduino%20Library%20CI/badge.svg)](https://github.com/adafruit/Adafruit_BluefruitLE_nRF51/actions)
+
 This library is for all nRF51 based Adafruit Bluefruit LE modules that use SPI or UART.
 
 Current nRF51 based Bluefruit LE products include:

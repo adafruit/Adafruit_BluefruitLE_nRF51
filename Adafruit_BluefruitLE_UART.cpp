@@ -29,8 +29,8 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 #include "Adafruit_BluefruitLE_UART.h"
@@ -40,9 +40,11 @@
     @brief Instantiates a new instance of the Adafruit_BluefruitLE_UART class
 */
 /******************************************************************************/
-Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
-  _mode_pin(mode_pin), _cts_pin(cts_pin), _rts_pin(rts_pin)
-{
+Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port,
+                                                     int8_t mode_pin,
+                                                     int8_t cts_pin,
+                                                     int8_t rts_pin)
+    : _mode_pin(mode_pin), _cts_pin(cts_pin), _rts_pin(rts_pin) {
   _physical_transport = BLUEFRUIT_TRANSPORT_HWUART;
 
 #if SOFTWARE_SERIAL_AVAILABLE
@@ -60,9 +62,11 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_
            using software serial
 */
 /******************************************************************************/
-Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_t mode_pin, int8_t cts_pin, int8_t rts_pin) :
-  _mode_pin(mode_pin), _cts_pin(cts_pin), _rts_pin(rts_pin)
-{
+Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port,
+                                                     int8_t mode_pin,
+                                                     int8_t cts_pin,
+                                                     int8_t rts_pin)
+    : _mode_pin(mode_pin), _cts_pin(cts_pin), _rts_pin(rts_pin) {
   _physical_transport = BLUEFRUIT_TRANSPORT_SWUART;
 
   hs = 0;
@@ -71,16 +75,12 @@ Adafruit_BluefruitLE_UART::Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_
 }
 #endif
 
-
 /******************************************************************************/
 /*!
     @brief Class's Destructor
 */
 /******************************************************************************/
-Adafruit_BluefruitLE_UART::~Adafruit_BluefruitLE_UART()
-{
-  end();
-}
+Adafruit_BluefruitLE_UART::~Adafruit_BluefruitLE_UART() { end(); }
 
 /******************************************************************************/
 /*!
@@ -91,14 +91,12 @@ Adafruit_BluefruitLE_UART::~Adafruit_BluefruitLE_UART()
             'irqPin' is not a HW interrupt pin false will be returned.
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_UART::begin(boolean debug, boolean blocking)
-{
+bool Adafruit_BluefruitLE_UART::begin(boolean debug, boolean blocking) {
   _verbose = debug;
   _intercharwritedelay = 0;
 
   // If hardware mode pin is enabled, set it to CMD first
-  if ( _mode_pin >= 0)
-  {
+  if (_mode_pin >= 0) {
     pinMode(_mode_pin, OUTPUT);
     digitalWrite(_mode_pin, BLUEFRUIT_MODE_COMMAND);
 
@@ -110,9 +108,9 @@ bool Adafruit_BluefruitLE_UART::begin(boolean debug, boolean blocking)
   if (hs) {
     hs->begin(9600);
 
-    #ifdef ARDUINO_STM32_FEATHER
+#ifdef ARDUINO_STM32_FEATHER
     hs->enableFlowControl();
-    #endif
+#endif
   } else {
 #if SOFTWARE_SERIAL_AVAILABLE
     ss->begin(9600);
@@ -121,9 +119,9 @@ bool Adafruit_BluefruitLE_UART::begin(boolean debug, boolean blocking)
 
   if (_cts_pin > 0) {
     pinMode(_cts_pin, OUTPUT);
-    digitalWrite(_cts_pin, HIGH);  // turn off txo
+    digitalWrite(_cts_pin, HIGH); // turn off txo
   }
-    
+
   if (_rts_pin > 0) {
     pinMode(_rts_pin, INPUT);
   }
@@ -138,8 +136,7 @@ bool Adafruit_BluefruitLE_UART::begin(boolean debug, boolean blocking)
     @brief  Uninitializes the SPI interface
 */
 /******************************************************************************/
-void Adafruit_BluefruitLE_UART::end(void)
-{
+void Adafruit_BluefruitLE_UART::end(void) {
   if (hs) {
     hs->end();
   } else {
@@ -161,35 +158,32 @@ void Adafruit_BluefruitLE_UART::end(void)
     @return     true if the mode switch was successful, otherwise false
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
-{
+bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode) {
   // invalid mode
-  if ( !(new_mode == BLUEFRUIT_MODE_COMMAND || new_mode == BLUEFRUIT_MODE_DATA) ) return false;
+  if (!(new_mode == BLUEFRUIT_MODE_COMMAND || new_mode == BLUEFRUIT_MODE_DATA))
+    return false;
 
   bool isOK;
 
-  if ( _mode_pin >= 0 )
-  {
+  if (_mode_pin >= 0) {
     // Switch mode using hardware pin
     digitalWrite(_mode_pin, new_mode);
     delay(1);
     isOK = true;
-  } else
-  {
+  } else {
     // Switch mode using +++ command, at worst switch 2 times
     int32_t updated_mode;
 
     isOK = atcommandIntReply(F("+++"), &updated_mode);
 
-    if ( isOK )
-    {
+    if (isOK) {
       // Ahhh, we are already in the wanted mode before sending +++
       // Switch again. This is required to make sure it is always correct
-      if ( updated_mode != new_mode )
-      {
+      if (updated_mode != new_mode) {
         isOK = atcommandIntReply(F("+++"), &updated_mode);
         // Still does not match -> give up
-        if ( updated_mode != new_mode ) return false;
+        if (updated_mode != new_mode)
+          return false;
       }
     }
   }
@@ -209,12 +203,12 @@ bool Adafruit_BluefruitLE_UART::setMode(uint8_t new_mode)
                 Character to send
 */
 /******************************************************************************/
-size_t Adafruit_BluefruitLE_UART::write(uint8_t c)
-{
+size_t Adafruit_BluefruitLE_UART::write(uint8_t c) {
   // flush left-over before a new command
-//  if (c == '\r') flush();
+  //  if (c == '\r') flush();
 
-  if (_verbose) SerialDebug.print((char) c);
+  if (_verbose)
+    SerialDebug.print((char)c);
 
   if (_rts_pin >= 0) {
     while (digitalRead(_rts_pin)) {
@@ -235,9 +229,8 @@ size_t Adafruit_BluefruitLE_UART::write(uint8_t c)
     @return 'true' if a response is ready, otherwise 'false'
 */
 /******************************************************************************/
-int Adafruit_BluefruitLE_UART::available(void)
-{
-  if (!  mySerial->available() & (_cts_pin > 0)) {
+int Adafruit_BluefruitLE_UART::available(void) {
+  if (!mySerial->available() & (_cts_pin > 0)) {
     // toggle flow control to get more byteses
     digitalWrite(_cts_pin, LOW);
     delay(1);
@@ -253,8 +246,7 @@ int Adafruit_BluefruitLE_UART::available(void)
     @return -1 if no data is available
 */
 /******************************************************************************/
-int Adafruit_BluefruitLE_UART::read(void)
-{
+int Adafruit_BluefruitLE_UART::read(void) {
   int c = mySerial->read();
   return c;
 }
@@ -267,10 +259,7 @@ int Adafruit_BluefruitLE_UART::read(void)
     @return -1 if no data is available
 */
 /******************************************************************************/
-int Adafruit_BluefruitLE_UART::peek(void)
-{
-  return mySerial->peek();
-}
+int Adafruit_BluefruitLE_UART::peek(void) { return mySerial->peek(); }
 
 /******************************************************************************/
 /*!
@@ -279,7 +268,4 @@ int Adafruit_BluefruitLE_UART::peek(void)
     @return -1 if no data is available
 */
 /******************************************************************************/
-void Adafruit_BluefruitLE_UART::flush(void)
-{
-  mySerial->flush();
-}
+void Adafruit_BluefruitLE_UART::flush(void) { mySerial->flush(); }

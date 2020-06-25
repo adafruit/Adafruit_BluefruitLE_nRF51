@@ -29,27 +29,26 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 
 #ifndef _ADAFRUIT_BLEBATTERY_H_
 #define _ADAFRUIT_BLEBATTERY_H_
 
-#include <Arduino.h>
 #include "Adafruit_BLE.h"
+#include <Arduino.h>
 
-class Adafruit_BLEBattery
-{
+class Adafruit_BLEBattery {
 private:
-  Adafruit_BLE& _ble;
+  Adafruit_BLE &_ble;
 
 public:
-  Adafruit_BLEBattery(Adafruit_BLE& ble);
+  Adafruit_BLEBattery(Adafruit_BLE &ble);
 
   bool begin(bool reset = true);
-  bool stop (bool reset = true);
+  bool stop(bool reset = true);
 
   bool update(uint8_t percent);
 };
