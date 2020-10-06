@@ -162,6 +162,14 @@ public:
   bool atcommandIntReply(const char cmd[], int32_t* reply)               { return this->atcommand_full(cmd, reply, 0, NULL, NULL); }
   bool atcommandIntReply(const __FlashStringHelper *cmd, int32_t* reply) { return this->atcommand_full(cmd, reply, 0, NULL, NULL); }
 
+  uint16_t atcommandStrReply(const char cmd[], char* buf, uint16_t bufsize, uint16_t timeout);
+  uint16_t atcommandStrReply(const __FlashStringHelper *cmd, char* buf, uint16_t bufsize, uint16_t timeout);
+
+  uint16_t atcommandStrReplyPerLine(const char cmd[], char* linebuf, uint16_t bufsize, uint16_t timeout, void (*line_callback)(void*, char*, uint16_t), void* callback_data);
+  uint16_t atcommandStrReplyPerLine(const __FlashStringHelper *cmd, char* linebuf, uint16_t bufsize, uint16_t timeout, void (*line_callback)(void*, char*, uint16_t), void* callback_data);
+
+
+
   //------------- One integer argument -------------//
   bool atcommandIntReply(const char cmd[]              , int32_t* reply, int32_t para1)
   {

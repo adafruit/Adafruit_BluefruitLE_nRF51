@@ -194,6 +194,116 @@ bool Adafruit_ATParser::atcommand_full(const __FlashStringHelper *cmd, int32_t* 
 
 /******************************************************************************/
 /*!
+    @brief Send an AT command and get multiline string response into
+           user-provided buffer.
+
+    @param[in] cmd Command
+    @param[in] buf Provided buffer
+    @param[in] bufsize buffer size
+    @param[in] timeout timeout in milliseconds
+
+*/
+/******************************************************************************/
+uint16_t Adafruit_ATParser::atcommandStrReply(const char cmd[], char* buf, uint16_t bufsize, uint16_t timeout)
+{
+  uint16_t result_bytes;
+  uint8_t current_mode = _mode;
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+
+  // Execute command with parameter and get response
+  println(cmd);
+  result_bytes = this->readline(buf, bufsize, timeout, true);
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+
+  return result_bytes;
+}
+
+uint16_t Adafruit_ATParser::atcommandStrReply(const __FlashStringHelper *cmd, char* buf, uint16_t bufsize, uint16_t timeout)
+{
+  uint16_t result_bytes;
+  uint8_t current_mode = _mode;
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+
+  // Execute command with parameter and get response
+  println(cmd);
+  result_bytes = this->readline(buf, bufsize, timeout, true);
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+
+  return result_bytes;
+}
+
+/******************************************************************************/
+/*!
+    @brief Send an AT command and process a multiline string response
+           by a user-provided callback executed per line.
+
+    @param[in] cmd Command
+    @param[in] linebuf Buffer to hold text of each line at a time
+    @param[in] bufsize buffer size
+    @param[in] timeout timeout in milliseconds to wait for each line
+    @param[in] line_callback function called for each line
+    @param[in] callback_data user-provided state for callback
+
+*/
+/******************************************************************************/
+uint16_t Adafruit_ATParser::atcommandStrReplyPerLine(
+    const char cmd[],
+    char* linebuf, uint16_t bufsize, uint16_t timeout,
+    void (*line_callback)(void*, char*, uint16_t), void* callback_data)
+{
+  uint16_t result_bytes;
+  uint8_t current_mode = _mode;
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+
+  // Execute command with parameter, get response, process line-by-line
+  println(cmd);
+  do {
+    result_bytes = this->readline(linebuf, bufsize, timeout, false);
+    if (0 == strncmp(linebuf, "OK", 2) ||
+        0 == strncmp(linebuf, "ERROR", 5)) break;
+    (*line_callback)(callback_data, linebuf, result_bytes);
+  } while (result_bytes > 0);
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+
+  return result_bytes;
+}
+
+uint16_t Adafruit_ATParser::atcommandStrReplyPerLine(
+    const __FlashStringHelper *cmd,
+    char* linebuf, uint16_t bufsize, uint16_t timeout,
+    void (*line_callback)(void*, char*, uint16_t), void* callback_data)
+{
+  uint16_t result_bytes;
+  uint8_t current_mode = _mode;
+  // switch mode if necessary to execute command
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+
+  // Execute command with parameter, get response, process line-by-line
+  println(cmd);
+  do {
+    result_bytes = this->readline(linebuf, bufsize, timeout, false);
+    if (0 == strncmp(linebuf, "OK", 2) ||
+        0 == strncmp(linebuf, "ERROR", 5)) break;
+    (*line_callback)(callback_data, linebuf, result_bytes);
+  } while (result_bytes > 0);
+
+  // switch back if necessary
+  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+
+  return result_bytes;
+}
+
+/******************************************************************************/
+/*!
     @brief  Get a line of response data (see \ref readline) and try to interpret
             it to an integer number. If the number is prefix with '0x', it will
             be interpreted as hex number. This function also drop the rest of
