@@ -29,25 +29,21 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 
 #include "Adafruit_BLEEddystone.h"
 
-#define EDDYSTONE_MINIMUM_FIRMWARE_VERSION    "0.7.0"
-
+#define EDDYSTONE_MINIMUM_FIRMWARE_VERSION "0.7.0"
 
 /******************************************************************************/
 /*!
     @brief Constructor
 */
 /******************************************************************************/
-Adafruit_BLEEddystone::Adafruit_BLEEddystone(Adafruit_BLE& ble) :
-  _ble(ble)
-{
-}
+Adafruit_BLEEddystone::Adafruit_BLEEddystone(Adafruit_BLE &ble) : _ble(ble) {}
 
 /******************************************************************************/
 /*!
@@ -55,18 +51,19 @@ Adafruit_BLEEddystone::Adafruit_BLEEddystone(Adafruit_BLE& ble) :
     @param reset true will reset Bluefruit
 */
 /******************************************************************************/
-bool Adafruit_BLEEddystone::begin(bool reset)
-{
-  VERIFY_( _ble.isVersionAtLeast(EDDYSTONE_MINIMUM_FIRMWARE_VERSION) );
+bool Adafruit_BLEEddystone::begin(bool reset) {
+  VERIFY_(_ble.isVersionAtLeast(EDDYSTONE_MINIMUM_FIRMWARE_VERSION));
 
   int32_t enabled = 0;
-  VERIFY_( _ble.atcommandIntReply( F("AT+EDDYSTONESERVICEEN"), &enabled) );
+  VERIFY_(_ble.atcommandIntReply(F("AT+EDDYSTONESERVICEEN"), &enabled));
 
-  if ( enabled ) return true;
-  VERIFY_( _ble.atcommand( F("AT+EDDYSTONESERVICEEN=1") ) );
+  if (enabled)
+    return true;
+  VERIFY_(_ble.atcommand(F("AT+EDDYSTONESERVICEEN=1")));
 
   // Perform Bluefruit reset if needed
-  if (reset) _ble.reset();
+  if (reset)
+    _ble.reset();
 
   return true;
 }
@@ -77,16 +74,17 @@ bool Adafruit_BLEEddystone::begin(bool reset)
     @param reset true will reset Bluefruit
 */
 /******************************************************************************/
-bool Adafruit_BLEEddystone::stop(bool reset)
-{
+bool Adafruit_BLEEddystone::stop(bool reset) {
   int32_t enabled = 0;
-  VERIFY_( _ble.atcommandIntReply( F("AT+EDDYSTONESERVICEEN"), &enabled) );
-  if ( !enabled ) return true;
+  VERIFY_(_ble.atcommandIntReply(F("AT+EDDYSTONESERVICEEN"), &enabled));
+  if (!enabled)
+    return true;
 
-  VERIFY_( _ble.atcommand( F("AT+EDDYSTONESERVICEEN=0") ) );
+  VERIFY_(_ble.atcommand(F("AT+EDDYSTONESERVICEEN=0")));
 
   // Perform Bluefruit reset if needed
-  if (reset) _ble.reset();
+  if (reset)
+    _ble.reset();
 
   return true;
 }
@@ -99,27 +97,31 @@ bool Adafruit_BLEEddystone::stop(bool reset)
     @param rssi_at_0m RSSI value at 0m (check out EddyStone specs)
 */
 /******************************************************************************/
-bool Adafruit_BLEEddystone::setURL(const char* url, bool broadcastEvenConnect, int8_t rssi_at_0m)
-{
+bool Adafruit_BLEEddystone::setURL(const char *url, bool broadcastEvenConnect,
+                                   int8_t rssi_at_0m) {
   bool result;
   uint8_t current_mode = _ble.getMode();
 
   // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_COMMAND);
+  if (current_mode == BLUEFRUIT_MODE_DATA)
+    _ble.setMode(BLUEFRUIT_MODE_COMMAND);
 
   // send command and integer parameters separated by comma
-  _ble.print(  F("AT+EDDYSTONEURL=") );
+  _ble.print(F("AT+EDDYSTONEURL="));
   _ble.print(url);
 
-  _ble.print(','); _ble.print(broadcastEvenConnect, DEC);
-  _ble.print(','); _ble.print(rssi_at_0m);
+  _ble.print(',');
+  _ble.print(broadcastEvenConnect, DEC);
+  _ble.print(',');
+  _ble.print(rssi_at_0m);
 
   _ble.println(); // execute command
 
   result = _ble.waitForOK();
 
   // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) _ble.setMode(BLUEFRUIT_MODE_DATA);
+  if (current_mode == BLUEFRUIT_MODE_DATA)
+    _ble.setMode(BLUEFRUIT_MODE_DATA);
 
   return result;
 }
@@ -129,9 +131,8 @@ bool Adafruit_BLEEddystone::setURL(const char* url, bool broadcastEvenConnect, i
     @brief Start Broadcasting (advertising) specified URL
 */
 /******************************************************************************/
-bool Adafruit_BLEEddystone::startBroadcast(void)
-{
-  return _ble.atcommand( F("AT+EDDYSTONEBROADCAST=1") );
+bool Adafruit_BLEEddystone::startBroadcast(void) {
+  return _ble.atcommand(F("AT+EDDYSTONEBROADCAST=1"));
 }
 
 /******************************************************************************/
@@ -139,9 +140,8 @@ bool Adafruit_BLEEddystone::startBroadcast(void)
     @brief Stop Broadcasting (advertising) specified URL
 */
 /******************************************************************************/
-bool Adafruit_BLEEddystone::stopBroadcast(void)
-{
-  return _ble.atcommand( F("AT+EDDYSTONEBROADCAST=0") );
+bool Adafruit_BLEEddystone::stopBroadcast(void) {
+  return _ble.atcommand(F("AT+EDDYSTONEBROADCAST=0"));
 }
 
 /******************************************************************************/
@@ -149,7 +149,6 @@ bool Adafruit_BLEEddystone::stopBroadcast(void)
     @brief Broadcast (advertising) specified URL
 */
 /******************************************************************************/
-bool Adafruit_BLEEddystone::startConfigMode(uint32_t seconds)
-{
-  return _ble.atcommand( F("AT+EDDYSTONECONFIGEN"), (int32_t) seconds );
+bool Adafruit_BLEEddystone::startConfigMode(uint32_t seconds) {
+  return _ble.atcommand(F("AT+EDDYSTONECONFIGEN"), (int32_t)seconds);
 }

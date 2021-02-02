@@ -29,32 +29,39 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 
-/** 
+/**
  *  @{
  */
 
 #ifndef _TIMEOUT_TIMER_H_
 #define _TIMEOUT_TIMER_H_
 
-class TimeoutTimer
-{
-  private:
-    uint32_t start;
-    uint32_t interval;
+class TimeoutTimer {
+private:
+  uint32_t start;
+  uint32_t interval;
 
-  public:
-    TimeoutTimer()              { start = millis(); interval = 0; }
-    TimeoutTimer(uint32_t msec) { set(msec); }
+public:
+  TimeoutTimer() {
+    start = millis();
+    interval = 0;
+  }
+  TimeoutTimer(uint32_t msec) { set(msec); }
 
-    void set(uint32_t msec)     { start = millis(); interval = msec; }
-    bool expired(void)  const   { return (millis() - start) >= interval; }
-    void restart(void)          { start = millis(); }
-    void reset(void)            { start += interval; } // used for periodic invoke to prevent drift
+  void set(uint32_t msec) {
+    start = millis();
+    interval = msec;
+  }
+  bool expired(void) const { return (millis() - start) >= interval; }
+  void restart(void) { start = millis(); }
+  void reset(void) {
+    start += interval;
+  } // used for periodic invoke to prevent drift
 };
 
 #endif /* _TIMEOUT_TIMER_H_ */

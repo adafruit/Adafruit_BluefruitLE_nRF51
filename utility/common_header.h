@@ -29,26 +29,26 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 
 #ifndef _COMMON_HEADER_H_
 #define _COMMON_HEADER_H_
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 //--------------------------------------------------------------------+
 // COMPILER
 //--------------------------------------------------------------------+
-#define STRING_(x)                  #x                   // stringify without expand
-#define XSTRING_(x)                 STRING_(x)           // expand then stringify
-#define STRING_CONCAT_(a, b)        a##b                 // concat without expand
-#define XSTRING_CONCAT_(a, b)       STRING_CONCAT_(a, b) // expand then concat
+#define STRING_(x) #x                              // stringify without expand
+#define XSTRING_(x) STRING_(x)                     // expand then stringify
+#define STRING_CONCAT_(a, b) a##b                  // concat without expand
+#define XSTRING_CONCAT_(a, b) STRING_CONCAT_(a, b) // expand then concat
 
-#define ATTR_PACKED               __attribute__ ((packed))
+#define ATTR_PACKED __attribute__((packed))
 
 //--------------------------------------------------------------------+
 // ASSERT & VERIFY
@@ -57,22 +57,27 @@
 
 //------------- Compile-time Assert -------------//
 #if defined __COUNTER__ && __COUNTER__ != __COUNTER__
-  #define _ASSERT_COUNTER __COUNTER__
+#define _ASSERT_COUNTER __COUNTER__
 #else
-  #define _ASSERT_COUNTER __LINE__
+#define _ASSERT_COUNTER __LINE__
 #endif
 
-#define ASSERT_STATIC_(const_expr) enum { XSTRING_CONCAT_(static_assert_, _ASSERT_COUNTER) = 1/(!!(const_expr)) }
+#define ASSERT_STATIC_(const_expr)                                             \
+  enum {                                                                       \
+    XSTRING_CONCAT_(static_assert_, _ASSERT_COUNTER) = 1 / (!!(const_expr))    \
+  }
 
-
-#define VERIFY_(condition)                if ( !(condition) ) return false;
-#define VERIFY_RETURN_(condition, error)  if ( !(condition) ) return error;
+#define VERIFY_(condition)                                                     \
+  if (!(condition))                                                            \
+    return false;
+#define VERIFY_RETURN_(condition, error)                                       \
+  if (!(condition))                                                            \
+    return error;
 
 //--------------------------------------------------------------------+
 // INLINE FUNCTION
 //--------------------------------------------------------------------+
-static inline bool is_within(uint32_t lower, uint32_t value, uint32_t upper)
-{
+static inline bool is_within(uint32_t lower, uint32_t value, uint32_t upper) {
   return (lower <= value) && (value <= upper);
 }
 

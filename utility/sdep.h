@@ -40,7 +40,7 @@
 
 #include "common_header.h"
 
-#define SDEP_MAX_PACKETSIZE       16 // Maximum payload per packet
+#define SDEP_MAX_PACKETSIZE 16 // Maximum payload per packet
 
 /******************************************************************************/
 /*!
@@ -48,12 +48,11 @@
     ID, and is used to create the command lookup table enum further down
 */
 /******************************************************************************/
-typedef enum
-{
-  SDEP_CMDTYPE_INITIALIZE     = 0xBEEF,   /**< Controls the on board LED(s) */
-  SDEP_CMDTYPE_AT_WRAPPER     = 0x0A00,
-  SDEP_CMDTYPE_BLE_UARTTX     = 0x0A01,
-  SDEP_CMDTYPE_BLE_UARTRX     = 0x0A02,
+typedef enum {
+  SDEP_CMDTYPE_INITIALIZE = 0xBEEF, /**< Controls the on board LED(s) */
+  SDEP_CMDTYPE_AT_WRAPPER = 0x0A00,
+  SDEP_CMDTYPE_BLE_UARTTX = 0x0A01,
+  SDEP_CMDTYPE_BLE_UARTRX = 0x0A02,
 } sdepCmdType_t;
 
 /******************************************************************************/
@@ -61,12 +60,11 @@ typedef enum
     The first byte of every transfer defines the message type
 */
 /******************************************************************************/
-typedef enum
-{
-  SDEP_MSGTYPE_COMMAND          = 0x10,
-  SDEP_MSGTYPE_RESPONSE         = 0x20,
-  SDEP_MSGTYPE_ALERT            = 0x40,
-  SDEP_MSGTYPE_ERROR            = 0x80
+typedef enum {
+  SDEP_MSGTYPE_COMMAND = 0x10,
+  SDEP_MSGTYPE_RESPONSE = 0x20,
+  SDEP_MSGTYPE_ALERT = 0x40,
+  SDEP_MSGTYPE_ERROR = 0x80
 } sdepMsgType_t;
 
 /******************************************************************************/
@@ -75,22 +73,19 @@ typedef enum
 */
 /******************************************************************************/
 typedef struct ATTR_PACKED {
-  uint8_t msg_type;           // 8-bit message type indicator (sdepMsgType_t)
+  uint8_t msg_type; // 8-bit message type indicator (sdepMsgType_t)
 
-  union
-  {
-    uint16_t cmd_id;          // 16-bit command ID
-    struct
-    {
+  union {
+    uint16_t cmd_id; // 16-bit command ID
+    struct {
       uint8_t cmd_id_low;
       uint8_t cmd_id_high;
     };
   };
 
-  struct ATTR_PACKED
-  {
-    uint8_t length    : 7;    // Payload length (for this packet)
-    uint8_t more_data : 1;    // 'more' bit for multiple packet transfers
+  struct ATTR_PACKED {
+    uint8_t length : 7;    // Payload length (for this packet)
+    uint8_t more_data : 1; // 'more' bit for multiple packet transfers
   };
 } sdepMsgHeader_t;
 
@@ -99,8 +94,7 @@ typedef struct ATTR_PACKED {
     SDEP command message
 */
 /******************************************************************************/
-typedef struct ATTR_PACKED 
-{
+typedef struct ATTR_PACKED {
   sdepMsgHeader_t header;
   uint8_t payload[SDEP_MAX_PACKETSIZE];
 } sdepMsgCommand_t;

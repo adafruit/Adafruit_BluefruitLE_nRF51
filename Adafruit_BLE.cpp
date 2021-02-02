@@ -29,20 +29,20 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 #include "Adafruit_BLE.h"
 #include "Adafruit_BLEMIDI.h"
 
 #ifndef min
-  #define min(a,b) ((a) < (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 enum {
-  EVENT_SYSTEM_CONNECT     = 0,
-  EVENT_SYSTEM_DISCONNECT  = 1,
+  EVENT_SYSTEM_CONNECT = 0,
+  EVENT_SYSTEM_DISCONNECT = 1,
 
   EVENT_SYSTEM_BLE_UART_RX = 8,
   // 9 reserved
@@ -51,23 +51,20 @@ enum {
   //  11 reserved
 };
 
-enum {
-  NVM_USERDATA_SIZE = 256
-};
+enum { NVM_USERDATA_SIZE = 256 };
 
 /******************************************************************************/
 /*!
     @brief  Constructor
 */
 /******************************************************************************/
-Adafruit_BLE::Adafruit_BLE(void)
-{
+Adafruit_BLE::Adafruit_BLE(void) {
   _timeout = BLE_DEFAULT_TIMEOUT;
 
   _reset_started_timestamp = 0;
 
-  _disconnect_callback  = NULL;
-  _connect_callback     = NULL;
+  _disconnect_callback = NULL;
+  _connect_callback = NULL;
   _ble_uart_rx_callback = NULL;
   _ble_midi_rx_callback = NULL;
   _ble_gatt_rx_callback = NULL;
@@ -79,20 +76,20 @@ Adafruit_BLE::Adafruit_BLE(void)
     @param
 */
 /******************************************************************************/
-void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_id)
-{
+void Adafruit_BLE::install_callback(bool enable, int8_t system_id,
+                                    int8_t gatts_id) {
   uint8_t current_mode = _mode;
 
   // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+  if (current_mode == BLUEFRUIT_MODE_DATA)
+    setMode(BLUEFRUIT_MODE_COMMAND);
 
-  print( enable ?  F("AT+EVENTENABLE=0x") : F("AT+EVENTDISABLE=0x") );
-  print( (system_id < 0) ? 0 : bit(system_id), HEX );
+  print(enable ? F("AT+EVENTENABLE=0x") : F("AT+EVENTDISABLE=0x"));
+  print((system_id < 0) ? 0 : bit(system_id), HEX);
 
-  if ( gatts_id >= 0 )
-  {
-    print( F(",0x") );
-    println( bit(gatts_id), HEX );
+  if (gatts_id >= 0) {
+    print(F(",0x"));
+    println(bit(gatts_id), HEX);
   }
 
   println();
@@ -100,7 +97,8 @@ void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_
   waitForOK();
 
   // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+  if (current_mode == BLUEFRUIT_MODE_DATA)
+    setMode(BLUEFRUIT_MODE_DATA);
 }
 
 /******************************************************************************/
@@ -109,36 +107,37 @@ void Adafruit_BLE::install_callback(bool enable, int8_t system_id, int8_t gatts_
     @param blocking blocking until bluefruit is ready, will take 1 second mostly
 */
 /******************************************************************************/
-bool Adafruit_BLE::reset(boolean blocking)
-{
+bool Adafruit_BLE::reset(boolean blocking) {
   bool isOK;
   // println();
-  for (uint8_t t=0; t < 5; t++) {
+  for (uint8_t t = 0; t < 5; t++) {
     isOK = atcommand(F("ATZ"));
 
-    if (isOK) break;
+    if (isOK)
+      break;
   }
 
-  if (! isOK) {
+  if (!isOK) {
     // ok we're going to get desperate
     delay(50);
     setMode(BLUEFRUIT_MODE_COMMAND);
     delay(50);
-    
-    for (uint8_t t=0; t < 5; t++) {
+
+    for (uint8_t t = 0; t < 5; t++) {
       isOK = atcommand(F("ATZ"));
-      
-      if (isOK) break;
+
+      if (isOK)
+        break;
     }
 
-    if (!isOK) return false;
+    if (!isOK)
+      return false;
   }
 
   _reset_started_timestamp = millis();
 
   // Bluefruit need 1 second to reboot
-  if (blocking)
-  {
+  if (blocking) {
     delay(1000);
   }
 
@@ -153,16 +152,14 @@ bool Adafruit_BLE::reset(boolean blocking)
     @brief  Performs a factory reset
 */
 /******************************************************************************/
-bool Adafruit_BLE::factoryReset(boolean blocking)
-{
-  println( F("AT+FACTORYRESET") );
+bool Adafruit_BLE::factoryReset(boolean blocking) {
+  println(F("AT+FACTORYRESET"));
   bool isOK = waitForOK();
 
   _reset_started_timestamp = millis();
 
   // Bluefruit need 1 second to reboot
-  if (blocking)
-  {
+  if (blocking) {
     delay(1000);
   }
 
@@ -178,8 +175,7 @@ bool Adafruit_BLE::factoryReset(boolean blocking)
     reset Bluefruit with non-blocking aka reset(false)
 */
 /******************************************************************************/
-bool Adafruit_BLE::resetCompleted(void)
-{
+bool Adafruit_BLE::resetCompleted(void) {
   return millis() > (_reset_started_timestamp + 1000);
 }
 
@@ -191,9 +187,8 @@ bool Adafruit_BLE::resetCompleted(void)
                true to enable (default), false to disable
 */
 /******************************************************************************/
-bool Adafruit_BLE::echo(bool enable)
-{
-  return atcommand(F("ATE"), (int32_t) enable);
+bool Adafruit_BLE::echo(bool enable) {
+  return atcommand(F("ATE"), (int32_t)enable);
 }
 
 /******************************************************************************/
@@ -201,8 +196,7 @@ bool Adafruit_BLE::echo(bool enable)
     @brief  Check connection state, returns true is connected!
 */
 /******************************************************************************/
-bool Adafruit_BLE::isConnected(void)
-{
+bool Adafruit_BLE::isConnected(void) {
   int32_t connected = 0;
   atcommandIntReply(F("AT+GAPGETCONN"), &connected);
   return connected;
@@ -213,18 +207,14 @@ bool Adafruit_BLE::isConnected(void)
     @brief  Disconnect if currently connected
 */
 /******************************************************************************/
-void Adafruit_BLE::disconnect(void)
-{
-  atcommand( F("AT+GAPDISCONNECT") );
-}
+void Adafruit_BLE::disconnect(void) { atcommand(F("AT+GAPDISCONNECT")); }
 
 /******************************************************************************/
 /*!
     @brief  Print Bluefruit's information retrieved by ATI command
 */
 /******************************************************************************/
-void Adafruit_BLE::info(void)
-{
+void Adafruit_BLE::info(void) {
   uint8_t current_mode = _mode;
 
   bool v = _verbose;
@@ -233,17 +223,20 @@ void Adafruit_BLE::info(void)
   SerialDebug.println(F("----------------"));
 
   // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+  if (current_mode == BLUEFRUIT_MODE_DATA)
+    setMode(BLUEFRUIT_MODE_COMMAND);
 
   println(F("ATI"));
 
-  while ( readline() ) {
-    if ( !strcmp(buffer, "OK") || !strcmp(buffer, "ERROR")  ) break;
+  while (readline()) {
+    if (!strcmp(buffer, "OK") || !strcmp(buffer, "ERROR"))
+      break;
     SerialDebug.println(buffer);
   }
 
   // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+  if (current_mode == BLUEFRUIT_MODE_DATA)
+    setMode(BLUEFRUIT_MODE_DATA);
 
   SerialDebug.println(F("----------------"));
 
@@ -255,22 +248,23 @@ void Adafruit_BLE::info(void)
     @brief  Checks if firmware is equal or later than specified version
 */
 /**************************************************************************/
-bool Adafruit_BLE::isVersionAtLeast(const char * versionString)
-{
+bool Adafruit_BLE::isVersionAtLeast(const char *versionString) {
   uint8_t current_mode = _mode;
 
   // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+  if (current_mode == BLUEFRUIT_MODE_DATA)
+    setMode(BLUEFRUIT_MODE_COMMAND);
 
   // requesting version number
   println(F("ATI=4"));
 
   readline();
-  bool result = ( strcmp(buffer, versionString) >= 0 );
+  bool result = (strcmp(buffer, versionString) >= 0);
   waitForOK();
 
   // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+  if (current_mode == BLUEFRUIT_MODE_DATA)
+    setMode(BLUEFRUIT_MODE_DATA);
 
   return result;
 }
@@ -284,12 +278,10 @@ bool Adafruit_BLE::isVersionAtLeast(const char * versionString)
     @return    None
 */
 /******************************************************************************/
-void Adafruit_BLE::update(uint32_t period_ms)
-{
+void Adafruit_BLE::update(uint32_t period_ms) {
   static TimeoutTimer tt;
 
-  if ( tt.expired() )
-  {
+  if (tt.expired()) {
     tt.set(period_ms);
 
     bool v = _verbose;
@@ -298,68 +290,70 @@ void Adafruit_BLE::update(uint32_t period_ms)
     uint8_t current_mode = _mode;
 
     // switch mode if necessary to execute command
-    if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+    if (current_mode == BLUEFRUIT_MODE_DATA)
+      setMode(BLUEFRUIT_MODE_COMMAND);
 
-    println( F("AT+EVENTSTATUS") );
+    println(F("AT+EVENTSTATUS"));
     readline();
     waitForOK();
 
     // parse event status system_event, gatts_event
-    uint8_t tempbuf[BLE_BUFSIZE+1];
+    uint8_t tempbuf[BLE_BUFSIZE + 1];
     uint32_t system_event, gatts_event;
-    char * p_comma = NULL;
+    char *p_comma = NULL;
 
     system_event = strtoul(this->buffer, &p_comma, 16);
-    gatts_event  = strtoul(p_comma+1, NULL, 16);
+    gatts_event = strtoul(p_comma + 1, NULL, 16);
 
     //--------------------------------------------------------------------+
     // System Event
     //--------------------------------------------------------------------+
-    if ( this->_connect_callback    && bitRead(system_event, EVENT_SYSTEM_CONNECT   ) ) this->_connect_callback();
-    if ( this->_disconnect_callback && bitRead(system_event, EVENT_SYSTEM_DISCONNECT) ) this->_disconnect_callback();
+    if (this->_connect_callback && bitRead(system_event, EVENT_SYSTEM_CONNECT))
+      this->_connect_callback();
+    if (this->_disconnect_callback &&
+        bitRead(system_event, EVENT_SYSTEM_DISCONNECT))
+      this->_disconnect_callback();
 
-    if ( this->_ble_uart_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX) )
-    {
+    if (this->_ble_uart_rx_callback &&
+        bitRead(system_event, EVENT_SYSTEM_BLE_UART_RX)) {
       // _verbose = true;
-      println( F("AT+BLEUARTRX") );
+      println(F("AT+BLEUARTRX"));
       uint16_t len = readline(tempbuf, BLE_BUFSIZE);
       waitForOK();
 
-      this->_ble_uart_rx_callback( (char*) tempbuf, len);
+      this->_ble_uart_rx_callback((char *)tempbuf, len);
     }
 
-    if ( this->_ble_midi_rx_callback && bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX) )
-    {
-//      _verbose = true;
-      while(1)
-      {
+    if (this->_ble_midi_rx_callback &&
+        bitRead(system_event, EVENT_SYSTEM_BLE_MIDI_RX)) {
+      //      _verbose = true;
+      while (1) {
         // use RAW command version
-        println( F("AT+BLEMIDIRXRAW") );
+        println(F("AT+BLEMIDIRXRAW"));
 
         // readraw swallow OK/ERROR already
         uint16_t len = readraw();
 
         // break if there is no more MIDI event
-        if ( len == 0 ) break;
+        if (len == 0)
+          break;
 
         // copy to internal buffer for other usage !
         memcpy(tempbuf, this->buffer, len);
 
-        Adafruit_BLEMIDI::processRxCallback(tempbuf, len, this->_ble_midi_rx_callback);
+        Adafruit_BLEMIDI::processRxCallback(tempbuf, len,
+                                            this->_ble_midi_rx_callback);
       }
     }
 
     //--------------------------------------------------------------------+
     // Gatt Event
     //--------------------------------------------------------------------+
-    if ( this->_ble_gatt_rx_callback && gatts_event )
-    {
-//      _verbose = true;
-      for(uint8_t charid=1; charid < 30; charid++)
-      {
-        if ( bitRead(gatts_event, charid-1) )
-        {
-          print( F("AT+GATTCHARRAW=") ); // use RAW command version
+    if (this->_ble_gatt_rx_callback && gatts_event) {
+      //      _verbose = true;
+      for (uint8_t charid = 1; charid < 30; charid++) {
+        if (bitRead(gatts_event, charid - 1)) {
+          print(F("AT+GATTCHARRAW=")); // use RAW command version
           println(charid);
 
           uint16_t len = readraw(); // readraw swallow OK/ERROR already
@@ -371,7 +365,8 @@ void Adafruit_BLE::update(uint32_t period_ms)
     }
 
     // switch back if necessary
-    if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+    if (current_mode == BLUEFRUIT_MODE_DATA)
+      setMode(BLUEFRUIT_MODE_DATA);
 
     _verbose = v;
   }
@@ -383,8 +378,7 @@ void Adafruit_BLE::update(uint32_t period_ms)
     @param
 */
 /******************************************************************************/
-bool Adafruit_BLE::setAdvData(uint8_t advdata[], uint8_t size)
-{
+bool Adafruit_BLE::setAdvData(uint8_t advdata[], uint8_t size) {
   return this->atcommand(F("AT+GAPSETADVDATA"), advdata, size);
 }
 
@@ -396,12 +390,13 @@ bool Adafruit_BLE::setAdvData(uint8_t advdata[], uint8_t size)
     @param offset relative offset in the NVM section
 */
 /******************************************************************************/
-bool Adafruit_BLE::writeNVM(uint16_t offset, uint8_t const data[], uint16_t size)
-{
-  VERIFY_(offset + size <= NVM_USERDATA_SIZE );
+bool Adafruit_BLE::writeNVM(uint16_t offset, uint8_t const data[],
+                            uint16_t size) {
+  VERIFY_(offset + size <= NVM_USERDATA_SIZE);
 
-  uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, (uint16_t) (AT_ARGTYPE_BYTEARRAY + size) };
-  uint32_t args[] = { offset, BLE_DATATYPE_BYTEARRAY, (uint32_t) data };
+  uint16_t type[] = {AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8,
+                     (uint16_t)(AT_ARGTYPE_BYTEARRAY + size)};
+  uint32_t args[] = {offset, BLE_DATATYPE_BYTEARRAY, (uint32_t)data};
 
   return this->atcommand_full(F("AT+NVMWRITE"), NULL, 3, type, args);
 }
@@ -414,12 +409,11 @@ bool Adafruit_BLE::writeNVM(uint16_t offset, uint8_t const data[], uint16_t size
     @param offset relative offset in the NVM section
 */
 /******************************************************************************/
-bool Adafruit_BLE::writeNVM(uint16_t offset, char const* str)
-{
-  VERIFY_(offset + strlen(str) <= NVM_USERDATA_SIZE );
+bool Adafruit_BLE::writeNVM(uint16_t offset, char const *str) {
+  VERIFY_(offset + strlen(str) <= NVM_USERDATA_SIZE);
 
-  uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_STRING };
-  uint32_t args[] = { offset, BLE_DATATYPE_STRING, (uint32_t) str };
+  uint16_t type[] = {AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_STRING};
+  uint32_t args[] = {offset, BLE_DATATYPE_STRING, (uint32_t)str};
 
   return this->atcommand_full(F("AT+NVMWRITE"), NULL, 3, type, args);
 }
@@ -431,12 +425,11 @@ bool Adafruit_BLE::writeNVM(uint16_t offset, char const* str)
     @param offset relative offset in the NVM section
 */
 /******************************************************************************/
-bool Adafruit_BLE::writeNVM(uint16_t offset, int32_t number)
-{
-  VERIFY_(offset + 4 <= NVM_USERDATA_SIZE );
+bool Adafruit_BLE::writeNVM(uint16_t offset, int32_t number) {
+  VERIFY_(offset + 4 <= NVM_USERDATA_SIZE);
 
-  uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_INT32 };
-  uint32_t args[] = { offset, BLE_DATATYPE_INTEGER, (uint32_t) number };
+  uint16_t type[] = {AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8, AT_ARGTYPE_INT32};
+  uint32_t args[] = {offset, BLE_DATATYPE_INTEGER, (uint32_t)number};
 
   return this->atcommand_full(F("AT+NVMWRITE"), NULL, 3, type, args);
 }
@@ -447,17 +440,17 @@ bool Adafruit_BLE::writeNVM(uint16_t offset, int32_t number)
     @param
 */
 /******************************************************************************/
-bool Adafruit_BLE::readNVM(uint16_t offset, uint8_t data[], uint16_t size)
-{
+bool Adafruit_BLE::readNVM(uint16_t offset, uint8_t data[], uint16_t size) {
   VERIFY_(offset < NVM_USERDATA_SIZE);
 
   uint8_t current_mode = _mode;
 
   // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_COMMAND);
+  if (current_mode == BLUEFRUIT_MODE_DATA)
+    setMode(BLUEFRUIT_MODE_COMMAND);
 
   // use RAW command version
-  print( F("AT+NVMREADRAW=") );
+  print(F("AT+NVMREADRAW="));
   print(offset);
 
   print(',');
@@ -466,13 +459,16 @@ bool Adafruit_BLE::readNVM(uint16_t offset, uint8_t data[], uint16_t size)
   uint16_t len = readraw(); // readraw swallow OK/ERROR already
 
   // Check for an error reading
-  if ( len != size ) return false;
+  if (len != size)
+    return false;
 
   // skip if NULL is entered
-  if (data) memcpy(data, this->buffer, min(size, BLE_BUFSIZE));
+  if (data)
+    memcpy(data, this->buffer, min(size, BLE_BUFSIZE));
 
   // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_DATA ) setMode(BLUEFRUIT_MODE_DATA);
+  if (current_mode == BLUEFRUIT_MODE_DATA)
+    setMode(BLUEFRUIT_MODE_DATA);
 
   return true;
 }
@@ -483,17 +479,17 @@ bool Adafruit_BLE::readNVM(uint16_t offset, uint8_t data[], uint16_t size)
     @param
 */
 /******************************************************************************/
-bool Adafruit_BLE::readNVM(uint16_t offset, char* str, uint16_t size)
-{
+bool Adafruit_BLE::readNVM(uint16_t offset, char *str, uint16_t size) {
   VERIFY_(offset < NVM_USERDATA_SIZE);
 
-  uint16_t type[] = { AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8 };
-  uint32_t args[] = { offset, size, BLE_DATATYPE_STRING};
+  uint16_t type[] = {AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT16, AT_ARGTYPE_UINT8};
+  uint32_t args[] = {offset, size, BLE_DATATYPE_STRING};
 
-  bool isOK =  this->atcommand_full(F("AT+NVMREAD"), NULL, 3, type, args);
+  bool isOK = this->atcommand_full(F("AT+NVMREAD"), NULL, 3, type, args);
 
   // skip if NULL is entered
-  if ( isOK && str ) strncpy(str, this->buffer, min(size, BLE_BUFSIZE));
+  if (isOK && str)
+    strncpy(str, this->buffer, min(size, BLE_BUFSIZE));
 
   return isOK;
 }
@@ -504,9 +500,8 @@ bool Adafruit_BLE::readNVM(uint16_t offset, char* str, uint16_t size)
     @param
 */
 /******************************************************************************/
-bool Adafruit_BLE::readNVM(uint16_t offset, int32_t* number)
-{
-  return this->readNVM(offset, (uint8_t*)number, 4);
+bool Adafruit_BLE::readNVM(uint16_t offset, int32_t *number) {
+  return this->readNVM(offset, (uint8_t *)number, 4);
 }
 
 /**
@@ -515,17 +510,18 @@ bool Adafruit_BLE::readNVM(uint16_t offset, int32_t* number)
  * @param size
  * @return
  */
-int Adafruit_BLE::writeBLEUart(uint8_t const * buffer, int size)
-{
+int Adafruit_BLE::writeBLEUart(uint8_t const *buffer, int size) {
   uint8_t current_mode = _mode;
 
   // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_COMMAND ) setMode(BLUEFRUIT_MODE_DATA);
+  if (current_mode == BLUEFRUIT_MODE_COMMAND)
+    setMode(BLUEFRUIT_MODE_DATA);
 
   size_t n = write(buffer, size);
 
   // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_COMMAND ) setMode(BLUEFRUIT_MODE_COMMAND);
+  if (current_mode == BLUEFRUIT_MODE_COMMAND)
+    setMode(BLUEFRUIT_MODE_COMMAND);
 
   return n;
 }
@@ -536,17 +532,18 @@ int Adafruit_BLE::writeBLEUart(uint8_t const * buffer, int size)
  * @param size
  * @return
  */
-int  Adafruit_BLE::readBLEUart(uint8_t* buffer, int size)
-{
+int Adafruit_BLE::readBLEUart(uint8_t *buffer, int size) {
   uint8_t current_mode = _mode;
 
   // switch mode if necessary to execute command
-  if ( current_mode == BLUEFRUIT_MODE_COMMAND ) setMode(BLUEFRUIT_MODE_DATA);
+  if (current_mode == BLUEFRUIT_MODE_COMMAND)
+    setMode(BLUEFRUIT_MODE_DATA);
 
   size_t n = readBytes(buffer, size);
 
   // switch back if necessary
-  if ( current_mode == BLUEFRUIT_MODE_COMMAND ) setMode(BLUEFRUIT_MODE_COMMAND);
+  if (current_mode == BLUEFRUIT_MODE_COMMAND)
+    setMode(BLUEFRUIT_MODE_COMMAND);
 
   return n;
 }
@@ -558,8 +555,7 @@ int  Adafruit_BLE::readBLEUart(uint8_t* buffer, int size)
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setConnectCallback( void (*fp) (void) )
-{
+void Adafruit_BLE::setConnectCallback(void (*fp)(void)) {
   this->_connect_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_CONNECT, -1);
 }
@@ -571,8 +567,7 @@ void Adafruit_BLE::setConnectCallback( void (*fp) (void) )
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setDisconnectCallback( void (*fp) (void) )
-{
+void Adafruit_BLE::setDisconnectCallback(void (*fp)(void)) {
   this->_disconnect_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_DISCONNECT, -1);
 }
@@ -584,8 +579,7 @@ void Adafruit_BLE::setDisconnectCallback( void (*fp) (void) )
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) )
-{
+void Adafruit_BLE::setBleUartRxCallback(void (*fp)(char data[], uint16_t len)) {
   this->_ble_uart_rx_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_BLE_UART_RX, -1);
 }
@@ -597,8 +591,7 @@ void Adafruit_BLE::setBleUartRxCallback( void (*fp) (char data[], uint16_t len) 
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setBleMidiRxCallback( midiRxCallback_t fp )
-{
+void Adafruit_BLE::setBleMidiRxCallback(midiRxCallback_t fp) {
   this->_ble_midi_rx_callback = fp;
   install_callback(fp != NULL, EVENT_SYSTEM_BLE_MIDI_RX, -1);
 }
@@ -610,11 +603,12 @@ void Adafruit_BLE::setBleMidiRxCallback( midiRxCallback_t fp )
     @param[in] fp function pointer, NULL will discard callback
 */
 /******************************************************************************/
-void Adafruit_BLE::setBleGattRxCallback(int32_t chars_idx,  void (*fp) (int32_t, uint8_t[], uint16_t) )
-{
-  if ( chars_idx == 0) return;
+void Adafruit_BLE::setBleGattRxCallback(int32_t chars_idx,
+                                        void (*fp)(int32_t, uint8_t[],
+                                                   uint16_t)) {
+  if (chars_idx == 0)
+    return;
 
   this->_ble_gatt_rx_callback = fp;
-  install_callback(fp != NULL, -1, chars_idx-1);
+  install_callback(fp != NULL, -1, chars_idx - 1);
 }
-

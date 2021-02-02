@@ -29,34 +29,32 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 
 #ifndef _ADAFRUIT_BLEMIDI_H_
 #define _ADAFRUIT_BLEMIDI_H_
 
-#include <Arduino.h>
 #include "Adafruit_BLE.h"
+#include <Arduino.h>
 
-typedef struct ATTR_PACKED
-{
+typedef struct ATTR_PACKED {
   union {
     struct {
       uint8_t timestamp_hi : 6;
-      uint8_t reserved     : 1;
-      uint8_t start_bit    : 1;
+      uint8_t reserved : 1;
+      uint8_t start_bit : 1;
     };
 
     uint8_t byte;
   };
 } midi_header_t;
 
-ASSERT_STATIC_ ( sizeof(midi_header_t) == 1 );
+ASSERT_STATIC_(sizeof(midi_header_t) == 1);
 
-typedef struct ATTR_PACKED
-{
+typedef struct ATTR_PACKED {
   union {
     struct {
       uint8_t timestamp_low : 7;
@@ -67,31 +65,28 @@ typedef struct ATTR_PACKED
   };
 } midi_timestamp_t;
 
-ASSERT_STATIC_ ( sizeof(midi_timestamp_t) == 1 );
+ASSERT_STATIC_(sizeof(midi_timestamp_t) == 1);
 
-class Adafruit_BLEMIDI
-{
+class Adafruit_BLEMIDI {
 private:
-  Adafruit_BLE& _ble;
+  Adafruit_BLE &_ble;
 
 public:
   typedef Adafruit_BLE::midiRxCallback_t midiRxCallback_t;
-  Adafruit_BLEMIDI(Adafruit_BLE& ble);
+  Adafruit_BLEMIDI(Adafruit_BLE &ble);
 
   bool begin(bool reset = true);
-  bool stop (bool reset = true);
+  bool stop(bool reset = true);
 
   bool send(const uint8_t bytes[3]);
 
-  bool send(uint8_t status, const uint8_t bytes[2])
-  {
-    uint8_t buffer[3] = { status, bytes[0], bytes[1] };
+  bool send(uint8_t status, const uint8_t bytes[2]) {
+    uint8_t buffer[3] = {status, bytes[0], bytes[1]};
     return send(buffer);
   }
 
-  bool send(uint8_t status, uint8_t byte1, uint8_t byte2)
-  {
-    uint8_t buffer[3] = { status, byte1, byte2 };
+  bool send(uint8_t status, uint8_t byte1, uint8_t byte2) {
+    uint8_t buffer[3] = {status, byte1, byte2};
     return send(buffer);
   }
 
@@ -99,7 +94,8 @@ public:
 
   void setRxCallback(midiRxCallback_t fp);
 
-  static void processRxCallback(uint8_t data[], uint16_t len, Adafruit_BLE::midiRxCallback_t callback_func);
+  static void processRxCallback(uint8_t data[], uint16_t len,
+                                Adafruit_BLE::midiRxCallback_t callback_func);
 };
 
 #endif /* _ADAFRUIT_BLEMIDI_H_ */

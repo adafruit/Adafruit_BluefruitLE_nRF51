@@ -29,8 +29,8 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 #include "Adafruit_BluefruitLE_SPI.h"
@@ -38,12 +38,10 @@
 #include <stdlib.h>
 
 #ifndef min
-  #define min(a,b) ((a) < (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-
 SPISettings bluefruitSPI(4000000, MSBFIRST, SPI_MODE0);
-
 
 /******************************************************************************/
 /*!
@@ -57,12 +55,12 @@ SPISettings bluefruitSPI(4000000, MSBFIRST, SPI_MODE0);
     @param[in]  rstPin
 */
 /******************************************************************************/
-Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, int8_t rstPin) :
-    m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
-{
+Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin,
+                                                   int8_t rstPin)
+    : m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true) {
   _physical_transport = BLUEFRUIT_TRANSPORT_HWSPI;
 
-  m_cs_pin  = csPin;
+  m_cs_pin = csPin;
   m_irq_pin = irqPin;
   m_rst_pin = rstPin;
 
@@ -92,24 +90,24 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, 
     @param[in]  rstPin
 */
 /******************************************************************************/
-Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin,
-    int8_t mosiPin, int8_t csPin, int8_t irqPin, int8_t rstPin) :
-    m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
-{
+Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin,
+                                                   int8_t misoPin,
+                                                   int8_t mosiPin, int8_t csPin,
+                                                   int8_t irqPin, int8_t rstPin)
+    : m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true) {
   _physical_transport = BLUEFRUIT_TRANSPORT_SWSPI;
 
-  m_sck_pin  = clkPin;
+  m_sck_pin = clkPin;
   m_miso_pin = misoPin;
   m_mosi_pin = mosiPin;
-  m_cs_pin   = csPin;
-  m_irq_pin  = irqPin;
-  m_rst_pin  = rstPin;
+  m_cs_pin = csPin;
+  m_irq_pin = irqPin;
+  m_rst_pin = rstPin;
 
   m_tx_count = 0;
 
   m_mode_switch_command_enabled = true;
 }
-
 
 /******************************************************************************/
 /*!
@@ -120,8 +118,7 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin
             'irqPin' is not a HW interrupt pin false will be returned.
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_SPI::begin(boolean v, boolean blocking)
-{
+bool Adafruit_BluefruitLE_SPI::begin(boolean v, boolean blocking) {
   _verbose = v;
 
   pinMode(m_irq_pin, INPUT);
@@ -147,8 +144,7 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v, boolean blocking)
   isOK = sendInitializePattern();
 
   // use hardware reset if available
-  if (m_rst_pin >= 0)
-  {
+  if (m_rst_pin >= 0) {
     // pull the RST to GND for 10 ms
     pinMode(m_rst_pin, OUTPUT);
     digitalWrite(m_rst_pin, HIGH);
@@ -156,14 +152,13 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v, boolean blocking)
     delay(10);
     digitalWrite(m_rst_pin, HIGH);
 
-    isOK= true;
+    isOK = true;
   }
 
   _reset_started_timestamp = millis();
 
   // Bluefruit takes 1 second to reboot
-  if (blocking)
-  {
+  if (blocking) {
     delay(1000);
   }
 
@@ -175,8 +170,7 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v, boolean blocking)
     @brief  Uninitializes the SPI interface
 */
 /******************************************************************************/
-void Adafruit_BluefruitLE_SPI::end(void)
-{
+void Adafruit_BluefruitLE_SPI::end(void) {
   if (m_sck_pin == -1) {
     SPI.end();
   }
@@ -188,8 +182,7 @@ void Adafruit_BluefruitLE_SPI::end(void)
            User should use setMode instead
 */
 /******************************************************************************/
-void Adafruit_BluefruitLE_SPI::simulateSwitchMode(void)
-{
+void Adafruit_BluefruitLE_SPI::simulateSwitchMode(void) {
   _mode = 1 - _mode;
 
   char ch = '0' + _mode;
@@ -202,13 +195,14 @@ void Adafruit_BluefruitLE_SPI::simulateSwitchMode(void)
     @brief Simulate "+++" switch mode command
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_SPI::setMode(uint8_t new_mode)
-{
+bool Adafruit_BluefruitLE_SPI::setMode(uint8_t new_mode) {
   // invalid mode
-  if ( !(new_mode == BLUEFRUIT_MODE_COMMAND || new_mode == BLUEFRUIT_MODE_DATA) ) return false;
+  if (!(new_mode == BLUEFRUIT_MODE_COMMAND || new_mode == BLUEFRUIT_MODE_DATA))
+    return false;
 
   // Already in the wanted mode
-  if ( _mode == new_mode ) return true;
+  if (_mode == new_mode)
+    return true;
 
   // SPI use different SDEP command when in DATA/COMMAND mode.
   // --> does not switch using +++ command
@@ -216,7 +210,8 @@ bool Adafruit_BluefruitLE_SPI::setMode(uint8_t new_mode)
 
   // If we're entering DATA mode, flush any old response, so that it isn't
   // interpreted as incoming UART data
-  if (_mode == BLUEFRUIT_MODE_DATA) flush();
+  if (_mode == BLUEFRUIT_MODE_DATA)
+    flush();
 
   return true;
 }
@@ -227,20 +222,19 @@ bool Adafruit_BluefruitLE_SPI::setMode(uint8_t new_mode)
            Usage of setMode is not affected.
 */
 /******************************************************************************/
-void Adafruit_BluefruitLE_SPI::enableModeSwitchCommand(bool enabled)
-{
+void Adafruit_BluefruitLE_SPI::enableModeSwitchCommand(bool enabled) {
   m_mode_switch_command_enabled = enabled;
 }
 
 /******************************************************************************/
 /*!
-    @brief Send initialize pattern to Bluefruit LE to force a reset. This pattern
-    follow the SDEP command syntax with command_id = SDEP_CMDTYPE_INITIALIZE.
-    The command has NO response, and is expected to complete within 1 second
+    @brief Send initialize pattern to Bluefruit LE to force a reset. This
+   pattern follow the SDEP command syntax with command_id =
+   SDEP_CMDTYPE_INITIALIZE. The command has NO response, and is expected to
+   complete within 1 second
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_SPI::sendInitializePattern(void)
-{
+bool Adafruit_BluefruitLE_SPI::sendInitializePattern(void) {
   return sendPacket(SDEP_CMDTYPE_INITIALIZE, NULL, 0, 0);
 }
 
@@ -252,23 +246,25 @@ bool Adafruit_BluefruitLE_SPI::sendInitializePattern(void)
                 More Data bitfield, 0 indicates this is not end of transfer yet
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, uint8_t count, uint8_t more_data)
-{
+bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t *buf,
+                                          uint8_t count, uint8_t more_data) {
   // flush old response before sending the new command, but only if we're *not*
   // in DATA mode, as the RX FIFO may containg incoming UART data that hasn't
   // been read yet
-  if (more_data == 0 && _mode != BLUEFRUIT_MODE_DATA) flush();
+  if (more_data == 0 && _mode != BLUEFRUIT_MODE_DATA)
+    flush();
 
   sdepMsgCommand_t msgCmd;
 
-  msgCmd.header.msg_type    = SDEP_MSGTYPE_COMMAND;
+  msgCmd.header.msg_type = SDEP_MSGTYPE_COMMAND;
   msgCmd.header.cmd_id_high = highByte(command);
-  msgCmd.header.cmd_id_low  = lowByte(command);
-  msgCmd.header.length      = count;
-  msgCmd.header.more_data   = (count == SDEP_MAX_PACKETSIZE) ? more_data : 0;
+  msgCmd.header.cmd_id_low = lowByte(command);
+  msgCmd.header.length = count;
+  msgCmd.header.more_data = (count == SDEP_MAX_PACKETSIZE) ? more_data : 0;
 
   // Copy payload
-  if ( buf != NULL && count > 0) memcpy(msgCmd.payload, buf, count);
+  if (buf != NULL && count > 0)
+    memcpy(msgCmd.payload, buf, count);
 
   // Starting SPI transaction
   if (m_sck_pin == -1)
@@ -279,8 +275,8 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, 
   TimeoutTimer tt(_timeout);
 
   // Bluefruit may not be ready
-  while ( ( spixfer(msgCmd.header.msg_type) == SPI_IGNORED_BYTE ) && !tt.expired() )
-  {
+  while ((spixfer(msgCmd.header.msg_type) == SPI_IGNORED_BYTE) &&
+         !tt.expired()) {
     // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
     SPI_CS_DISABLE();
     delayMicroseconds(SPI_DEFAULT_DELAY_US);
@@ -288,10 +284,10 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, 
   }
 
   bool result = !tt.expired();
-  if ( result )
-  {
+  if (result) {
     // transfer the rest of the data
-    spixfer((void*) (((uint8_t*)&msgCmd) +1), sizeof(sdepMsgHeader_t)+count-1);
+    spixfer((void *)(((uint8_t *)&msgCmd) + 1),
+            sizeof(sdepMsgHeader_t) + count - 1);
   }
 
   SPI_CS_DISABLE();
@@ -311,10 +307,8 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, 
                 Character to send
 */
 /******************************************************************************/
-size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
-{
-  if (_mode == BLUEFRUIT_MODE_DATA)
-  {
+size_t Adafruit_BluefruitLE_SPI::write(uint8_t c) {
+  if (_mode == BLUEFRUIT_MODE_DATA) {
     sendPacket(SDEP_CMDTYPE_BLE_UARTTX, &c, 1, 0);
     getResponse();
     return 1;
@@ -323,36 +317,31 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
   // Following code handle BLUEFRUIT_MODE_COMMAND
 
   // Final packet due to \r or \n terminator
-  if (c == '\r' || c == '\n')
-  {
-    if (m_tx_count > 0)
-    {
+  if (c == '\r' || c == '\n') {
+    if (m_tx_count > 0) {
       // +++ command to switch mode
-      if (m_mode_switch_command_enabled && memcmp(m_tx_buffer, "+++", 3) == 0)
-      {
+      if (m_mode_switch_command_enabled && memcmp(m_tx_buffer, "+++", 3) == 0) {
         simulateSwitchMode();
-      }else
-      {
+      } else {
         sendPacket(SDEP_CMDTYPE_AT_WRAPPER, m_tx_buffer, m_tx_count, 0);
       }
       m_tx_count = 0;
     }
   }
   // More than max packet buffered --> send with more_data = 1
-  else if (m_tx_count == SDEP_MAX_PACKETSIZE)
-  {
+  else if (m_tx_count == SDEP_MAX_PACKETSIZE) {
     sendPacket(SDEP_CMDTYPE_AT_WRAPPER, m_tx_buffer, m_tx_count, 1);
 
     m_tx_buffer[0] = c;
     m_tx_count = 1;
   }
   // Not enough data, continue to buffer
-  else
-  {
+  else {
     m_tx_buffer[m_tx_count++] = c;
   }
 
-  if (_verbose) SerialDebug.print((char) c);
+  if (_verbose)
+    SerialDebug.print((char)c);
 
   return 1;
 }
@@ -362,25 +351,19 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
 
 */
 /******************************************************************************/
-size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
-{
-  if ( _mode == BLUEFRUIT_MODE_DATA )
-  {
-    if (m_mode_switch_command_enabled &&
-        (size >= 3) &&
+size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size) {
+  if (_mode == BLUEFRUIT_MODE_DATA) {
+    if (m_mode_switch_command_enabled && (size >= 3) &&
         !memcmp(buf, "+++", 3) &&
-        !(size > 3 && buf[3] != '\r' && buf[3] != '\n') )
-    {
+        !(size > 3 && buf[3] != '\r' && buf[3] != '\n')) {
       simulateSwitchMode();
-    }else
-    {
+    } else {
       size_t remain = size;
-      while(remain)
-      {
+      while (remain) {
         size_t len = min(remain, SDEP_MAX_PACKETSIZE);
         remain -= len;
 
-        sendPacket(SDEP_CMDTYPE_BLE_UARTTX, buf, (uint8_t) len, remain ? 1 : 0);
+        sendPacket(SDEP_CMDTYPE_BLE_UARTTX, buf, (uint8_t)len, remain ? 1 : 0);
         buf += len;
       }
 
@@ -390,8 +373,7 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
     return size;
   }
   // Command mode
-  else
-  {
+  else {
     size_t n = 0;
     while (size--) {
       n += write(*buf++);
@@ -407,14 +389,12 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
     @return 'true' if a response is ready, otherwise 'false'
 */
 /******************************************************************************/
-int Adafruit_BluefruitLE_SPI::available(void)
-{
-  if (! m_rx_fifo.empty() ) {
+int Adafruit_BluefruitLE_SPI::available(void) {
+  if (!m_rx_fifo.empty()) {
     return m_rx_fifo.count();
   }
 
-  if ( _mode == BLUEFRUIT_MODE_DATA )
-  {
+  if (_mode == BLUEFRUIT_MODE_DATA) {
     // DATA Mode: query for BLE UART data
     sendPacket(SDEP_CMDTYPE_BLE_UARTRX, NULL, 0, 0);
 
@@ -422,8 +402,7 @@ int Adafruit_BluefruitLE_SPI::available(void)
     getResponse();
 
     return m_rx_fifo.count();
-  }else
-  {
+  } else {
     return (digitalRead(m_irq_pin));
   }
 }
@@ -435,8 +414,7 @@ int Adafruit_BluefruitLE_SPI::available(void)
     @return -1 if no data is available
 */
 /******************************************************************************/
-int Adafruit_BluefruitLE_SPI::read(void)
-{
+int Adafruit_BluefruitLE_SPI::read(void) {
   uint8_t ch;
 
   // try to grab from buffer first...
@@ -445,21 +423,19 @@ int Adafruit_BluefruitLE_SPI::read(void)
     return (int)ch;
   }
 
-  if ( _mode == BLUEFRUIT_MODE_DATA )
-  {
+  if (_mode == BLUEFRUIT_MODE_DATA) {
     // DATA Mode: query for BLE UART data
     sendPacket(SDEP_CMDTYPE_BLE_UARTRX, NULL, 0, 0);
 
     // Waiting to get response from Bluefruit
     getResponse();
-  }else
-  {
+  } else {
     // COMMAND Mode: Only read data from Bluefruit if IRQ is raised
-    if ( digitalRead(m_irq_pin) ) getResponse();
+    if (digitalRead(m_irq_pin))
+      getResponse();
   }
 
-  return m_rx_fifo.read(&ch) ? ((int) ch) : EOF;
-
+  return m_rx_fifo.read(&ch) ? ((int)ch) : EOF;
 }
 
 /******************************************************************************/
@@ -470,26 +446,24 @@ int Adafruit_BluefruitLE_SPI::read(void)
     @return -1 if no data is available
 */
 /******************************************************************************/
-int Adafruit_BluefruitLE_SPI::peek(void)
-{
+int Adafruit_BluefruitLE_SPI::peek(void) {
   uint8_t ch;
 
   // try to grab from buffer first...
-  if ( m_rx_fifo.peek(&ch) ) {
+  if (m_rx_fifo.peek(&ch)) {
     return (int)ch;
   }
 
-  if ( _mode == BLUEFRUIT_MODE_DATA )
-  {
+  if (_mode == BLUEFRUIT_MODE_DATA) {
     // DATA Mode: query for BLE UART data
     sendPacket(SDEP_CMDTYPE_BLE_UARTRX, NULL, 0, 0);
 
     // Waiting to get response from Bluefruit
     getResponse();
-  }else
-  {
+  } else {
     // Read data from Bluefruit if possible
-    if ( digitalRead(m_irq_pin) ) getResponse();
+    if (digitalRead(m_irq_pin))
+      getResponse();
   }
 
   return m_rx_fifo.peek(&ch) ? ch : EOF;
@@ -502,15 +476,12 @@ int Adafruit_BluefruitLE_SPI::peek(void)
     @return -1 if no data is available
 */
 /******************************************************************************/
-void Adafruit_BluefruitLE_SPI::flush(void)
-{
-  m_rx_fifo.clear();
-}
+void Adafruit_BluefruitLE_SPI::flush(void) { m_rx_fifo.clear(); }
 
 /******************************************************************************/
 /*!
-    @brief  Try to perform an full AT response transfer from Bluefruit, or execute
-            as many SPI transaction as internal FIFO can hold up.
+    @brief  Try to perform an full AT response transfer from Bluefruit, or
+   execute as many SPI transaction as internal FIFO can hold up.
 
     @note   If verbose is enabled, all the received data will be print to Serial
 
@@ -519,25 +490,24 @@ void Adafruit_BluefruitLE_SPI::flush(void)
       - false : if failed
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_SPI::getResponse(void)
-{
+bool Adafruit_BluefruitLE_SPI::getResponse(void) {
   // Try to read data from Bluefruit if there is enough room in the fifo
-  while ( m_rx_fifo.remaining() >= SDEP_MAX_PACKETSIZE )
-  {
+  while (m_rx_fifo.remaining() >= SDEP_MAX_PACKETSIZE) {
     // Get a SDEP packet
     sdepMsgResponse_t msg_response;
     memclr(&msg_response, sizeof(sdepMsgResponse_t));
 
-    if ( !getPacket(&msg_response) ) return false;
+    if (!getPacket(&msg_response))
+      return false;
 
     // Write to fifo
-    if ( msg_response.header.length > 0)
-    {
+    if (msg_response.header.length > 0) {
       m_rx_fifo.write_n(msg_response.payload, msg_response.header.length);
     }
 
     // No more packet data
-    if ( !msg_response.header.more_data ) break;
+    if (!msg_response.header.more_data)
+      break;
 
     // It takes a bit since all Data received to IRQ to get LOW
     // May need to delay a bit for it to be stable before the next try
@@ -549,8 +519,8 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
 
 /******************************************************************************/
 /*!
-    @brief      Perform a single SPI SDEP transaction and is used by getReponse to
-                get a full response composed of multiple packets.
+    @brief      Perform a single SPI SDEP transaction and is used by getReponse
+   to get a full response composed of multiple packets.
 
     @param[in]  buf
                 Memory location where payload is copied to
@@ -558,16 +528,17 @@ bool Adafruit_BluefruitLE_SPI::getResponse(void)
     @return number of bytes in SDEP payload
 */
 /******************************************************************************/
-bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
-{
-  // Wait until IRQ is asserted, double timeout since some commands take long time to start responding
-  TimeoutTimer tt(2*_timeout);
-  
-  while ( !digitalRead(m_irq_pin) ) {
-    if (tt.expired()) return false;
+bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t *p_response) {
+  // Wait until IRQ is asserted, double timeout since some commands take long
+  // time to start responding
+  TimeoutTimer tt(2 * _timeout);
+
+  while (!digitalRead(m_irq_pin)) {
+    if (tt.expired())
+      return false;
   }
-  
-  sdepMsgHeader_t* p_header = &p_response->header;
+
+  sdepMsgHeader_t *p_header = &p_response->header;
 
   if (m_sck_pin == -1)
     SPI.beginTransaction(bluefruitSPI);
@@ -576,78 +547,83 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
   tt.set(_timeout);
 
   do {
-    if ( tt.expired() ) break;
+    if (tt.expired())
+      break;
 
     p_header->msg_type = spixfer(0xff);
 
-    if (p_header->msg_type == SPI_IGNORED_BYTE)
-    {
+    if (p_header->msg_type == SPI_IGNORED_BYTE) {
       // Bluefruit may not be ready
-      // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
+      // Disable & Re-enable CS with a bit of delay for Bluefruit to ready
+      // itself
       SPI_CS_DISABLE();
       delayMicroseconds(SPI_DEFAULT_DELAY_US);
       SPI_CS_ENABLE();
-    }
-    else if (p_header->msg_type == SPI_OVERREAD_BYTE)
-    {
-      // IRQ may not be pulled down by Bluefruit when returning all data in previous transfer.
-      // This could happen when Arduino MCU is running at fast rate comparing to Bluefruit's MCU,
-      // causing an SPI_OVERREAD_BYTE to be returned at stage.
+    } else if (p_header->msg_type == SPI_OVERREAD_BYTE) {
+      // IRQ may not be pulled down by Bluefruit when returning all data in
+      // previous transfer. This could happen when Arduino MCU is running at
+      // fast rate comparing to Bluefruit's MCU, causing an SPI_OVERREAD_BYTE to
+      // be returned at stage.
       //
       // Walkaround: Disable & Re-enable CS with a bit of delay and keep waiting
-      // TODO IRQ is supposed to be OFF then ON, it is better to use GPIO trigger interrupt.
+      // TODO IRQ is supposed to be OFF then ON, it is better to use GPIO
+      // trigger interrupt.
 
       SPI_CS_DISABLE();
       // wait for the clock to be enabled..
-//      while (!digitalRead(m_irq_pin)) {
-//        if ( tt.expired() ) break;
-//      }
-//      if (!digitalRead(m_irq_pin)) break;
+      //      while (!digitalRead(m_irq_pin)) {
+      //        if ( tt.expired() ) break;
+      //      }
+      //      if (!digitalRead(m_irq_pin)) break;
       delayMicroseconds(SPI_DEFAULT_DELAY_US);
       SPI_CS_ENABLE();
     }
-  }  while (p_header->msg_type == SPI_IGNORED_BYTE || p_header->msg_type == SPI_OVERREAD_BYTE);
+  } while (p_header->msg_type == SPI_IGNORED_BYTE ||
+           p_header->msg_type == SPI_OVERREAD_BYTE);
 
-  bool result=false;
+  bool result = false;
 
   // Not a loop, just a way to avoid goto with error handling
-  do
-  {
+  do {
     // Look for the header
-    // note that we should always get the right header at this point, and not doing so will really mess up things.
-    while ( p_header->msg_type != SDEP_MSGTYPE_RESPONSE && p_header->msg_type != SDEP_MSGTYPE_ERROR && !tt.expired() )
-    {
+    // note that we should always get the right header at this point, and not
+    // doing so will really mess up things.
+    while (p_header->msg_type != SDEP_MSGTYPE_RESPONSE &&
+           p_header->msg_type != SDEP_MSGTYPE_ERROR && !tt.expired()) {
       p_header->msg_type = spixfer(0xff);
     }
-    
-    if ( tt.expired() ) break;
-    
-    memset( (&p_header->msg_type)+1, 0xff, sizeof(sdepMsgHeader_t) - 1);
-    spixfer((&p_header->msg_type)+1, sizeof(sdepMsgHeader_t) - 1);
 
-    // Command is 16-bit at odd address, may have alignment issue with 32-bit chip
+    if (tt.expired())
+      break;
+
+    memset((&p_header->msg_type) + 1, 0xff, sizeof(sdepMsgHeader_t) - 1);
+    spixfer((&p_header->msg_type) + 1, sizeof(sdepMsgHeader_t) - 1);
+
+    // Command is 16-bit at odd address, may have alignment issue with 32-bit
+    // chip
     uint16_t cmd_id = word(p_header->cmd_id_high, p_header->cmd_id_low);
 
     // Error Message Response
-    if ( p_header->msg_type == SDEP_MSGTYPE_ERROR ) break;
+    if (p_header->msg_type == SDEP_MSGTYPE_ERROR)
+      break;
 
     // Invalid command
     if (!(cmd_id == SDEP_CMDTYPE_AT_WRAPPER ||
           cmd_id == SDEP_CMDTYPE_BLE_UARTTX ||
-          cmd_id == SDEP_CMDTYPE_BLE_UARTRX) )
-    {
+          cmd_id == SDEP_CMDTYPE_BLE_UARTRX)) {
       break;
     }
 
     // Invalid length
-    if(p_header->length > SDEP_MAX_PACKETSIZE) break;
+    if (p_header->length > SDEP_MAX_PACKETSIZE)
+      break;
 
     // read payload
     memset(p_response->payload, 0xff, p_header->length);
     spixfer(p_response->payload, p_header->length);
 
     result = true;
-  }while(0);
+  } while (0);
 
   SPI_CS_DISABLE();
   if (m_sck_pin == -1)
@@ -678,21 +654,21 @@ void Adafruit_BluefruitLE_SPI::spixfer(void *buff, size_t len) {
 uint8_t Adafruit_BluefruitLE_SPI::spixfer(uint8_t x) {
   if (m_sck_pin == -1) {
     uint8_t reply = SPI.transfer(x);
-    //SerialDebug.println(reply, HEX);
+    // SerialDebug.println(reply, HEX);
     return reply;
   }
 
   // software spi
   uint8_t reply = 0;
-  for (int i=7; i>=0; i--) {
+  for (int i = 7; i >= 0; i--) {
     reply <<= 1;
     digitalWrite(m_sck_pin, LOW);
-    digitalWrite(m_mosi_pin, x & (1<<i));
+    digitalWrite(m_mosi_pin, x & (1 << i));
     digitalWrite(m_sck_pin, HIGH);
     if (digitalRead(m_miso_pin))
       reply |= 1;
   }
   digitalWrite(m_sck_pin, LOW);
-  //SerialDebug.println(reply, HEX);
+  // SerialDebug.println(reply, HEX);
   return reply;
 }

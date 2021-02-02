@@ -29,8 +29,8 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 
@@ -40,59 +40,56 @@
 #include "Arduino.h"
 #include <Adafruit_BLE.h>
 
-#define SOFTWARE_SERIAL_AVAILABLE   ( ! (defined (_VARIANT_ARDUINO_DUE_X_) || defined (ARDUINO_ARCH_SAMD) || defined (ARDUINO_STM32_FEATHER)) )
+#define SOFTWARE_SERIAL_AVAILABLE                                              \
+  (!(defined(_VARIANT_ARDUINO_DUE_X_) || defined(ARDUINO_ARCH_SAMD) ||         \
+     defined(ARDUINO_STM32_FEATHER)))
 
 #if SOFTWARE_SERIAL_AVAILABLE
-  #include <SoftwareSerial.h>
+#include <SoftwareSerial.h>
 #endif
 
-class Adafruit_BluefruitLE_UART : public Adafruit_BLE
-{
-  private:
-    // Hardware Pins
-    int8_t  _mode_pin, _cts_pin, _rts_pin;
-    Stream *mySerial;
+class Adafruit_BluefruitLE_UART : public Adafruit_BLE {
+private:
+  // Hardware Pins
+  int8_t _mode_pin, _cts_pin, _rts_pin;
+  Stream *mySerial;
 #if SOFTWARE_SERIAL_AVAILABLE
-    SoftwareSerial *ss;
+  SoftwareSerial *ss;
 #endif
-    HardwareSerial *hs;
-    boolean _debug;
-    uint8_t _intercharwritedelay;
+  HardwareSerial *hs;
+  boolean _debug;
+  uint8_t _intercharwritedelay;
 
-  public:
-    // Software Serial Constructor (0, 1, 2, or 3 pins)
-    Adafruit_BluefruitLE_UART(HardwareSerial &port,
-		      int8_t mode_pin = -1, 
-		      int8_t cts_pin = -1, 
-		      int8_t rts_pin = -1);
+public:
+  // Software Serial Constructor (0, 1, 2, or 3 pins)
+  Adafruit_BluefruitLE_UART(HardwareSerial &port, int8_t mode_pin = -1,
+                            int8_t cts_pin = -1, int8_t rts_pin = -1);
 #if SOFTWARE_SERIAL_AVAILABLE
-    Adafruit_BluefruitLE_UART(SoftwareSerial &port,
-		      int8_t mode_pin = -1, 
-		      int8_t cts_pin = -1, 
-		      int8_t rts_pin = -1);
+  Adafruit_BluefruitLE_UART(SoftwareSerial &port, int8_t mode_pin = -1,
+                            int8_t cts_pin = -1, int8_t rts_pin = -1);
 #endif
 
-    void setInterCharWriteDelay(uint8_t x) { _intercharwritedelay = x; };
+  void setInterCharWriteDelay(uint8_t x) { _intercharwritedelay = x; };
 
-    virtual ~Adafruit_BluefruitLE_UART();
+  virtual ~Adafruit_BluefruitLE_UART();
 
-    // HW initialisation
-    bool begin(boolean debug = false, boolean blocking = true);
-    void end(void);
+  // HW initialisation
+  bool begin(boolean debug = false, boolean blocking = true);
+  void end(void);
 
-    bool setMode(uint8_t new_mode);
+  bool setMode(uint8_t new_mode);
 
-    // Class Print virtual function Interface
-    virtual size_t write(uint8_t c);
+  // Class Print virtual function Interface
+  virtual size_t write(uint8_t c);
 
-    // pull in write(str) and write(buf, size) from Print
-    using Print::write;
+  // pull in write(str) and write(buf, size) from Print
+  using Print::write;
 
-    // Class Stream interface
-    virtual int  available(void);
-    virtual int  read(void);
-    virtual void flush(void);
-    virtual int  peek(void);
+  // Class Stream interface
+  virtual int available(void);
+  virtual int read(void);
+  virtual void flush(void);
+  virtual int peek(void);
 };
 
 #endif

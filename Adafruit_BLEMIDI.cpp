@@ -29,35 +29,30 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 
 #include "Adafruit_BLEMIDI.h"
 
-#define MIDI_MINIMUM_FIRMWARE_VERSION    "0.7.0"
+#define MIDI_MINIMUM_FIRMWARE_VERSION "0.7.0"
 
 /******************************************************************************/
 /*!
     @brief Constructor
 */
 /******************************************************************************/
-Adafruit_BLEMIDI::Adafruit_BLEMIDI(Adafruit_BLE& ble) :
-  _ble(ble)
-{
-}
+Adafruit_BLEMIDI::Adafruit_BLEMIDI(Adafruit_BLE &ble) : _ble(ble) {}
 
 /******************************************************************************/
 /*!
     @brief Set callback
 */
 /******************************************************************************/
-void Adafruit_BLEMIDI::setRxCallback(midiRxCallback_t fp)
-{
+void Adafruit_BLEMIDI::setRxCallback(midiRxCallback_t fp) {
   _ble.setBleMidiRxCallback(fp);
 }
-
 
 /******************************************************************************/
 /*!
@@ -65,18 +60,19 @@ void Adafruit_BLEMIDI::setRxCallback(midiRxCallback_t fp)
     @param reset true will reset Bluefruit
 */
 /******************************************************************************/
-bool Adafruit_BLEMIDI::begin(bool reset)
-{
-  VERIFY_( _ble.isVersionAtLeast(MIDI_MINIMUM_FIRMWARE_VERSION) );
+bool Adafruit_BLEMIDI::begin(bool reset) {
+  VERIFY_(_ble.isVersionAtLeast(MIDI_MINIMUM_FIRMWARE_VERSION));
 
   int32_t enabled = 0;
-  VERIFY_( _ble.atcommandIntReply( F("AT+BLEMIDIEN"), &enabled) );
+  VERIFY_(_ble.atcommandIntReply(F("AT+BLEMIDIEN"), &enabled));
 
-  if ( enabled ) return true;
-  VERIFY_( _ble.atcommand( F("AT+BLEMIDIEN=1") ) );
+  if (enabled)
+    return true;
+  VERIFY_(_ble.atcommand(F("AT+BLEMIDIEN=1")));
 
   // Perform Bluefruit reset if needed
-  if (reset) _ble.reset();
+  if (reset)
+    _ble.reset();
 
   return true;
 }
@@ -87,16 +83,17 @@ bool Adafruit_BLEMIDI::begin(bool reset)
     @param reset true will reset Bluefruit
 */
 /******************************************************************************/
-bool Adafruit_BLEMIDI::stop(bool reset)
-{
+bool Adafruit_BLEMIDI::stop(bool reset) {
   int32_t enabled = 0;
-  VERIFY_( _ble.atcommandIntReply( F("AT+BLEMIDIEN"), &enabled) );
-  if ( !enabled ) return true;
+  VERIFY_(_ble.atcommandIntReply(F("AT+BLEMIDIEN"), &enabled));
+  if (!enabled)
+    return true;
 
-  VERIFY_( _ble.atcommand( F("AT+BLEMIDIEN=0") ) );
+  VERIFY_(_ble.atcommand(F("AT+BLEMIDIEN=0")));
 
   // Perform Bluefruit reset if needed
-  if (reset) _ble.reset();
+  if (reset)
+    _ble.reset();
 
   return true;
 }
@@ -107,9 +104,8 @@ bool Adafruit_BLEMIDI::stop(bool reset)
     @param bytes MIDI event data
 */
 /******************************************************************************/
-bool Adafruit_BLEMIDI::send(const uint8_t bytes[3])
-{
-  return _ble.atcommand( F("AT+BLEMIDITX"), bytes, 3);
+bool Adafruit_BLEMIDI::send(const uint8_t bytes[3]) {
+  return _ble.atcommand(F("AT+BLEMIDITX"), bytes, 3);
 }
 
 /******************************************************************************/
@@ -122,14 +118,14 @@ bool Adafruit_BLEMIDI::send(const uint8_t bytes[3])
     @note count + 1 must less than (20-3) --> count <= 16
 */
 /******************************************************************************/
-bool Adafruit_BLEMIDI::send_n(uint8_t status, const uint8_t bytes[], uint8_t count)
-{
+bool Adafruit_BLEMIDI::send_n(uint8_t status, const uint8_t bytes[],
+                              uint8_t count) {
   VERIFY_(count <= 16);
 
-  uint8_t data[17] = { status };
-  memcpy(data+1, bytes, count);
+  uint8_t data[17] = {status};
+  memcpy(data + 1, bytes, count);
 
-  return _ble.atcommand( F("AT+BLEMIDITX"), data, count+1);
+  return _ble.atcommand(F("AT+BLEMIDITX"), data, count + 1);
 }
 
 /******************************************************************************/
@@ -138,9 +134,11 @@ bool Adafruit_BLEMIDI::send_n(uint8_t status, const uint8_t bytes[], uint8_t cou
     @param
 */
 /******************************************************************************/
-void Adafruit_BLEMIDI::processRxCallback(uint8_t data[], uint16_t len, Adafruit_BLE::midiRxCallback_t callback_func)
-{
-  if ( len < 3 ) return;
+void Adafruit_BLEMIDI::processRxCallback(
+    uint8_t data[], uint16_t len,
+    Adafruit_BLE::midiRxCallback_t callback_func) {
+  if (len < 3)
+    return;
 
   // First 3 bytes is always : Header + Timestamp + Status
   midi_header_t header;
@@ -150,15 +148,13 @@ void Adafruit_BLEMIDI::processRxCallback(uint8_t data[], uint16_t len, Adafruit_
   header.byte = *data++;
   len--;
 
-  while (len)
-  {
+  while (len) {
     /* event : 0x00 - 0x7F
        status: 0x80 - 0xEF
        sysex : 0xF0 - 0xFF
      */
 
-    if ( bitRead(data[0], 7) )
-    {
+    if (bitRead(data[0], 7)) {
       // Start of new full event
       midi_timestamp_t timestamp;
       timestamp.byte = *data++;
@@ -167,19 +163,18 @@ void Adafruit_BLEMIDI::processRxCallback(uint8_t data[], uint16_t len, Adafruit_
       status = *data++;
 
       // Status must have 7th-bit set, must have something wrong
-      if ( !bitRead(status, 7) ) return;
+      if (!bitRead(status, 7))
+        return;
 
-      callback_func( tstamp, status, data[0], data[1]);
+      callback_func(tstamp, status, data[0], data[1]);
 
-      len  -= 4;
+      len -= 4;
       data += 2;
-    }
-    else
-    {
+    } else {
       // Running event
-      callback_func( tstamp, status, data[0], data[1]);
+      callback_func(tstamp, status, data[0], data[1]);
 
-      len  -= 2;
+      len -= 2;
       data += 2;
     }
   }

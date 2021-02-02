@@ -29,8 +29,8 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 
@@ -51,11 +51,11 @@
                Should the buffer is overwitten to the first item when it is full
 */
 /******************************************************************************/
-Adafruit_FIFO::Adafruit_FIFO(void* buffer, uint16_t depth, uint8_t item_size, bool overwrite)
-{
-  m_buffer       = (uint8_t*) buffer;
-  m_depth        = depth;
-  m_item_size    = item_size;
+Adafruit_FIFO::Adafruit_FIFO(void *buffer, uint16_t depth, uint8_t item_size,
+                             bool overwrite) {
+  m_buffer = (uint8_t *)buffer;
+  m_depth = depth;
+  m_item_size = item_size;
   m_overwritable = overwrite;
 
   m_count = m_wr_idx = m_rd_idx = 0;
@@ -66,10 +66,7 @@ Adafruit_FIFO::Adafruit_FIFO(void* buffer, uint16_t depth, uint8_t item_size, bo
     @brief  Clear the FIFO
 */
 /******************************************************************************/
-void Adafruit_FIFO::clear(void)
-{
-  m_rd_idx = m_wr_idx = m_count = 0;
-}
+void Adafruit_FIFO::clear(void) { m_rd_idx = m_wr_idx = m_count = 0; }
 
 /******************************************************************************/
 /*!
@@ -79,22 +76,17 @@ void Adafruit_FIFO::clear(void)
                Memory address of the item
 */
 /******************************************************************************/
-bool Adafruit_FIFO::write(void const* item)
-{
-  if ( full() && !m_overwritable ) return false;
+bool Adafruit_FIFO::write(void const *item) {
+  if (full() && !m_overwritable)
+    return false;
 
-  memcpy( m_buffer + (m_wr_idx * m_item_size),
-          item,
-          m_item_size);
+  memcpy(m_buffer + (m_wr_idx * m_item_size), item, m_item_size);
 
   m_wr_idx = (m_wr_idx + 1) % m_depth;
 
-  if ( full() )
-  {
+  if (full()) {
     m_rd_idx = m_wr_idx; // keep the full state (rd == wr && len = size)
-  }
-  else
-  {
+  } else {
     m_count++;
   }
 
@@ -113,15 +105,14 @@ bool Adafruit_FIFO::write(void const* item)
     @return    Number of written items
 */
 /******************************************************************************/
-uint16_t Adafruit_FIFO::write_n(void const * data, uint16_t n)
-{
-  if ( n == 0 ) return 0;
+uint16_t Adafruit_FIFO::write_n(void const *data, uint16_t n) {
+  if (n == 0)
+    return 0;
 
-  uint8_t* buf = (uint8_t*) data;
+  uint8_t *buf = (uint8_t *)data;
 
   uint16_t len = 0;
-  while( (len < n) && write(buf) )
-  {
+  while ((len < n) && write(buf)) {
     len++;
     buf += m_item_size;
   }
@@ -137,13 +128,11 @@ uint16_t Adafruit_FIFO::write_n(void const * data, uint16_t n)
                Memory address to store item
 */
 /******************************************************************************/
-bool Adafruit_FIFO::read(void* buffer)
-{
-  if( empty() ) return false;
+bool Adafruit_FIFO::read(void *buffer) {
+  if (empty())
+    return false;
 
-  memcpy(buffer,
-         m_buffer + (m_rd_idx * m_item_size),
-         m_item_size);
+  memcpy(buffer, m_buffer + (m_rd_idx * m_item_size), m_item_size);
   m_rd_idx = (m_rd_idx + 1) % m_depth;
   m_count--;
 
@@ -163,15 +152,14 @@ bool Adafruit_FIFO::read(void* buffer)
 */
 /******************************************************************************/
 
-uint16_t Adafruit_FIFO::read_n (void * buffer, uint16_t n)
-{
-  if( n == 0 ) return 0;
+uint16_t Adafruit_FIFO::read_n(void *buffer, uint16_t n) {
+  if (n == 0)
+    return 0;
 
-  uint8_t* buf = (uint8_t*) buffer;
+  uint8_t *buf = (uint8_t *)buffer;
 
   uint16_t len = 0;
-  while( (len < n) && read(buf) )
-  {
+  while ((len < n) && read(buf)) {
     len++;
     buf += m_item_size;
   }
@@ -187,17 +175,14 @@ uint16_t Adafruit_FIFO::read_n (void * buffer, uint16_t n)
                Memory address to store item
 */
 /******************************************************************************/
-bool Adafruit_FIFO::peek(void* buffer)
-{
-  if( empty() ) return false;
+bool Adafruit_FIFO::peek(void *buffer) {
+  if (empty())
+    return false;
 
-  memcpy(buffer,
-         m_buffer + (m_rd_idx * m_item_size),
-         m_item_size);
+  memcpy(buffer, m_buffer + (m_rd_idx * m_item_size), m_item_size);
 
   return true;
 }
-
 
 /******************************************************************************/
 /*!
@@ -210,15 +195,12 @@ bool Adafruit_FIFO::peek(void* buffer)
                Memory address to store item
 */
 /******************************************************************************/
-bool Adafruit_FIFO::peekAt(uint16_t position, void * p_buffer)
-{
-  if( empty() || (position >= m_count) ) return false;
+bool Adafruit_FIFO::peekAt(uint16_t position, void *p_buffer) {
+  if (empty() || (position >= m_count))
+    return false;
 
   uint16_t index = (m_rd_idx + position) % m_depth; // rd_idx is position=0
-  memcpy(p_buffer,
-         m_buffer + (index * m_item_size),
-         m_item_size);
+  memcpy(p_buffer, m_buffer + (index * m_item_size), m_item_size);
 
   return true;
 }
-

@@ -29,8 +29,8 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 
@@ -41,11 +41,7 @@
     @brief Constructor
 */
 /******************************************************************************/
-Adafruit_BLEBattery::Adafruit_BLEBattery(Adafruit_BLE& ble) :
-  _ble(ble)
-{
-
-}
+Adafruit_BLEBattery::Adafruit_BLEBattery(Adafruit_BLE &ble) : _ble(ble) {}
 
 /******************************************************************************/
 /*!
@@ -53,16 +49,17 @@ Adafruit_BLEBattery::Adafruit_BLEBattery(Adafruit_BLE& ble) :
     @param reset true will reset Bluefruit
 */
 /******************************************************************************/
-bool Adafruit_BLEBattery::begin(bool reset)
-{
+bool Adafruit_BLEBattery::begin(bool reset) {
   int32_t enabled = 0;
-  VERIFY_( _ble.atcommandIntReply( F("AT+BLEBATTEN"), &enabled) );
-  if ( enabled ) return true;
+  VERIFY_(_ble.atcommandIntReply(F("AT+BLEBATTEN"), &enabled));
+  if (enabled)
+    return true;
 
-  VERIFY_( _ble.atcommand( F("AT+BLEBATTEN=1") ) );
+  VERIFY_(_ble.atcommand(F("AT+BLEBATTEN=1")));
 
   // Perform Bluefruit reset if needed
-  if (reset) _ble.reset();
+  if (reset)
+    _ble.reset();
 
   return true;
 }
@@ -73,16 +70,17 @@ bool Adafruit_BLEBattery::begin(bool reset)
     @param reset true will reset Bluefruit
 */
 /******************************************************************************/
-bool Adafruit_BLEBattery::stop(bool reset)
-{
+bool Adafruit_BLEBattery::stop(bool reset) {
   int32_t enabled = 0;
-  VERIFY_( _ble.atcommandIntReply( F("AT+BLEBATTEN"), &enabled) );
-  if ( !enabled ) return true;
+  VERIFY_(_ble.atcommandIntReply(F("AT+BLEBATTEN"), &enabled));
+  if (!enabled)
+    return true;
 
-  VERIFY_( _ble.atcommand( F("AT+BLEBATTEN=0") ) );
+  VERIFY_(_ble.atcommand(F("AT+BLEBATTEN=0")));
 
   // Perform Bluefruit reset if needed
-  if (reset) _ble.reset();
+  if (reset)
+    _ble.reset();
 
   return true;
 }
@@ -93,9 +91,7 @@ bool Adafruit_BLEBattery::stop(bool reset)
     @param percent Battery value in percentage 0-100
 */
 /******************************************************************************/
-bool Adafruit_BLEBattery::update(uint8_t percent)
-{
-  VERIFY_( is_within(0, percent, 100) );
-  return _ble.atcommand( F("AT+BLEBATTVAL"), percent ) ;
+bool Adafruit_BLEBattery::update(uint8_t percent) {
+  VERIFY_(is_within(0, percent, 100));
+  return _ble.atcommand(F("AT+BLEBATTVAL"), percent);
 }
-

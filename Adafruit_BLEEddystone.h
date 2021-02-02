@@ -29,37 +29,36 @@
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
 
 #ifndef _ADAFRUIT_BLEEDDYSTONE_H_
 #define _ADAFRUIT_BLEEDDYSTONE_H_
 
-#include <Arduino.h>
 #include "Adafruit_BLE.h"
+#include <Arduino.h>
 
-#define EDDYSTONE_DEFAULT_RSSI0M              (-18)
+#define EDDYSTONE_DEFAULT_RSSI0M (-18)
 
-class Adafruit_BLEEddystone
-{
+class Adafruit_BLEEddystone {
 private:
-  Adafruit_BLE& _ble;
+  Adafruit_BLE &_ble;
 
 public:
-  Adafruit_BLEEddystone(Adafruit_BLE& ble);
+  Adafruit_BLEEddystone(Adafruit_BLE &ble);
 
   bool begin(bool reset = true);
-  bool stop (bool reset = true);
+  bool stop(bool reset = true);
 
-  bool setURL(const char* url, bool broadcastEvenConnect = false, int8_t rssi_at_0m = EDDYSTONE_DEFAULT_RSSI0M);
+  bool setURL(const char *url, bool broadcastEvenConnect = false,
+              int8_t rssi_at_0m = EDDYSTONE_DEFAULT_RSSI0M);
 
   bool startBroadcast(void);
   bool stopBroadcast(void);
 
   bool startConfigMode(uint32_t seconds);
-
 };
 
 #endif /* _ADAFRUIT_BLEEDDYSTONE_H_ */
