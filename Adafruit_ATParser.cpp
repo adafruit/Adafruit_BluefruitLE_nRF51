@@ -315,8 +315,24 @@ int32_t Adafruit_ATParser::readline_parseInt(void)
   uint16_t len = readline();
   if (len == 0) return 0;
 
-  // also parsed hex number e.g 0xADAF
-  int32_t val = strtol(buffer, NULL, 0);
+  // strtol also parses hex number e.g 0xADAF
+  
+  // Ted 2018-09-21. Using strtol does not allow the use of the hardware random
+  // number generator, which returns an unsigned long. On the other hand, strtoul
+  // does not work with negative results (are there any?), so it gets a bit
+  // more complicated here
+  int32_t val;
+  uint16_t i;
+  
+  for(i = 0; i < len && isspace(buffer[i]); i++); // Find the first non-space
+  if (buffer[i] == '-') {
+    // Negative number ==> use strtol
+    val = strtol(buffer, NULL, 0);
+  } else {
+    // Though the variable type is not correct (it is signed) this construct
+    // works if sendCommandWithIntReply is called with a pointer to an uint32_t
+    *((uint32_t *)&val) = strtoul(buffer, NULL, 0);
+  }
 
   return val;
 }
